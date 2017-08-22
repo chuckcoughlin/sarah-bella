@@ -20,6 +20,8 @@ import chuckcoughlin.sbcontrol.R;
 
 public class LogsFragment extends Fragment {
 
+    TextView logView;
+
     public LogsFragment() {
     }
 
