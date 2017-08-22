@@ -15,6 +15,7 @@ import android.widget.TextView;
 import chuckcoughlin.sbcontrol.MainActivity;
 import chuckcoughlin.sbcontrol.R;
 
+
 /**
  * This fragment of the main activity simply shows an image of the robot.
  */
