@@ -3,7 +3,7 @@
  *  (MIT License)
  */
 
-package chuckcoughlin.sbcontrol.chuckcoughlin.sbcontrol.tab;
+package chuckcoughlin.sbcontrol.tab;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;

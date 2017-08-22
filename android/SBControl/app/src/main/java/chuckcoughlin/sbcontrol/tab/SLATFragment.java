@@ -3,7 +3,7 @@
  *  (MIT License)
  */
 
-package chuckcoughlin.sbcontrol.chuckcoughlin.sbcontrol.tab;
+package chuckcoughlin.sbcontrol.tab;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -15,19 +15,20 @@ import android.widget.TextView;
 import chuckcoughlin.sbcontrol.R;
 
 /**
- * This fragment handles editing of a form with device configuration
+ * This fragment handles robot control during its SLAT
+ * mapping sequence.
  */
 
-public class ConfigurationFragment extends Fragment {
+public class SLATFragment extends Fragment {
 
-    public ConfigurationFragment() {
+    public SLATFragment() {
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-        textView.setText("Configuration");
+        textView.setText("SLAT");
         return rootView;
     }
 }

@@ -9,10 +9,10 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
-import chuckcoughlin.sbcontrol.chuckcoughlin.sbcontrol.tab.ConfigurationFragment;
-import chuckcoughlin.sbcontrol.chuckcoughlin.sbcontrol.tab.CoverFragment;
-import chuckcoughlin.sbcontrol.chuckcoughlin.sbcontrol.tab.LogsFragment;
-import chuckcoughlin.sbcontrol.chuckcoughlin.sbcontrol.tab.SLATFragment;
+import chuckcoughlin.sbcontrol.tab.ConfigurationFragment;
+import chuckcoughlin.sbcontrol.tab.CoverFragment;
+import chuckcoughlin.sbcontrol.tab.LogsFragment;
+import chuckcoughlin.sbcontrol.tab.SLATFragment;
 
 /**
  * There is a specialized page fragment for each tab position.
