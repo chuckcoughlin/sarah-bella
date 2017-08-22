@@ -1,4 +1,4 @@
-package chuckcoughlin.sb.sbcontrol;
+package chuckcoughlin.sbcontrol;
 
 import org.junit.Test;
 
