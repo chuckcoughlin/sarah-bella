@@ -19,7 +19,7 @@ public class LogViewHolder extends RecyclerView.ViewHolder {
 
     public LogViewHolder(View containerView) {
         super(containerView);
-        itemView = (TextView)containerView.findViewById(R.id.logs_recycle_item);
+        itemView = (TextView)containerView.findViewById(R.id.logs_recyclable_item);
     }
 
     void bind(int listIndex) {

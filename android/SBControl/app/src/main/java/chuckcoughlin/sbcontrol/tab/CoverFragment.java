@@ -29,7 +29,7 @@ public class CoverFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_cover, container, false);
         TextView textView = (TextView) rootView.findViewById(R.id.cover_title_label);
-        textView.setText(getString(R.string.cover_title));
+        textView.setText(R.string.cover_title);
         return rootView;
     }
 }
