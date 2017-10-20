@@ -64,83 +64,64 @@ Install the dependent packages for Turtlebot3 control:
 		ros-kinetic-rqt-image-view ros-kinetic-gmapping ros-kinetic-navigation
 ```
 
-#### ROS Development Setup
-The instructions below describe setup of a "catkin" workspace for application and package development. We have constructed the following directories:
+#### Custom Development Setup
+The instructions below describe setup of a "catkin" workspace for application and package development. By convention, the parent 
+directory for all development of custom packages is "catkin_ws". All custom packages are installed as sub-directories here.
+A package build involves the entire tree. In order to make our packages portable to the target Raspberry Pi, we will use
+python as much as possible.
 
-###### common 
-Install the turtlebot3 messages and catkin build files here. 
-###### config 
-We keep system-specific configurations here. When applications require system-specific parameters we include the vaules from here.
-###### applications
-Source code for the robot applications.
-###### packages
+To create a new package (assuming a python and turtlebot dependency):
+```
+        catkin_package_create <package name> rospy turtlebot3
+```
+
+###### Turtlebot3 Support
 Source code for support packages.
 
-
 ```
-		mkdir -p ~/robotics/common/src
-		cd ~/robotics/common/src
+		mkdir -p ~/robotics/catkin_ws/src
+		cd ~/robotics/catkin_ws/src
 		git clone https://github.com/ROBOTIS-GIT/turtlebot3_msgs.git
 		git clone https://github.com/ROBOTIS-GIT/turtlebot3.git
 		cd .. && catkin_make
 ```
 
-The instructions below describe setup of a "catkin" workspace for a typical package. Unlike an application, the package has to
-be bundled and added to the ROS depeendencies..
+###### System Configuration
+We keep system-specific configurations in ~/robotics/conf.d. On startup each file in this directory is source'd to create
+environment variables that are referenced by the ROS packages and build scripts where necessary.
 
-#### ROSPi
+### Raspberry Pi
 "ROSPi" is the RaspberryPi that is the robot's single board computer (SBC). After an initial flash and configuration
 this device must be configured for each application. A wi-fi connection is used for file transfer with commands
 entered via external keyboard, mouse and monitor.
 
-##### Initial Image
-On the host machine, download and install "Etcher" from https://etcher.io. Use this to transfer images to the SD card.
+#### Initial Image
+On the host machine, download and install "Etcher" from https://etcher.io. We will use this to transfer images to the SD card.
 Download Ubintu Mate for RaspberryPi 3 from https://ubuntu-mate.org/download.
 For the actual download, you will need a torrent translator like qBittorent at https://www.qbittorrent.org/download.php.
 The downloaded file has an ".xz" extension, meaning that it is compressed. On a mac, the "xz" utility can be downloaded
 from homebrew as:
 
 ```
-        ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" < /dev/null 2> /dev/null
-		brew install xz
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" < /dev/null 2> /dev/null
+    brew install xz
 ```
 Use "unxz" to de-compress the image.
 
-Using Etcher flash the decompressed image onto the SD card. On my system, this is /dev/disk7. Flash time is approximately 5 minutes.
+Using Etcher, flash the decompressed image onto the SD card. On my system, this is /dev/disk7. Flash time is approximately 5 minutes.
 
-##### ROSPi Network Configuration
+#### ROSPi Network Configuration
 We woud like to have ROSPi connect automtically to the wireless network on startup so as to not require any user intervention for normal operations.
-The following material has been taken from: http://weworkweplay.com/play/automatically-connect-a-raspberry-pi-to-a-wifi-network. Note that the 
-Pi comes with the "nano" editor. To save a file use ctrl-X, then Y.
+We have found that the selection of wi-fi networks is easiest during the initial system configuration. Select the desired network and mark it to
+automatically connect if found. It may not be available during the first login, but will connect on subsequent system restarts. 
 
-Execute: sudo nano /etc/network/interfaces
-```
-        auto wlan0
+To test and to determine the IP address, restart ROSPi and execute "ifconfig".
 
-        iface lo inet loopback
-        iface eth0 inet dhcp
+#### ROS Development Setup
+Like the main deveopment system, the Raspberry Pi requires the ROS development libraries. Follow the instructions at:
+http://turtlebot3.readthedocs.io/en/latest/sbc_software.html, sections 6.3 to the end. These steps can be expected to
+take an hour or more.
 
-        allow-hotplug wlan0
-        iface wlan0 inet static
-        address 192.168.1.155    # Desired static IP
-        netmask 255.255.255.0
-        gateway 192.168.1.1      # IP of our router
-        wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
-        iface default inet dhcp
-```
-
-Execute: sudo nano /etc/wpa_supplicant/wpa_supplicant.conf
-```
-        ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
-        update_config=1
-        
-        network={
-	        ssid="MY_SSID"
-	        psk="topsecret"
-	        proto=RSN
-	        key_mgmt=WPA-PSK
-	        pairwise=CCMP
-	        auth_alg=OPEN
-        }
-```
-To test, restart ROSPi and execute "ifconfig".
+#### Backup
+To backup an SD card, mount it on the host system. Then use the Disk Utility application to save the SD card contents
+to an image file on disk.
