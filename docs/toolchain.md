@@ -8,8 +8,8 @@ This document summarizes the tools and build procedures required to build the Sa
 We will use the kinetic version of ROS. This is the current version used by ROBOTIS for Turtlebot.
 
 ### Android
-The control application is a standard Android application built using Android Studio 2.3.3. The studio may be downloaded from http://developer.android.com. It runs directly on the host build system. 
-For an OSX system, ROS can be installed by following the instructions on: http://wiki.ros.org/kinetic/Installation/OSX/Homebrew/Source.
+The control application is a standard Android application built using Android Studio 3.0. The studio may be downloaded from http://developer.android.com (preview). It runs directly on the host build system. 
+
 #### SB-Assistant
 The notepad application is designed to command the robot, perform compute-intensive analyses and display results. 
 
