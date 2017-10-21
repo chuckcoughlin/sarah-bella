@@ -9,6 +9,7 @@ We will use the kinetic version of ROS. This is the current version used by ROBO
 
 ### Android
 The control application is a standard Android application built using Android Studio 2.3.3. The studio may be downloaded from http://developer.android.com. It runs directly on the host build system. 
+For an OSX system, ROS can be installed by following the instructions on: http://wiki.ros.org/kinetic/Installation/OSX/Homebrew/Source.
 #### SB-Assistant
 The notepad application is designed to command the robot, perform compute-intensive analyses and display results. 
 
@@ -97,7 +98,7 @@ entered via external keyboard, mouse and monitor.
 
 #### Initial Image
 On the host machine, download and install "Etcher" from https://etcher.io. We will use this to transfer images to the SD card.
-Download Ubintu Mate for RaspberryPi 3 from https://ubuntu-mate.org/download.
+Download Ubuntu Mate for RaspberryPi 3 from https://ubuntu-mate.org/download. This is the initial boot image.
 For the actual download, you will need a torrent translator like qBittorent at https://www.qbittorrent.org/download.php.
 The downloaded file has an ".xz" extension, meaning that it is compressed. On a mac, the "xz" utility can be downloaded
 from homebrew as:
@@ -119,9 +120,34 @@ To test and to determine the IP address, restart ROSPi and execute "ifconfig".
 
 #### ROS Development Setup
 Like the main deveopment system, the Raspberry Pi requires the ROS development libraries. Follow the instructions at:
-http://turtlebot3.readthedocs.io/en/latest/sbc_software.html, sections 6.3 to the end. These steps can be expected to
-take an hour or more.
+http://turtlebot3.readthedocs.io/en/latest/sbc_software.html, sections 6.3.1, 6.3.3 and 6.3.4.. These steps can be expected to
+take an hour or more. Make sure the robot's battery is charged.
+
+After I executed the "sudo apt upgrade", I discovered that my Firefox now crashed on start. To revert to a prior version:
+```
+    apt-cache show firefox | grep Version
+	sudo apt-get purge firefox
+	sudo apt-get install firefox=45.0.2+build1-0ubuntu1   # The older version shown from previos command
+	sudo apt-mark hold firefox                            # Prevents auto-update to newer version
+```
+When complete, execute:
+```
+    rosdep update
+```
+Replace similar lines in ~/.bashrc:
+```
+   IP_ADDRESS=`hostname-I`
+   export ROS_MASTER_URI="http://${IP_ADDRESS}:11311"
+   export ROS_HOSTNAME=${IP_ADDRESS}
+```
+
+The ROS installation places the ROS workspace at /home/<username>/catkin_ws. Unfortunately it updates firefox, so it is necessary
+to revert the version again.
+
+#### FTP
+We use ftp to transfer files from the host to the Raspberry Pi. To do this install 
+the vsftpd package.
 
 #### Backup
 To backup an SD card, mount it on the host system. Then use the Disk Utility application to save the SD card contents
-to an image file on disk.
+to an image file on disk. Be sure to select the entire device, not just the named partition. Save as "compressed".
