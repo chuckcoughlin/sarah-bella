@@ -76,7 +76,7 @@ To create a new package (assuming a python and turtlebot dependency):
         catkin_package_create <package name> rospy turtlebot3
 ```
 
-###### Turtlebot3 Support
+#### Turtlebot3 Support
 Source code for support packages.
 
 ```
@@ -86,6 +86,22 @@ Source code for support packages.
 		git clone https://github.com/ROBOTIS-GIT/turtlebot3.git
 		cd .. && catkin_make
 ```
+
+#### ROSJave
+We install ROSJava so that we can convert the ROS messages to Java classes and use them for the Android application.
+
+```
+        sudo apt-get install ros-kinetic-genjava
+```
+Download the 0.5.11 std_msgs jar file from: /github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_messages/std_msgs.
+At the time of this writing, the latest version was 0.5.10. After downloading, rename it and store it in:
+/home/<username>/robotics/catkin_ws/devel/share/maven/org/ros/rosjava_messages/std_msgs/0.5.11/std_msgs-0.5.11.jar.
+
+Then in each package for which we desire a translation into Java, insert the following line into package.xml:
+```
+        <run_depend>rosjava</run_depend>
+```
+As each ROS package is created using "catkin_make", we convert the messages into Java and a .jar file is created for the android application.
 
 ###### System Configuration
 We keep system-specific configurations in ~/robotics/conf.d. On startup each file in this directory is source'd to create
