@@ -105,6 +105,7 @@ Edit the resulting package.xml file appropriately. Then:
 ```
 		cd ~/robotics/catkin_ws
 		catkin_make
+```
 
 Once the package has been created and compiles with its dependencies, proceed to define its custom code. See 
 http:://wiki.ros.org/rospy_tutorials for guidance. The custom code consists of execution nodes, messages,
