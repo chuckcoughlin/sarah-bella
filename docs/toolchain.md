@@ -9,7 +9,8 @@ We will use the kinetic version of ROS. This is the current version used by ROBO
 
 ### Android
 The control application is a standard Android application built using Android Studio 3.0. The studio may be downloaded from http://developer.android.com (preview). It runs directly on the host build system. 
-
+Make the Android home environment variable available by adding 
+```ANDROID_HOME=~/Library/Android/sdk``` to ~/.bashrc.
 #### SB-Assistant
 This notepad application is designed to command the robot, perform compute-intensive analyses and display results. 
 
