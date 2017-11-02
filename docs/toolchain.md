@@ -11,7 +11,7 @@ We will use the kinetic version of ROS. This is the current version used by ROBO
 The control application is a standard Android application built using Android Studio 3.0. The studio may be downloaded from http://developer.android.com (preview). It runs directly on the host build system. 
 
 #### SB-Assistant
-The notepad application is designed to command the robot, perform compute-intensive analyses and display results. 
+This notepad application is designed to command the robot, perform compute-intensive analyses and display results. 
 
 ### Linux
 Creation of ROS control code for the robot requires a Linux machine. We have implemented this as a pair of virtual machines on the host build system. 
@@ -65,19 +65,8 @@ Install the dependent packages for Turtlebot3 control:
 		ros-kinetic-rqt-image-view ros-kinetic-gmapping ros-kinetic-navigation
 ```
 
-#### Custom Development Setup
-The instructions below describe setup of a "catkin" workspace for application and package development. By convention, the parent 
-directory for all development of custom packages is "catkin_ws". All custom packages are installed as sub-directories here.
-A package build involves the entire tree. In order to make our packages portable to the target Raspberry Pi, we will use
-python as much as possible.
-
-To create a new package (assuming a python and turtlebot dependency):
-```
-        catkin_package_create <package name> rospy turtlebot3
-```
-
 #### Turtlebot3 Support
-Source code for support packages.
+Install the source code for turtlebot support packages.
 
 ```
 		mkdir -p ~/robotics/catkin_ws/src
@@ -86,30 +75,51 @@ Source code for support packages.
 		git clone https://github.com/ROBOTIS-GIT/turtlebot3.git
 		cd .. && catkin_make
 ```
+#### Package Creation
+A package encapsulates a related set of robot functionality. Ultimately we need to transfer the package definition onto the
+robot, but first we checkout and build on the virtual machine. 
 
-#### ROSJave
-We install ROSJava so that we can convert the ROS messages to Java classes and use them for the Android application.
+Custom packages all reside as sub-directories of a "catkin" workspace. By convention, this parent 
+directory for all development of custom packages is "catkin_ws". 
+A package build involves the entire tree. In order to make our packages portable to the target Raspberry Pi, we will use
+python as much as possible.
 
+The narrative below describes the general steps involved in creating a package. For further details see:
+http://wiki.ros.org/catkin/Tutorials. Make sure that the following lines have been added to ~/.bashrc:
 ```
-        sudo apt-get install ros-kinetic-genjava
+    source /opt/ros/kinetic/setup.bash
+	source ~/robotics/catkin_ws/devel/setup.bash
 ```
-Download the 0.5.11 std_msgs jar file from: /github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_messages/std_msgs.
-At the time of this writing, the latest version was 0.5.10. After downloading, rename it and store it in:
-/home/<username>/robotics/catkin_ws/devel/share/maven/org/ros/rosjava_messages/std_msgs/0.5.11/std_msgs-0.5.11.jar.
+Note that the standard ROS packages are installed in /opt/ros/kinetic/share. These can be browsed to determine
+message contents and other details.
 
-Then in each package for which we desire a translation into Java, insert the following line into package.xml:
+To create a new package (assuming a python and turtlebot top-level dependencies):
 ```
-        <run_depend>rosjava</run_depend>
+		cd ~/robotics/catkin_ws/src
+        catkin_create_pkg <package name> rospy turtlebot3_msgs turtlebot3_navigation
 ```
-As each ROS package is created using "catkin_make", we convert the messages into Java and a .jar file is created for the android application.
+Note that the metapackage turtlebot3 should not be listed as a dependency. Use its sub-packages instead.
+
+Edit the resulting package.xml file appropriately. Then:
+```
+		cd ~/robotics/catkin_ws
+		catkin_make
+
+Once the package has been created and compiles with its dependencies, proceed to define its custom code. See 
+http:://wiki.ros.org/rospy_tutorials for guidance. The custom code consists of execution nodes, messages,
+services and topic files, as appropriate.
+
+###### Transfer to the Robot
+Once the package has been defined and tested on the development system, it needs to be packaged and transferred to the
+robot. Several scripts are provided for this purpose.
 
 ###### System Configuration
 We keep system-specific configurations in ~/robotics/conf.d. On startup each file in this directory is source'd to create
 environment variables that are referenced by the ROS packages and build scripts where necessary.
 
 ### Raspberry Pi
-"ROSPi" is the RaspberryPi that is the robot's single board computer (SBC). After an initial flash and configuration
-this device must be configured for each application. A wi-fi connection is used for file transfer with commands
+"ROSPi" (our name) is the RaspberryPi that is the robot's single board computer (SBC). After an initial flash and configuration
+this device must be separately configured for each application. A wi-fi connection is used for file transfer with commands
 entered via external keyboard, mouse and monitor.
 
 #### Initial Image
