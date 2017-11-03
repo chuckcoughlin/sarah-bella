@@ -1,20 +1,31 @@
 # Toolchain and Build Notes
 
 This document summarizes the tools and build procedures required to build the Sarah-Bella application suite. Current hardware consists of the following:
-  * Build system - iMac running OSX Sierra (10.12).
+  * Host system - iMac running OSX Sierra (10.12).
   * Tablet - Samsung Galaxy S3 - 10"
   * Robot - ROBOTIS Turtlebot3, monitor, USB keyboard
 
 We will use the kinetic version of ROS. This is the current version used by ROBOTIS for Turtlebot.
 
 ### Android
-The control application is a standard Android application built using Android Studio 3.0. The studio may be downloaded from http://developer.android.com (preview). It runs directly on the host build system. 
-Make the Android home environment variable available by adding 
+The control application is a standard Android application built using Android Studio 3.0. The studio may be downloaded from http://developer.android.com. It runs on the OSX build system, creating a run image 
+for the android tablet. 
+
+To configure the host, make the Android home environment variable available by adding 
 ```ANDROID_HOME=~/Library/Android/sdk``` to ~/.bashrc.
-From https://github.com/rosjava/rosjava_mvn_repo/blob/master/org/ros/android_core/android_15/0.3.3 download android_15-0.3.3.aar and place it in ~/robotics/sarah-bella/android/app/libs.
+Then make the ROS libraries available. From https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/android_core/android_15/0.3.3 download android_15-0.3.3.aar. 
+```
+	DIR="~/Library/Android/sdk/extras/m2repository/org/ros/android_core/android_15/0.3.3"
+	mkdir -p $DIR
+	cd $DIR
+	mv ~/downloads/android_15-0.3.3.aar .
+	jar -xf android_15-0.3.3.aar classes.jar
+	mv classes.jar android_15.0.3.3.jar
+```
 
 #### SB-Assistant
-This notepad application is designed to command the robot, perform compute-intensive analyses and display results. 
+This notepad application is designed to command the robot, perform compute-intensive analyses and display results. The SBAssistant project is contained in the overall project
+repository (```git clone http://github.com/chuckcoughlin/sarah-bella``` Load android/SBAssistant into Android Studio).
 
 ### Linux
 Creation of ROS control code for the robot requires a Linux machine. We have implemented this as a pair of virtual machines on the host build system. 
