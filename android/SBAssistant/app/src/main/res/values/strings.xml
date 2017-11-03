@@ -1,7 +1,0 @@
-<resources>
-    <string name="app_name">SBAssistant</string>
-    <string name="action_settings">Settings</string>
-    <string name="section_format">Hello World from section: %1$d</string>
-    <string name="cover_title">Turtlebot 3</string>
-    <string name="logs_title">Device Log Messages</string>
-</resources>
