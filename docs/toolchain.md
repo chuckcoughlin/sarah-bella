@@ -34,8 +34,9 @@ repository (```git clone http://github.com/chuckcoughlin/sarah-bella``` Load and
 ***************************************************************
 
 ### Linux
-We develop ROS control code for the robot on a Linux machine, implemented as a virtual machines on the OSX host build system.
-This machine contains a development area which is linked to the robot's Raspberry Pi via a shared *git* source code repository. Python (mostly) and C++ code for the entire repertoire of applications and support packages is edited and compiled here. Actual tryout and testing must take place on the robot.
+The robot's ROS control code is developed on a Linux machine. We implement this as a virtual machine on the OSX host build system.
+This machine contains a development area which is linked to the robot's Raspberry Pi via a shared *git* source code repository. 
+Python (mostly) and C++ code for the entire repertoire of applications and support packages is edited and compiled here. Actual tryout and testing must take place on the robot.
 
 #### VirtualBox Setup
 We use VirtualBox on an iMac host to implement our Linux virtual machines. The application may be downloaded from http://www.oracle.com/technetwork/server-storage/virtualbox/downloads/index.html.
@@ -187,6 +188,14 @@ Replace similar lines in ~/.bashrc:
 
 The ROS installation places the ROS workspace at /home/<username>/catkin_ws. Unfortunately it updates firefox, so it is necessary
 to revert the version again.
+
+On startup *roscore* starts any nodes defined in roslaunch/roscore.xml. Install it from the git repository as follows:
+```
+   cd ~/robotics/repo/robot/bin
+   sudo cp ros /etc/init.d
+   sudo chmod 755 /etc/init.d/ros
+   sudo update-rc.d ros defaults
+```
 
 ##### FTP
 We use ftp to transfer miscellaneous files from the host to the Raspberry Pi. To do this install
