@@ -1,0 +1,47 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          ros
+# Required-Start:    $local_fs $remote_fs dbus
+# Required-Stop:     $local_fs $remote_fs dbus
+# Should-Start:      $named
+# Should-Stop:       $named
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start roscore
+### END INIT INFO
+
+set -e
+
+PATH=/opt/ros/kinetic/bin:/bin:/usr/bin:/sbin:/usr/sbin
+DAEMON=/opt/ros/kinetic/bin/roscore
+
+test -x $DAEMON || exit 0
+
+. /lib/lsb/init-functions
+source /opt/ros/kinetic/setup.bash
+
+case "$1" in
+  start)
+	roscore
+  ;;
+
+  restart)
+    /etc/init.d/ros stop
+    /etc/init.d/ros start
+  ;;
+
+  stop)
+    killall roscore
+  ;;
+  force-reload)
+    /etc/init.d/ros restart
+  ;;
+
+  *)
+    echo "Usage: /etc/init.d/ros {start|stop|restart|force-reload}"
+    exit 1
+    ;;
+esac
+
+exit 0
