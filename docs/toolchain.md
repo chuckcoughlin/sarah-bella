@@ -7,7 +7,7 @@ This document summarizes the tools and build procedures required to build the Sa
 
 We will use the kinetic version of ROS. This is the current version used by ROBOTIS for Turtlebot.
 
-[sarah-bella - Turtlebot3](/images/sarah-bella.png)
+![sarah-bella - Turtlebot3](/images/sarah-bella.png)
 
 *********************************************************
 ### Android
@@ -33,7 +33,7 @@ repository (```git clone http://github.com/chuckcoughlin/sarah-bella``` Load and
 ***************************************************************
 
 ### Linux
-Creation of ROS control code for the robot requires a Linux machine. We have implemented this as a virtual machines on the OSX host build system. 
+Creation of ROS control code for the robot requires a Linux machine. We have implemented this as a virtual machines on the OSX host build system.
 The first machine is the development area. Here C++ code for the entire repertoire of applications and support packages is compiled and tested. Testing is accomplished via simulation.
 
 The second machine is sized to fit the robot's Raspberry Pi. Here, a particular application is compiled into an executable image and copied to an SD card.
