@@ -7,13 +7,16 @@ This document summarizes the tools and build procedures required to build the Sa
 
 We will use the kinetic version of ROS. This is the current version used by ROBOTIS for Turtlebot.
 
-### Android
-The control application is a standard Android application built using Android Studio 3.0. The studio may be downloaded from http://developer.android.com. It runs on the OSX build system, creating a run image 
-for the android tablet. 
+[sarah-bella - Turtlebot3](/images/sarah-bella.png)
 
-To configure the host, make the Android home environment variable available by adding 
+*********************************************************
+### Android
+The control application is a standard Android application built using Android Studio 3.0. The studio may be downloaded from http://developer.android.com. It runs on the OSX build system, creating a run image
+for the android tablet.
+
+To configure the host, make the Android home environment variable available by adding
 ```ANDROID_HOME=~/Library/Android/sdk``` to ~/.bashrc.
-Then make the ROS libraries available. From https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/android_core/android_15/0.3.3 download android_15-0.3.3.aar. 
+Then make the ROS libraries available. From https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/android_core/android_15/0.3.3 download android_15-0.3.3.aar.
 ```
 	DIR="~/Library/Android/sdk/extras/m2repository/org/ros/android_core/android_15/0.3.3"
 	mkdir -p $DIR
@@ -27,25 +30,27 @@ Then make the ROS libraries available. From https://github.com/rosjava/rosjava_m
 This notepad application is designed to command the robot, perform compute-intensive analyses and display results. The SBAssistant project is contained in the overall project
 repository (```git clone http://github.com/chuckcoughlin/sarah-bella``` Load android/SBAssistant into Android Studio).
 
+***************************************************************
+
 ### Linux
-Creation of ROS control code for the robot requires a Linux machine. We have implemented this as a pair of virtual machines on the host build system. 
+Creation of ROS control code for the robot requires a Linux machine. We have implemented this as a virtual machines on the OSX host build system. 
 The first machine is the development area. Here C++ code for the entire repertoire of applications and support packages is compiled and tested. Testing is accomplished via simulation.
 
 The second machine is sized to fit the robot's Raspberry Pi. Here, a particular application is compiled into an executable image and copied to an SD card.
 On startup. the Raspberry Pi boots from that card.
 
 #### VirtualBox Setup
-We use VirtualBox on an iMac host to implement our Linux virtual machines. The application may be downloaded from http://www.oracle.com/technetwork/server-storage/virtualbox/downloads/index.html. 
+We use VirtualBox on an iMac host to implement our Linux virtual machines. The application may be downloaded from http://www.oracle.com/technetwork/server-storage/virtualbox/downloads/index.html.
 
-The VirtualBox installation requires an additional package in order to support a file system shared with the host. From https://www.virtualbox.org/wiki/Downloads download, then from the VirtualBox "devices" menu, 
-mount the VirtualBox Extension Packaage.  Either let the script run automatically or 
+The VirtualBox installation requires an additional package in order to support a file system shared with the host. From https://www.virtualbox.org/wiki/Downloads download, then from the VirtualBox "devices" menu,
+mount the VirtualBox Extension Packaage.  Either let the script run automatically or
 navigate to /media/<username>VBOXADDITIONS_5.1.28_117968 and execute:
 
 ```
 		./VBoxLinuxAdditions.run
 ```
 
-Manipulate the VirtualBox menu until "Devices" shows. Under "Shared Folders" create a virtual device, say "share" pointing to an existing directory on the host system, say "/Users/<username>/robotics/share". 
+Manipulate the VirtualBox menu until "Devices" shows. Under "Shared Folders" create a virtual device, say "share" pointing to an existing directory on the host system, say "/Users/<username>/robotics/share".
 This provides a way to transfer our build products to the host so that it can flash SD cards.
 
 Then within the virtual machine:
@@ -60,10 +65,10 @@ on startup. In this case 'sudo umount share' and mount manually. The equivalent 
 ```
         sudo mount -t vboxsf share /home/<username>/robotics/share -o umask=0022,uid=1000,gid=1000
 ```
-The VirtualBox additions also provide for a shared clipboard. 
+The VirtualBox additions also provide for a shared clipboard.
 
 #### ROSDev Setup
-Create a virtual machine "ROSDev" to house ROS development activities. These activities include package development as well as construction of the entire suite of 
+Create a virtual machine "ROSDev" to house ROS development activities. These activities include package development as well as construction of the entire suite of
 applictions that will eventually run on the robot.
 Use an Unbuntu 16.04 boot image downloaded from https://www.ubuntu.com/download/desktop/contribute?version=16.04.3&architecture=amd64r.
 Create a virtual machine sized at 6gb of RAM and 50gb of disk.
@@ -91,10 +96,10 @@ Install the source code for turtlebot support packages.
 ```
 #### Package Creation
 A package encapsulates a related set of robot functionality. Ultimately we need to transfer the package definition onto the
-robot, but first we checkout and build on the virtual machine. 
+robot, but first we checkout and build on the virtual machine.
 
-Custom packages all reside as sub-directories of a "catkin" workspace. By convention, this parent 
-directory for all development of custom packages is "catkin_ws". 
+Custom packages all reside as sub-directories of a "catkin" workspace. By convention, this parent
+directory for all development of custom packages is "catkin_ws".
 A package build involves the entire tree. In order to make our packages portable to the target Raspberry Pi, we will use
 python as much as possible.
 
@@ -120,7 +125,7 @@ Edit the resulting package.xml file appropriately. Then:
 		catkin_make
 ```
 
-Once the package has been created and compiles with its dependencies, proceed to define its custom code. See 
+Once the package has been created and compiles with its dependencies, proceed to define its custom code. See
 http:://wiki.ros.org/rospy_tutorials for guidance. The custom code consists of execution nodes, messages,
 services and topic files, as appropriate.
 
@@ -132,6 +137,7 @@ robot. Several scripts are provided for this purpose.
 We keep system-specific configurations in ~/robotics/conf.d. On startup each file in this directory is source'd to create
 environment variables that are referenced by the ROS packages and build scripts where necessary.
 
+**********************************************************
 ### Raspberry Pi
 "ROSPi" (our name) is the RaspberryPi that is the robot's single board computer (SBC). After an initial flash and configuration
 this device must be separately configured for each application. A wi-fi connection is used for file transfer with commands
@@ -155,7 +161,7 @@ Using Etcher, flash the decompressed image onto the SD card. On my system, this 
 #### ROSPi Network Configuration
 We woud like to have ROSPi connect automtically to the wireless network on startup so as to not require any user intervention for normal operations.
 We have found that the selection of wi-fi networks is easiest during the initial system configuration. Select the desired network and mark it to
-automatically connect if found. It may not be available during the first login, but will connect on subsequent system restarts. 
+automatically connect if found. It may not be available during the first login, but will connect on subsequent system restarts.
 
 To test and to determine the IP address, restart ROSPi and execute "ifconfig".
 
@@ -186,7 +192,7 @@ The ROS installation places the ROS workspace at /home/<username>/catkin_ws. Unf
 to revert the version again.
 
 #### FTP
-We use ftp to transfer files from the host to the Raspberry Pi. To do this install 
+We use ftp to transfer files from the host to the Raspberry Pi. To do this install
 the vsftpd package.
 
 #### Backup
