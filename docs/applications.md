@@ -6,19 +6,24 @@ files that co-ordinate underlying packages. Packages are separately developed, r
 
 The android assistant contains control and monitoring code for all applications.
 
-#### 01 - SystemCheck
+******************************************************
+### 01 - SystemCheck
 This activity is designed to exercise all of the devices on the robot.
 
 **topic:**
 ```
-sb_system_check:
-    String hostname
-    String ip_address
+sb_system_check||
+      String|hostname|
+      String|ip_address|
 ```
-##### Android
-**node:** sb_get_system_parameters
 
-##### robot
+#### Android
 
-**package:** ```$: catkin_create_pkg system_check rospy turtlebot3```
-**node:** sb_get_system_parameters
+**node:** sb_get_system_parameters <br/>
+
+#### robot
+
+**package:** ```catkin_create_pkg system_check rospy turtlebot3_msgs    turtlebot3_navigation```<br/>
+**node:** sb_report_system_parameters <br/>
+
+******************************************************
