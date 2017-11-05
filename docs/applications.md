@@ -19,7 +19,8 @@ sb_system_check
 
 #### ----------------------- notepad -------------------------
 
-**node:** sb_get_system_parameters <br/>
+**node:** sb__interrogte_system <br/>
+**node:** sb__excercise_robot <br/>
 
 #### ---------------------- robot  --------------------------
 
