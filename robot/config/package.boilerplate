@@ -19,6 +19,8 @@
   <exec_depend>rospy</exec_depend>
   <exec_depend>turtlebot3_msgs</exec_depend>
   <exec_depend>turtlebot3_navigation</exec_depend>
+  <exec_depend>message_generation</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
