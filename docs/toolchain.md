@@ -5,7 +5,7 @@ This document summarizes the tools and build procedures required to build the Sa
   * Tablet - Samsung Galaxy S3 - 10"
   * Robot - ROBOTIS Turtlebot3, monitor, USB keyboard
 
-We will use the kinetic version of ROS. This is the current version used by ROBOTIS for Turtlebot.
+We use the kinetic version of ROS. This is the current version used by ROBOTIS for Turtlebot.
 
 ![sarah-bella - Turtlebot3](/images/sarah-bella.png)
 ````                        sara-bella - Turtlebot3 ````
@@ -17,7 +17,7 @@ for the android tablet.
 
 To configure the host, make the Android home environment variable available by adding
 ```ANDROID_HOME=~/Library/Android/sdk``` to ~/.bashrc.
-Then make the ROS libraries available. From https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/android_core/android_15/0.3.3 download android_15-0.3.3.aar.
+The next step makes ROS libraries available to the Android build environment. From https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/android_core/android_15/0.3.3 download android_15-0.3.3.aar.
 ```
 	DIR="~/Library/Android/sdk/extras/m2repository/org/ros/android_core/android_15/0.3.3"
 	mkdir -p $DIR

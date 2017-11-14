@@ -12,19 +12,18 @@ This activity is designed to exercise all of the devices on the robot.
 
 **topic:**
 ```
-sb_system_check
+/sb_system_parameters
       String hostname
       String ip_address
 ```
 
 #### ----------------------- notepad -------------------------
 
-**node:** sb__interrogte_system <br/>
-**node:** sb__excercise_robot <br/>
+**node:** sb_subscribe_system_parameters <br/>
 
 #### ---------------------- robot  --------------------------
 
 **package:** ```catkin_create_pkg system_check rospy turtlebot3_msgs    turtlebot3_navigation```<br/>
-**node:** sb_report_system_parameters <br/>
+**node:** sb_publish_system_parameters <br/>
 
 ******************************************************
