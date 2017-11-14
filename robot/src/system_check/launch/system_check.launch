@@ -1,0 +1,5 @@
+<launch>
+  <!-- Launch file for system_check -->
+  <node pkg="system_check" type="publish_system_parameters.py" name="sb_system_parameters" output="screen">
+  </node>
+</launch>
