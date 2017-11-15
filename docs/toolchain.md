@@ -105,7 +105,7 @@ python as much as possible.
 The narrative below describes the general steps involved in creating a package. For further details see:
 http://wiki.ros.org/catkin/Tutorials. Make sure that the following lines have been added to ~/.bashrc:
 ```
-    source /opt/ros/kinetic/setup.bash
+  source /opt/ros/kinetic/setup.bash
 	source ~/robotics/catkin_ws/devel/setup.bash
 ```
 Note that the standard ROS packages are installed in /opt/ros/kinetic/share. These can be browsed to determine
@@ -130,7 +130,7 @@ services and topic files, as appropriate.
 
 ###### Transfer to the Robot
 Once the package has been defined and tested on the development system, it needs to be packaged and transferred to the
-robot. This is accomplished by simply checking the changes into *git* (pushing them, of course) and checking them out on the robot. Once checked out, the new code must be built and executed.
+robot. This is accomplished by simply checking the changes into *git* (pushing them, of course) and checking them out on the robot. Once checked out on the RaspberryPi, the new code must be built and executed.
 
 ###### System Configuration
 We keep system-specific configurations in ~/robotics/conf. These files are referenced as necessary when the ROS packages are built on the robot.
@@ -174,8 +174,8 @@ ROS package downloads.
   git checkout --track origin/robot      # Always use the 'robot' branch
   mkdir catkin_ws
   cd catkin_ws
-  ln -s ~/robotics/robot/config config
-  ln -s ~/robotics/robot/src src
+  ln -s ~/robotics/repo/robot/config config
+  ln -s ~/robotics/repo/robot/src src
 ```
 
 Like the main development system, the Raspberry Pi requires the ROS development libraries. Follow the instructions at:
@@ -205,7 +205,7 @@ to revert the version again.
 
 We want **roscore** to start automatically when the RaspberryPi is booted. Install the init file from the git repository as follows:
 ```
-   cd ~/robotics/robot/src/bin
+   cd ~/robotics/repo/robot/src/bin
    sudo cp ros /etc/init.d
    sudo chmod 755 /etc/init.d/ros
    sudo update-rc.d ros defaults
