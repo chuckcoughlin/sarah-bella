@@ -15,7 +15,7 @@ We use the kinetic version of ROS. This is the current version used by ROBOTIS f
 The control application is a standard Android application built using Android Studio 3.0. The studio may be downloaded from http://developer.android.com. It runs on the OSX build system, creating a run image
 for the android tablet.
 
-To configure the host, make the Android home environment variable available by adding
+Configure the host build system, making the Android home environment variable available by adding
 ```ANDROID_HOME=~/Library/Android/sdk``` to ~/.bashrc.
 The next step makes ROS libraries available to the Android build environment. From https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/android_core/android_15/0.3.3 download android_15-0.3.3.aar.
 ```
@@ -214,6 +214,7 @@ The package to be started is set by editing ```catkin_ws/config/launch.conf```, 
 
 ##### GPIO
 The GPIO pin layout is shown below:
+
 ![GPIO](/images/RaspberryPi-GPIO.png)
 ````                        RaspberryPi GPIO Pin Assignments ````
 
@@ -225,7 +226,7 @@ Download the **wiringPi** GPIO library and build the 'gpio' tool. Copy into our 
   git clone git://git.drogon.net/wiringPi
   cd wiringPi
   sudo ./build
-  cp gpio/gpio ~/robotics/robot/bin
+  cp gpio/gpio ~/robotics/repo/robot/bin
 ```
 
 ##### FTP
