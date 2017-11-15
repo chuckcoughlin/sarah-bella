@@ -15,6 +15,7 @@ set -e
 
 PATH=/opt/ros/kinetic/bin:/bin:/usr/bin:/sbin:/usr/sbin
 DAEMON=/opt/ros/kinetic/bin/roscore
+IP=`hostname -I`
 export ROSLOG=/var/log/ros.log
 
 test -x $DAEMON || exit 0
@@ -24,7 +25,7 @@ test -x $DAEMON || exit 0
 export HOME=/home/chuckc
 export ROS_ROOT=/opt/ros/kinetic/share/ros
 export ROS_PACKAGE_PATH=${HOME}/robotics/catkin_ws/src:/opt/ros/kineetic/share
-export ROS_MASTER_URI=http://localhost:11311
+export ROS_MASTER_URI=http://${IP}:11311
 export ROS_ETC_DIR=/opt/ros/kinetic/etc/ros
 export PYTHONPATH=${HOME}/robotics/catkin_ws/devel/lib/python2.7/dist-packages:/opt/ros/kinetic/lib/python2.7/dist-packages
 
@@ -61,7 +62,7 @@ case "$1" in
   stop)
 	. /opt/ros/kinetic/setup.sh
 	for i in $(rosnode list) ; do
-		rosnode kil $i
+		rosnode kill $i
 	done
   	killall roscore
   ;;
