@@ -35,7 +35,7 @@ repository (```git clone http://github.com/chuckcoughlin/sarah-bella``` Load and
 
 ### Linux
 The robot's ROS control code is developed on a Linux machine. We implement this as a virtual machine on the OSX host build system.
-This machine contains a development area which is linked to the robot's Raspberry Pi via a shared *git* source code repository. 
+This machine contains a development area which is linked to the robot's Raspberry Pi via a shared *git* source code repository.
 Python (mostly) and C++ code for the entire repertoire of applications and support packages is edited and compiled here. Actual tryout and testing must take place on the robot.
 
 #### VirtualBox Setup
@@ -164,9 +164,18 @@ automatically connect if found. It may not be available during the first login, 
 To test and to determine the IP address, restart ROSPi and execute "ifconfig".
 
 ##### ROS Development Setup
-Like the main deveopment system, the Raspberry Pi requires the ROS development libraries. Follow the instructions at:
-http://turtlebot3.readthedocs.io/en/latest/sbc_software.html, sections 6.3.1, 6.3.3 and 6.3.4.. These steps can be expected to
-take an hour or more. Make sure the robot's battery is charged.
+
+Make **catkin_ws** the root of our git repository.
+```
+  cd
+  git clone http://github.com/chuckcoughlin/sarah-bella catkin_ws
+  git checkout robot      # Always use the 'robot' branch
+```
+
+Like the main development system, the Raspberry Pi requires the ROS development libraries. Follow the instructions at:
+http://turtlebot3.readthedocs.io/en/latest/sbc_software.html, sections 6.3.1, 6.3.3 and 6.3.4. These steps can be expected to
+take an hour or more. Make sure the robot's battery is charged. We will make use of **catkin_ws** that we just created as a **git**
+repository.
 
 After I executed the "sudo apt upgrade", I discovered that my Firefox now crashed on start. To revert to a prior version:
 ```
@@ -189,13 +198,14 @@ Replace similar lines in ~/.bashrc:
 The ROS installation places the ROS workspace at /home/<username>/catkin_ws. Unfortunately it updates firefox, so it is necessary
 to revert the version again.
 
-On startup *roscore* starts any nodes defined in roslaunch/roscore.xml. Install it from the git repository as follows:
+We want **roscore** to start automatically when the RaspberryPi is booted. Install the init file from the git repository as follows:
 ```
-   cd ~/robotics/repo/robot/bin
+   cd ~/catkin_ws/src/bin
    sudo cp ros /etc/init.d
    sudo chmod 755 /etc/init.d/ros
    sudo update-rc.d ros defaults
 ```
+The package to be started is set by editing ```catkin_ws/config/launch.conf```, setting the desired package and launch file.
 
 ##### FTP
 We use ftp to transfer miscellaneous files from the host to the Raspberry Pi. To do this install
