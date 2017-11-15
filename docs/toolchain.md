@@ -120,7 +120,7 @@ Note that the metapackage turtlebot3 should not be listed as a dependency. Use i
 
 Edit the resulting package.xml file appropriately. Then:
 ```
-		cd ~/robotics/catkin_ws
+		cd ~/robotics/robot/catkin_ws
 		catkin_make
 ```
 
@@ -165,17 +165,22 @@ To test and to determine the IP address, restart ROSPi and execute "ifconfig".
 
 ##### ROS Development Setup
 
-Make **catkin_ws** the root of our git repository.
+Make **robotics** the root of our **git** repository. We will use **git** as the integrating mechanism with our development machine. Establish
+links within **catkin_ws** in order to merge our repository with the standard ROS packages. Make sure that the link is created before the
+ROS package downloads.
 ```
   cd
-  git clone http://github.com/chuckcoughlin/sarah-bella catkin_ws
-  git checkout robot      # Always use the 'robot' branch
+  git clone http://github.com/chuckcoughlin/sarah-bella robotics
+  git checkout --track origin/robot      # Always use the 'robot' branch
+  mkdir catkin_ws
+  cd catkin_ws
+  ln -s ~/robotics/robot/config config
+  ln -s ~/robotics/robot/src src
 ```
 
 Like the main development system, the Raspberry Pi requires the ROS development libraries. Follow the instructions at:
 http://turtlebot3.readthedocs.io/en/latest/sbc_software.html, sections 6.3.1, 6.3.3 and 6.3.4. These steps can be expected to
-take an hour or more. Make sure the robot's battery is charged. We will make use of **catkin_ws** that we just created as a **git**
-repository.
+take an hour or more. Make sure the robot's battery is charged.
 
 After I executed the "sudo apt upgrade", I discovered that my Firefox now crashed on start. To revert to a prior version:
 ```
@@ -200,12 +205,28 @@ to revert the version again.
 
 We want **roscore** to start automatically when the RaspberryPi is booted. Install the init file from the git repository as follows:
 ```
-   cd ~/catkin_ws/src/bin
+   cd ~/robotics/robot/src/bin
    sudo cp ros /etc/init.d
    sudo chmod 755 /etc/init.d/ros
    sudo update-rc.d ros defaults
 ```
 The package to be started is set by editing ```catkin_ws/config/launch.conf```, setting the desired package and launch file.
+
+##### GPIO
+The GPIO pin layout is shown below:
+![GPIO](/images/RaspberryPi-GPIO.png)
+````                        RaspberryPi GPIO Pin Assignments ````
+
+Download the **wiringPi** GPIO library and build the 'gpio' tool. Copy into our **bin** area for use in ROS scripts as needed.
+
+```
+  mkdir -p ~/external
+  cd ~/external
+  git clone git://git.drogon.net/wiringPi
+  cd wiringPi
+  sudo ./build
+  cp gpio/gpio ~/robotics/robot/bin
+```
 
 ##### FTP
 We use ftp to transfer miscellaneous files from the host to the Raspberry Pi. To do this install
