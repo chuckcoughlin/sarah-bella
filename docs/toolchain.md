@@ -5,7 +5,7 @@ This document summarizes the tools and build procedures required to build the Sa
   * Tablet - Samsung Galaxy S3 - 10"
   * Robot - ROBOTIS Turtlebot3, monitor, USB keyboard
 
-We will use the kinetic version of ROS. This is the current version used by ROBOTIS for Turtlebot.
+We use the kinetic version of ROS. This is the current version used by ROBOTIS for Turtlebot.
 
 ![sarah-bella - Turtlebot3](/images/sarah-bella.png)
 ````                        sara-bella - Turtlebot3 ````
@@ -15,9 +15,9 @@ We will use the kinetic version of ROS. This is the current version used by ROBO
 The control application is a standard Android application built using Android Studio 3.0. The studio may be downloaded from http://developer.android.com. It runs on the OSX build system, creating a run image
 for the android tablet.
 
-To configure the host, make the Android home environment variable available by adding
+Configure the host build system, making the Android home environment variable available by adding
 ```ANDROID_HOME=~/Library/Android/sdk``` to ~/.bashrc.
-Then make the ROS libraries available. From https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/android_core/android_15/0.3.3 download android_15-0.3.3.aar.
+The next step makes ROS libraries available to the Android build environment. From https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/android_core/android_15/0.3.3 download android_15-0.3.3.aar.
 ```
 	DIR="~/Library/Android/sdk/extras/m2repository/org/ros/android_core/android_15/0.3.3"
 	mkdir -p $DIR
@@ -35,7 +35,7 @@ repository (```git clone http://github.com/chuckcoughlin/sarah-bella``` Load and
 
 ### Linux
 The robot's ROS control code is developed on a Linux machine. We implement this as a virtual machine on the OSX host build system.
-This machine contains a development area which is linked to the robot's Raspberry Pi via a shared *git* source code repository. 
+This machine contains a development area which is linked to the robot's Raspberry Pi via a shared *git* source code repository.
 Python (mostly) and C++ code for the entire repertoire of applications and support packages is edited and compiled here. Actual tryout and testing must take place on the robot.
 
 #### VirtualBox Setup
@@ -105,7 +105,7 @@ python as much as possible.
 The narrative below describes the general steps involved in creating a package. For further details see:
 http://wiki.ros.org/catkin/Tutorials. Make sure that the following lines have been added to ~/.bashrc:
 ```
-    source /opt/ros/kinetic/setup.bash
+  source /opt/ros/kinetic/setup.bash
 	source ~/robotics/catkin_ws/devel/setup.bash
 ```
 Note that the standard ROS packages are installed in /opt/ros/kinetic/share. These can be browsed to determine
@@ -120,7 +120,7 @@ Note that the metapackage turtlebot3 should not be listed as a dependency. Use i
 
 Edit the resulting package.xml file appropriately. Then:
 ```
-		cd ~/robotics/catkin_ws
+		cd ~/robotics/robot/catkin_ws
 		catkin_make
 ```
 
@@ -130,7 +130,7 @@ services and topic files, as appropriate.
 
 ###### Transfer to the Robot
 Once the package has been defined and tested on the development system, it needs to be packaged and transferred to the
-robot. This is accomplished by simply checking the changes into *git* (pushing them, of course) and checking them out on the robot. Once checked out, the new code must be built and executed.
+robot. This is accomplished by simply checking the changes into *git* (pushing them, of course) and checking them out on the robot. Once checked out on the RaspberryPi, the new code must be built and executed.
 
 ###### System Configuration
 We keep system-specific configurations in ~/robotics/conf. These files are referenced as necessary when the ROS packages are built on the robot.
@@ -164,8 +164,22 @@ automatically connect if found. It may not be available during the first login, 
 To test and to determine the IP address, restart ROSPi and execute "ifconfig".
 
 ##### ROS Development Setup
-Like the main deveopment system, the Raspberry Pi requires the ROS development libraries. Follow the instructions at:
-http://turtlebot3.readthedocs.io/en/latest/sbc_software.html, sections 6.3.1, 6.3.3 and 6.3.4.. These steps can be expected to
+
+Make **robotics** the root of our **git** repository. We will use **git** as the integrating mechanism with our development machine. Establish
+links within **catkin_ws** in order to merge our repository with the standard ROS packages. Make sure that the link is created before the
+ROS package downloads.
+```
+  cd
+  git clone http://github.com/chuckcoughlin/sarah-bella robotics
+  git checkout --track origin/robot      # Always use the 'robot' branch
+  mkdir catkin_ws
+  cd catkin_ws
+  ln -s ~/robotics/repo/robot/config config
+  ln -s ~/robotics/repo/robot/src src
+```
+
+Like the main development system, the Raspberry Pi requires the ROS development libraries. Follow the instructions at:
+http://turtlebot3.readthedocs.io/en/latest/sbc_software.html, sections 6.3.1, 6.3.3 and 6.3.4. These steps can be expected to
 take an hour or more. Make sure the robot's battery is charged.
 
 After I executed the "sudo apt upgrade", I discovered that my Firefox now crashed on start. To revert to a prior version:
@@ -189,12 +203,30 @@ Replace similar lines in ~/.bashrc:
 The ROS installation places the ROS workspace at /home/<username>/catkin_ws. Unfortunately it updates firefox, so it is necessary
 to revert the version again.
 
-On startup *roscore* starts any nodes defined in roslaunch/roscore.xml. Install it from the git repository as follows:
+We want **roscore** to start automatically when the RaspberryPi is booted. Install the init file from the git repository as follows:
 ```
-   cd ~/robotics/repo/robot/bin
+   cd ~/robotics/repo/robot/src/bin
    sudo cp ros /etc/init.d
    sudo chmod 755 /etc/init.d/ros
    sudo update-rc.d ros defaults
+```
+The package to be started is set by editing ```catkin_ws/config/launch.conf```, setting the desired package and launch file.
+
+##### GPIO
+The GPIO pin layout is shown below:
+
+![GPIO](/images/RaspberryPi-GPIO.png)
+````                        RaspberryPi GPIO Pin Assignments ````
+
+Download the **wiringPi** GPIO library and build the 'gpio' tool. Copy into our **bin** area for use in ROS scripts as needed.
+
+```
+  mkdir -p ~/external
+  cd ~/external
+  git clone git://git.drogon.net/wiringPi
+  cd wiringPi
+  sudo ./build
+  cp gpio/gpio ~/robotics/repo/robot/bin
 ```
 
 ##### FTP
