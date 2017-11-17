@@ -9,11 +9,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
-import chuckcoughlin.sb.assistant.tab.ConfigurationFragment;
-import chuckcoughlin.sb.assistant.tab.CoverFragment;
-import chuckcoughlin.sb.assistant.tab.LogsFragment;
-import chuckcoughlin.sb.assistant.tab.SLATFragment;
-
 /**
  * There is a specialized page fragment for each tab position.
  * Return the appropriate fragment when requested.
@@ -21,26 +16,31 @@ import chuckcoughlin.sb.assistant.tab.SLATFragment;
 
 public class MainActivityPagerAdapter extends FragmentStatePagerAdapter {
     private final static int TAB_COUNT = 4;
+    private String tabTitles[] = new String[] { "Tab1", "Tab2", "Tab3" };
+    private Context context;
 
-    public MainActivityPagerAdapter(FragmentManager fm) {
+    public MainActivityPagerAdapter(FragmentManager fm,Context ctx) {
+
         super(fm);
+        this.context = ctx;
     }
 
+    // Returns the fragment to display for that page
     @Override
     public Fragment getItem(int position) {
-        switch(position) {
-            case 0:
-                return new CoverFragment();
-            case 1:
-                return new ConfigurationFragment();
-            case 2:
-                return new LogsFragment();
-            case 3:
-                return new SLATFragment();
+        switch (position) {
+            case 0: // Fragment # 0 - This will show FirstFragment
+                return FirstFragment.newInstance(0, "Page # 1");
+            case 1: // Fragment # 0 - This will show FirstFragment different title
+                return FirstFragment.newInstance(1, "Page # 2");
+            case 2: // Fragment # 1 - This will show SecondFragment
+                return SecondFragment.newInstance(2, "Page # 3");
             default:
                 return null;
         }
     }
+
+
 
     /**
      * @return the number of pages in our repertoire.
@@ -48,5 +48,12 @@ public class MainActivityPagerAdapter extends FragmentStatePagerAdapter {
     @Override
     public int getCount() {
         return TAB_COUNT;
+    }
+
+
+    @Override
+    public CharSequence getPageTitle(int position) {
+        // Generate title based on item position
+        return tabTitles[position];
     }
 }
