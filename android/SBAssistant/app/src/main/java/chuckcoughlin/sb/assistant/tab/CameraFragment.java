@@ -16,7 +16,7 @@ import android.widget.TextView;
 import chuckcoughlin.sb.assistant.R;
 
 /**
- * This fragment allows preusal of the robot's activity log.
+ * Show the view through the robot's camera
  */
 
 public class CameraFragment extends BasicAssistantFragment {
@@ -29,7 +29,7 @@ public class CameraFragment extends BasicAssistantFragment {
         label.setText("@string/fragmentCameraLabel");
 
         ImageView imageView = (ImageView) view.findViewById(R.id.fragmentCameraImage);
-        imageView.setImageResource(R.drawable.turtlebot);
+        imageView.setImageResource(R.drawable.turtlebot3);
         return view;
     }
 }

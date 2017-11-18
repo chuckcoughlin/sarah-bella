@@ -24,9 +24,9 @@ public class SystemFragment extends BasicAssistantFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_first, container, false);
-        TextView tvLabel = (TextView) view.findViewById(R.id.tvLabel);
-        tvLabel.setText(page + " -- " + title);
+        View view = inflater.inflate(R.layout.fragment_system, container, false);
+        TextView label = (TextView) view.findViewById(R.id.fragmentSystemText);
+        label.setText("TODO");
         return view;
     }
 }

@@ -33,7 +33,7 @@ public class LogsFragment extends BasicAssistantFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_logs, container, false);
         TextView textView = (TextView) rootView.findViewById(R.id.logs_title_label);
-        textView.setText(R.string.logs_title);
+        textView.setText(R.string.fragmentLogsLabel);
 
         logMessageView = (RecyclerView)rootView.findViewById(R.id.logs_recycler_view);
         LinearLayoutManager layoutManager = new LinearLayoutManager(rootView.getContext());

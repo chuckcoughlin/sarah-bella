@@ -10,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import chuckcoughlin.sb.assistant.R;
@@ -20,15 +21,15 @@ import chuckcoughlin.sb.assistant.R;
 
 public class CoverFragment extends BasicAssistantFragment {
 
-    // Inflate the view. It holds a single image - the turtlebot3
+    // Inflate the view. It holds a the camera live image
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.cover_fragment, container, false);
-        TextView tvLabel = (TextView) view.findViewById(R.id.txtMain);
-        tvLabel.setText(title);
+        View view = inflater.inflate(R.layout.fragment_cover, container, false);
+        TextView label = (TextView) view.findViewById(R.id.fragmentCoverText);
+        label.setText("@string/fragmentCoverLabel");
 
-        ImageView imageView = (ImageView) view.findViewById(R.id.imgMain);
-        imageView.setImageResource(image);
+        ImageView imageView = (ImageView) view.findViewById(R.id.fragmentCoverImage);
+        imageView.setImageResource(R.drawable.turtlebot3);
         return view;
     }
 }

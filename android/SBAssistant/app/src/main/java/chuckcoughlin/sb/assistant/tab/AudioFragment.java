@@ -14,18 +14,17 @@ import android.widget.TextView;
 import chuckcoughlin.sb.assistant.R;
 
 /**
- * Display the current values of robot system parameters.
+ * Display various values of robot's microphones.
  */
 
 public class AudioFragment extends BasicAssistantFragment {
 
     // Inflate the view for the fragment based on layout XML
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_first, container, false);
-        TextView tvLabel = (TextView) view.findViewById(R.id.tvLabel);
-        tvLabel.setText(page + " -- " + title);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_audio, container, false);
+        TextView label = (TextView) view.findViewById(R.id.fragmentAudioText);
+        label.setText("TODO");
         return view;
     }
 }

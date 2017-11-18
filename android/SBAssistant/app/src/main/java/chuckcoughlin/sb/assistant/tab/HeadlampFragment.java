@@ -23,11 +23,10 @@ public class HeadlampFragment extends BasicAssistantFragment {
 
     // Inflate the view for the fragment based on layout XML
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_first, container, false);
-        TextView tvLabel = (TextView) view.findViewById(R.id.tvLabel);
-        tvLabel.setText(page + " -- " + title);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_headlamp, container, false);
+        TextView label = (TextView) view.findViewById(R.id.fragmentHeadlampText);
+        label.setText("TODO");
         return view;
     }
 }
