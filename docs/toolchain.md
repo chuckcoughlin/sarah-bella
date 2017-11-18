@@ -7,7 +7,7 @@ This document summarizes the tools and build procedures required to build the Sa
 
 We use the kinetic version of ROS. This is the current version used by ROBOTIS for Turtlebot.
 
-![sarah-bella - Turtlebot3](/images/sarah-bella.png)
+![sarah-bella - Turtlebot3](/images/sarah-bella-large.png)
 ````                        sara-bella - Turtlebot3 ````
 
 *********************************************************
@@ -30,6 +30,12 @@ The next step makes ROS libraries available to the Android build environment. Fr
 #### SB-Assistant
 This notepad application is designed to command the robot, perform compute-intensive analyses and display results. The SBAssistant project is contained in the overall project
 repository (```git clone http://github.com/chuckcoughlin/sarah-bella``` Load android/SBAssistant into Android Studio).
+
+#### Emulator
+In order to test the application in the emulator, after configuring a suitable target device with the AVD manager, select the studio menu Tools->Android->Enable ADB Integration.
+
+#### Transfer to tablet
+How is this done?
 
 ***************************************************************
 
