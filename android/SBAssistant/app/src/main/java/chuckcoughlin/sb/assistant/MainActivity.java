@@ -22,12 +22,10 @@ import chuckcoughlin.sb.assistant.R;
 public class MainActivity extends AppCompatActivity {
 
     /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
+     * A specialized {@link android.support.v4.view.PagerAdapter} that will provide
+     * fragments for each of the application pages. We use a
+     * {@link android.support.v4.app.FragmentStatePagerAdapter} so as to conserve
+     * memory if the list of pages is great.
      */
     private MainActivityPagerAdapter pagerAdapter;
 
@@ -43,12 +41,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Get the ViewPager and set it's PagerAdapter so that it can display items
         ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
-        viewPager.setAdapter(new MainActivityPagerAdapter(getSupportFragmentManager(),
-                              MainActivity.this));
-
-        // Give the TabLayout the ViewPager
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
-        tabLayout.setupWithViewPager(viewPager);
+        pagerAdapter = new MainActivityPagerAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(pagerAdapter);
     }
 
 }

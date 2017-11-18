@@ -15,16 +15,15 @@ import android.widget.TextView;
 import chuckcoughlin.sb.assistant.R;
 
 /**
- * This fragment handles robot control during its SLAM
- * mapping sequence.
+ * This fragment presents a static "cover" with no dynamic content.
  */
 
-public class SLAMFragment extends BasicAssistantFragment {
+public class CoverFragment extends BasicAssistantFragment {
 
-    // Inflate the view. It holds a single image - the results of the mapping sequence
+    // Inflate the view. It holds a single image - the turtlebot3
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.SLAM_fragment, container, false);
+        View view = inflater.inflate(R.layout.cover_fragment, container, false);
         TextView tvLabel = (TextView) view.findViewById(R.id.txtMain);
         tvLabel.setText(title);
 

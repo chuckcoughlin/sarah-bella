@@ -9,35 +9,60 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
+import chuckcoughlin.sb.assistant.tab.AudioFragment;
+import chuckcoughlin.sb.assistant.tab.BasicAssistantFragment;
+import chuckcoughlin.sb.assistant.tab.CameraFragment;
+import chuckcoughlin.sb.assistant.tab.CoverFragment;
+import chuckcoughlin.sb.assistant.tab.HeadlampFragment;
+import chuckcoughlin.sb.assistant.tab.LogsFragment;
+import chuckcoughlin.sb.assistant.tab.SLAMFragment;
+import chuckcoughlin.sb.assistant.tab.SystemFragment;
+
+
 /**
  * There is a specialized page fragment for each tab position.
  * Return the appropriate fragment when requested.
  */
 
 public class MainActivityPagerAdapter extends FragmentStatePagerAdapter {
-    private final static int TAB_COUNT = 4;
-    private String tabTitles[] = new String[] { "Tab1", "Tab2", "Tab3" };
-    private Context context;
+    private final String tabTitles[] = new String[] { "@string/cover_title", "@string/system_title", "@string/headlamp_title",
+                                                      "@string/SLAM_title","@string/audio_title","@string/camera_title","@string/log_title"};
 
-    public MainActivityPagerAdapter(FragmentManager fm,Context ctx) {
-
+    public MainActivityPagerAdapter(FragmentManager fm) {
         super(fm);
-        this.context = ctx;
     }
 
-    // Returns the fragment to display for that page
+    /**
+     * Each page is a different class.
+     * @param position page number
+     * @return a new instance of the page.
+     */
     @Override
     public Fragment getItem(int position) {
+        BasicAssistantFragment frag = null;
         switch (position) {
-            case 0: // Fragment # 0 - This will show FirstFragment
-                return FirstFragment.newInstance(0, "Page # 1");
-            case 1: // Fragment # 0 - This will show FirstFragment different title
-                return FirstFragment.newInstance(1, "Page # 2");
-            case 2: // Fragment # 1 - This will show SecondFragment
-                return SecondFragment.newInstance(2, "Page # 3");
+            case 0:
+                frag = new CoverFragment();
+            case 1:
+                frag =  new SystemFragment();
+            case 2:
+                frag = new HeadlampFragment();
+            case 3:
+                frag = new SLAMFragment();
+            case 4:
+                frag = new AudioFragment();
+            case 5:
+                frag = new CameraFragment();
+            case 6:
+                frag = new LogsFragment();
             default:
-                return null;
+                ;
         }
+        if( frag!=null ) {
+            frag.setPageNumber(position);
+            frag.setTitle(tabTitles[position]);
+        }
+        return frag;
     }
 
 
@@ -47,13 +72,12 @@ public class MainActivityPagerAdapter extends FragmentStatePagerAdapter {
      */
     @Override
     public int getCount() {
-        return TAB_COUNT;
+        return tabTitles.length;
     }
 
 
     @Override
     public CharSequence getPageTitle(int position) {
-        // Generate title based on item position
         return tabTitles[position];
     }
 }

@@ -5,8 +5,8 @@
 
 package chuckcoughlin.sb.assistant.tab;
 
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,12 +14,11 @@ import android.widget.TextView;
 
 import chuckcoughlin.sb.assistant.R;
 
-
 /**
- * This fragment shows the status and allows control of the robot headlamp.
+ * Display the current values of robot system parameters.
  */
 
-public class HeadlampFragment extends BasicAssistantFragment {
+public class SystemFragment extends BasicAssistantFragment {
 
     // Inflate the view for the fragment based on layout XML
     @Override
