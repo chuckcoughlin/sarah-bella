@@ -2,7 +2,7 @@
  * Copyright 2017 Charles Coughlin. All rights reserved.
  *  (MIT License)
  */
-package chuckcoughlin.sb.assistant.tab.logs;
+package chuckcoughlin.sb.assistant.logs;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -15,15 +15,14 @@ import chuckcoughlin.sb.assistant.R;
  */
 
 public class LogViewHolder extends RecyclerView.ViewHolder {
-    private TextView itemView;
 
-    public LogViewHolder(View containerView) {
-        super(containerView);
-        itemView = (TextView)containerView.findViewById(R.id.logs_recyclable_item);
+    /**
+     * The item view is actually a LinearLayout
+     * @param iView contains the list of text views
+     */
+    public LogViewHolder(View iView) {
+        super(iView);
     }
 
-    void bind(int listIndex) {
-        itemView.setText(String.valueOf(listIndex));
 
-    }
 }

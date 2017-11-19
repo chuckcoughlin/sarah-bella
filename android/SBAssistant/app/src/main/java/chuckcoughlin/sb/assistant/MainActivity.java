@@ -13,6 +13,7 @@ import android.support.v7.widget.Toolbar;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,7 +21,7 @@ import android.view.View;
 import chuckcoughlin.sb.assistant.R;
 
 public class MainActivity extends AppCompatActivity {
-
+    private static final String CLSS = "MainActivity";
     /**
      * A specialized {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the application pages. We use a
@@ -28,21 +29,26 @@ public class MainActivity extends AppCompatActivity {
      * memory if the list of pages is great.
      */
     private MainActivityPagerAdapter pagerAdapter;
-
     /**
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager viewPager;
 
+    public MainActivity() {
+        Log.i(CLSS,"Constructor ...");
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.i(CLSS,"onCreate: entering ...");
         setContentView(R.layout.activity_main);
 
         // Get the ViewPager and set it's PagerAdapter so that it can display items
         ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
         pagerAdapter = new MainActivityPagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(pagerAdapter);
+        Log.i(CLSS,"onCreate: complete");
     }
 
 }

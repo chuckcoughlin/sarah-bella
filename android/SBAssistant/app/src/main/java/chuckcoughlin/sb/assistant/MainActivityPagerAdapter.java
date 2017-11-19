@@ -8,6 +8,7 @@ package chuckcoughlin.sb.assistant;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.util.Log;
 
 import chuckcoughlin.sb.assistant.tab.AudioFragment;
 import chuckcoughlin.sb.assistant.tab.BasicAssistantFragment;
@@ -25,11 +26,13 @@ import chuckcoughlin.sb.assistant.tab.SystemFragment;
  */
 
 public class MainActivityPagerAdapter extends FragmentStatePagerAdapter {
+    private final static String CLSS = "MainActivityPagerAdapter";
     private final String tabTitles[] = new String[] { "@string/cover_title", "@string/system_title", "@string/headlamp_title",
                                                       "@string/SLAM_title","@string/audio_title","@string/camera_title","@string/log_title"};
 
     public MainActivityPagerAdapter(FragmentManager fm) {
         super(fm);
+        Log.i(CLSS,"Constructor ...");
     }
 
     /**
@@ -40,6 +43,7 @@ public class MainActivityPagerAdapter extends FragmentStatePagerAdapter {
     @Override
     public Fragment getItem(int position) {
         BasicAssistantFragment frag = null;
+        Log.i(CLSS,"getItem: "+getClass().getCanonicalName());
         switch (position) {
             case 0:
                 frag = new CoverFragment();
