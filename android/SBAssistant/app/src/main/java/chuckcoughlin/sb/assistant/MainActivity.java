@@ -5,6 +5,7 @@
 
 package chuckcoughlin.sb.assistant;
 
+import android.content.Context;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -45,8 +46,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // Get the ViewPager and set it's PagerAdapter so that it can display items
-        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
-        pagerAdapter = new MainActivityPagerAdapter(getSupportFragmentManager());
+        ViewPager viewPager = findViewById(R.id.viewpager);
+        pagerAdapter = new MainActivityPagerAdapter(getSupportFragmentManager(),getApplicationContext());
         viewPager.setAdapter(pagerAdapter);
         Log.i(CLSS,"onCreate: complete");
     }

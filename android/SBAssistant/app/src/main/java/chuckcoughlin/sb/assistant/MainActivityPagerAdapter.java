@@ -5,6 +5,7 @@
 
 package chuckcoughlin.sb.assistant;
 
+import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -17,6 +18,7 @@ import chuckcoughlin.sb.assistant.tab.CoverFragment;
 import chuckcoughlin.sb.assistant.tab.HeadlampFragment;
 import chuckcoughlin.sb.assistant.tab.LogsFragment;
 import chuckcoughlin.sb.assistant.tab.SLAMFragment;
+import chuckcoughlin.sb.assistant.tab.SettingsFragment;
 import chuckcoughlin.sb.assistant.tab.SystemFragment;
 
 
@@ -27,11 +29,15 @@ import chuckcoughlin.sb.assistant.tab.SystemFragment;
 
 public class MainActivityPagerAdapter extends FragmentStatePagerAdapter {
     private final static String CLSS = "MainActivityPagerAdapter";
-    private final String tabTitles[] = new String[] { "@string/cover_title", "@string/system_title", "@string/headlamp_title",
-                                                      "@string/SLAM_title","@string/audio_title","@string/camera_title","@string/log_title"};
+    private String[] tabTitles;
 
-    public MainActivityPagerAdapter(FragmentManager fm) {
+    public MainActivityPagerAdapter(FragmentManager fm,Context ctx) {
         super(fm);
+
+        tabTitles = new String[] {
+                ctx.getString(R.string.cover_title), ctx.getString(R.string.settings_title),ctx.getString(R.string.system_title), ctx.getString(R.string.headlamp_title),
+                ctx.getString(R.string.SLAM_title),ctx.getString(R.string.audio_title),
+                ctx.getString(R.string.camera_title),ctx.getString(R.string.log_title)};
         Log.i(CLSS,"Constructor ...");
     }
 
@@ -43,26 +49,36 @@ public class MainActivityPagerAdapter extends FragmentStatePagerAdapter {
     @Override
     public Fragment getItem(int position) {
         BasicAssistantFragment frag = null;
-        Log.i(CLSS,"getItem: "+getClass().getCanonicalName());
+
         switch (position) {
             case 0:
                 frag = new CoverFragment();
+                break;
             case 1:
-                frag =  new SystemFragment();
+                frag =  new SettingsFragment();
+                break;
             case 2:
-                frag = new HeadlampFragment();
+                frag =  new SystemFragment();
+                break;
             case 3:
-                frag = new SLAMFragment();
+                frag = new HeadlampFragment();
+                break;
             case 4:
-                frag = new AudioFragment();
+                frag = new SLAMFragment();
+                break;
             case 5:
-                frag = new CameraFragment();
+                frag = new AudioFragment();
+                break;
             case 6:
+                frag = new CameraFragment();
+                break;
+            case 7:
                 frag = new LogsFragment();
+                break;
             default:
-                ;
         }
         if( frag!=null ) {
+            Log.i(CLSS,"getItem: "+position+": fragment="+frag.getClass().getCanonicalName());
             frag.setPageNumber(position);
             frag.setTitle(tabTitles[position]);
         }

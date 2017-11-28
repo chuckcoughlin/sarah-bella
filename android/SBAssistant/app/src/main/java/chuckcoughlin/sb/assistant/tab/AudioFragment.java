@@ -23,7 +23,7 @@ public class AudioFragment extends BasicAssistantFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_audio, container, false);
-        TextView label = (TextView) view.findViewById(R.id.fragmentAudioText);
+        TextView label = view.findViewById(R.id.fragmentAudioText);
         label.setText("TODO");
         return view;
     }

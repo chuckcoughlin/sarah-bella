@@ -6,6 +6,11 @@
     android:layout_height="match_parent"
     tools:context="chuckcoughlin.sb.assistant.tab.SLAMFragment">
 
+    <ImageView
+        android:id="@+id/fragmentCoverImage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center" />
     <TextView
         android:id="@+id/fragmentCoverText"
         android:layout_width="match_parent"
@@ -17,13 +22,8 @@
         android:gravity="center"
         android:textAppearance="@style/TabTitle"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/coverConstraintLayout"
+        app:layout_constraintBottom_toBottomOf="@+id/coverConstraintLayout"
         tools:layout_constraintLeft_creator="1"
         tools:layout_constraintTop_creator="1" />
-    <ImageView
-        android:id="@+id/fragmentCoverImage"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center" />
 
 </android.support.constraint.ConstraintLayout>

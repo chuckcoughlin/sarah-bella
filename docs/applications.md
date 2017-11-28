@@ -8,22 +8,22 @@ The android assistant contains control and monitoring code for all applications.
 
 ******************************************************
 ### 01 - SystemCheck
-This activity is designed to exercise all of the devices on the robot.
+This activity is designed to read system parameters and exercise all devices on the robot.
 
 **topic:**
 ```
-/sb_system_parameters
+/sb_system
       String hostname
       String ip_address
 ```
 
 #### ----------------------- notepad -------------------------
 
-**node:** sb_subscribe_system_parameters <br/>
+**node:** sb_subscribe_system <br/>
 
 #### ---------------------- robot  --------------------------
 
 **package:** ```catkin_create_pkg system_check rospy turtlebot3_msgs    turtlebot3_navigation```<br/>
-**node:** sb_publish_system_parameters <br/>
+**node:** sb_publish_system <br/>
 
 ******************************************************

@@ -25,7 +25,7 @@ public class SystemFragment extends BasicAssistantFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_system, container, false);
-        TextView label = (TextView) view.findViewById(R.id.fragmentSystemText);
+        TextView label = view.findViewById(R.id.fragmentSystemText);
         label.setText("TODO");
         return view;
     }

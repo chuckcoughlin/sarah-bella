@@ -25,10 +25,10 @@ public class CameraFragment extends BasicAssistantFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_camera, container, false);
-        TextView label = (TextView) view.findViewById(R.id.fragmentCameraText);
+        TextView label = view.findViewById(R.id.fragmentCameraText);
         label.setText("@string/fragmentCameraLabel");
 
-        ImageView imageView = (ImageView) view.findViewById(R.id.fragmentCameraImage);
+        ImageView imageView = view.findViewById(R.id.fragmentCameraImage);
         imageView.setImageResource(R.drawable.turtlebot3);
         return view;
     }

@@ -25,10 +25,10 @@ public class SLAMFragment extends BasicAssistantFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_slam, container, false);
-        TextView label = (TextView) view.findViewById(R.id.fragmentSLAMText);
+        TextView label = view.findViewById(R.id.fragmentSLAMText);
         label.setText("@string/fragmentSLAMLabel");
 
-        ImageView imageView = (ImageView) view.findViewById(R.id.fragmentCameraImage);
+        ImageView imageView = view.findViewById(R.id.fragmentSLAMImage);
         imageView.setImageResource(R.drawable.turtlebot3);
         return view;
     }

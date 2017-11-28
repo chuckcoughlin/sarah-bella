@@ -32,7 +32,7 @@ This notepad application is designed to command the robot, perform compute-inten
 repository (```git clone http://github.com/chuckcoughlin/sarah-bella``` Load android/SBAssistant into Android Studio).
 
 #### Emulator
-In order to test the application in the emulator, after configuring a suitable target device with the AVD manager, select the studio menu Tools->Android->Enable ADB Integration and Run->Edit Configuration. Thereafter use of the green "run" arrow in the toolbar to launch the application in the emulator. Output is viewable directly in the studio's ''logcat'' tab.
+In order to test the application in the emulator, after configuring a suitable target device with the AVD manager, select the studio menu Tools->Android->Enable ADB Integration and Run->Edit Configuration. Thereafter use the green "run" arrow in the toolbar to launch the application in the emulator. Output is viewable directly in the studio's ''logcat'' tab.
 
 #### Transfer to tablet
 The tablet must be set in "developer" mode. This is accomplished under Settings->About Tablet. Tap on "Build number" 7 times. (Yes, really). Under Settings->Developer options, enable USB debugging. Connect the tablet and host using the same USB cable that is used to charge the device. Once the cable is connected a dialog should popup asking you to allow file transfer. (If this does not appear, you may have to fiddle with Developer options->USB Configuration).

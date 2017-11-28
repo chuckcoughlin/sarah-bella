@@ -32,10 +32,10 @@ public class LogsFragment extends BasicAssistantFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_logs, container, false);
-        TextView textView = (TextView) rootView.findViewById(R.id.logs_title_label);
+        TextView textView = rootView.findViewById(R.id.logs_title_label);
         textView.setText(R.string.fragmentLogsLabel);
 
-        logMessageView = (RecyclerView)rootView.findViewById(R.id.logs_recycler_view);
+        logMessageView = rootView.findViewById(R.id.logs_recycler_view);
         // Better performance with a fixed size queue
         logMessageView.setHasFixedSize(true);
         LinearLayoutManager layoutManager = new LinearLayoutManager(rootView.getContext());
