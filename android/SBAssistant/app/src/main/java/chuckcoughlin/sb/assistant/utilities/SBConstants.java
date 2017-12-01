@@ -17,6 +17,10 @@ public class SBConstants {
     public static final String SETTINGS_VALUE = "value";
 
     // These are the parameter names in the Settings table
-    public static final String ROS_MASTER_URI="http://xxx.xxx.xxx:11311";
-    public static final String ROS_HOSTNAME="xxx.xxx.xxx";
+    public static final String ROS_MASTER_URI="ROS Master URI";
+    public static final String ROS_HOSTNAME="ROS Hostname";
+
+    // These are the default values for the settings
+    public static final String DEFAULT_ROS_MASTER_URI="http://xxx.xxx.xxx:11311";
+    public static final String DEFAULT_ROS_HOSTNAME="xxx.xxx.xxx";
 }

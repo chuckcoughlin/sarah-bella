@@ -1,7 +1,7 @@
 # Toolchain and Build Notes
 
 This document summarizes the tools and build procedures required to build the Sarah-Bella application suite. Current hardware consists of the following:
-  * Host system - iMac running OSX Sierra (10.12).
+  * Host system - iMac running OSX High Sierra (10.13).
   * Tablet - Samsung Galaxy S3 - 10"
   * Robot - ROBOTIS Turtlebot3, monitor, USB keyboard
 
@@ -10,6 +10,13 @@ We use the kinetic version of ROS. This is the current version used by ROBOTIS f
 ![sarah-bella - Turtlebot3](/images/sarah-bella-large.png)
 ````                        sara-bella - Turtlebot3 ````
 
+Here is a diagram that shows the relationships between the various development components.
+![System Architecture for Development](/images/development-layout.png)
+````                        Development - System Architecture ````
+
+On the host system:
+ * Android Studio is used to create the Android application 'SBAssistant' which executes on the tablet and is used as the user interface to command the robot.
+ * The Linux VM is a Virtual Box virtual machine with the Robot Operating System (ROS) libraries. It is used to create and test-compile the robot code. When done, the code is checked into ''git'' and subsequently checked out and built on the robot.
 *********************************************************
 ### Android
 The control application is a standard Android application built using Android Studio 3.0. The studio may be downloaded from http://developer.android.com. It runs on the OSX build system, creating a run image
@@ -29,7 +36,7 @@ The next step makes ROS libraries available to the Android build environment. Fr
 
 #### SB-Assistant
 This notepad application is designed to command the robot, perform compute-intensive analyses and display results. The SBAssistant project is contained in the overall project
-repository (```git clone http://github.com/chuckcoughlin/sarah-bella``` Load android/SBAssistant into Android Studio).
+repository (```git clone http://github.com/chuckcoughlin/sarah-bella``` Load android/SBAssistant into Android Studio). Internet access is required to build.
 
 #### Emulator
 In order to test the application in the emulator, after configuring a suitable target device with the AVD manager, select the studio menu Tools->Android->Enable ADB Integration and Run->Edit Configuration. Thereafter use the green "run" arrow in the toolbar to launch the application in the emulator. Output is viewable directly in the studio's ''logcat'' tab.

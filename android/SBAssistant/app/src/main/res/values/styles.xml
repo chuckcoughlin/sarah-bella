@@ -26,7 +26,7 @@
 
     <!-- Base application theme. -->
     <style name="SBAssistTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- Customize your theme here. -->
+        <!-- Customize the theme here. -->
 
         <item name="android:windowDisablePreview">true</item>
         <item name="windowActionBar">false</item>

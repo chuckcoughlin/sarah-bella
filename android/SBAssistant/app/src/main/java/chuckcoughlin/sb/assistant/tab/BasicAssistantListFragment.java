@@ -1,19 +1,20 @@
 package chuckcoughlin.sb.assistant.tab;
 
 
+import android.support.v4.app.ListFragment;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
 /**
- * This is a base class for all the page fragments, except lists.
+ * This is a base class for all the page fragments that aare lists.
  */
 
-public class BasicAssistantFragment extends Fragment implements AssistantFragment {
+public class BasicAssistantListFragment extends ListFragment implements AssistantFragment {
 
     /**
      * A no-arg constructor is required.
      */
-    public BasicAssistantFragment() {
+    public BasicAssistantListFragment() {
         Bundle bundle = new Bundle();
         setArguments(bundle);
     }

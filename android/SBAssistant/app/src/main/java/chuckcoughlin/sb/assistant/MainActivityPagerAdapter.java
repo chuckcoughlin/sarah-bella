@@ -11,6 +11,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.util.Log;
 
+import chuckcoughlin.sb.assistant.tab.AssistantFragment;
 import chuckcoughlin.sb.assistant.tab.AudioFragment;
 import chuckcoughlin.sb.assistant.tab.BasicAssistantFragment;
 import chuckcoughlin.sb.assistant.tab.CameraFragment;
@@ -48,7 +49,7 @@ public class MainActivityPagerAdapter extends FragmentStatePagerAdapter {
      */
     @Override
     public Fragment getItem(int position) {
-        BasicAssistantFragment frag = null;
+        AssistantFragment frag = null;
 
         switch (position) {
             case 0:
@@ -82,7 +83,7 @@ public class MainActivityPagerAdapter extends FragmentStatePagerAdapter {
             frag.setPageNumber(position);
             frag.setTitle(tabTitles[position]);
         }
-        return frag;
+        return (Fragment)frag;
     }
 
 

@@ -3,11 +3,12 @@
     <string name="action_settings">Settings</string>
     <string name="fragmentAudioLabel">Audio Inputs</string>
     <string name="fragmentCameraLabel">View from Robot Camera</string>
-    <string name="fragmentCoverLabel">Turtlebot3 (Sarah-Bella)</string>
+    <string name="fragmentCoverLabel">Turtlebot3 \"Sarah-Bella\"</string>
     <string name="fragmentHeadlampLabel">Headlamp Control</string>
     <string name="fragmentLogsLabel">Logfile Entries</string>
+    <string name="fragmentSettingsLabel">Configuration Settings</string>
     <string name="fragmentSLAMLabel">SLAM - whatever that stands for</string>
-    <string name="fragmentSystemLabel">System Parameters</string>
+    <string name="fragmentSystemLabel">Robot Systems Parameters</string>
     <string name="name_label">Name:</string>
     <!-- Tab Titles as they appear across the top of the page -->
     <string name="cover_title">Cover</string>

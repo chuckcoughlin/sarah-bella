@@ -20,7 +20,7 @@ import chuckcoughlin.sb.assistant.logs.RecyclerAdapter;
  * This fragment allows preusal of the robot's activity log.
  */
 
-public class LogsFragment extends BasicAssistantFragment {
+public class LogsFragment extends BasicAssistantListFragment {
 
     private static final int NUM_LOG_MESSAGES = 100;  // Number of list items to display/scroll
     private RecyclerView.LayoutManager layoutManager;

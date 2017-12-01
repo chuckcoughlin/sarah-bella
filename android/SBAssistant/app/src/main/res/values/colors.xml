@@ -4,8 +4,8 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="textColorPrimary">#FFFFFF</color>
     <color name="windowBackground">#FFFFFF</color>
-    <color name="navigationBarColor">#000000</color>
-    <color name="colorAccent">#C62828</color>
+    <color name="navigationBarColor">#aad0ff</color>
+    <color name="colorAccent">#aad0ff</color>
     <color name="blue">#03A9F4</color>
 
     <!--Material Greens used to vary backgrounds of log messages-->

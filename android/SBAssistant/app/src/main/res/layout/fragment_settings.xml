@@ -1,40 +1,41 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/constraintLayout"
+    android:id="@+id/coverConstraintLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="chuckcoughlin.sb.assistant.tab.SettingsFragment">
 
     <TextView
         android:id="@+id/fragmentSettingsText"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:layout_marginBottom="32dp"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:layout_marginTop="@dimen/activity_vertical_margin"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/constraintLayout"
-        tools:layout_constraintLeft_creator="1"
-        tools:layout_constraintTop_creator="1" />
+        android:gravity="center"
+        android:textAppearance="@style/TabTitle"/>
     <ScrollView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/settingsScrollView"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true">
-        <!-- Create a list of name/value pairs -->
+        android:layout_alignParentEnd="true"
+        app:layout_constraintTop_toBottomOf="@+id/fragmentSettingsText" >
+        <!-- Create a list of name/value pairs (the particular list id is required) -->
         <ListView
-            android:id="@+id/settingsListView"
+            android:id="@+id/android:list"
+            android:background="@color/navigationBarColor"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true" >
-        </ListView>
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:paddingLeft="@dimen/page_margin"
+            android:paddingRight="@dimen/page_margin"
+            android:scrollbarStyle="outsideOverlay"/>
 
     </ScrollView>
 

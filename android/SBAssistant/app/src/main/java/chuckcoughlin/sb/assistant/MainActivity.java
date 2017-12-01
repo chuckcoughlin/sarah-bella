@@ -6,6 +6,7 @@
 package chuckcoughlin.sb.assistant;
 
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -18,8 +19,11 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import chuckcoughlin.sb.assistant.R;
+import chuckcoughlin.sb.assistant.db.SBDbHelper;
+import chuckcoughlin.sb.assistant.utilities.SBConstants;
 
 public class MainActivity extends AppCompatActivity {
     private static final String CLSS = "MainActivity";
@@ -50,6 +54,21 @@ public class MainActivity extends AppCompatActivity {
         pagerAdapter = new MainActivityPagerAdapter(getSupportFragmentManager(),getApplicationContext());
         viewPager.setAdapter(pagerAdapter);
         Log.i(CLSS,"onCreate: complete");
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final Toast toast = Toast.makeText(getBaseContext(),"Hi MOM",Toast.LENGTH_LONG);
+                toast.show();
+            }
+        });
+
+        // If I absolutely have to start over again with the database
+        // this.deleteDatabase(SBConstants.DB_NAME);
+
+        // Initialize the Settings database for use elsewhere in the application.
+        SBDbHelper.initialize(this);
     }
 
 }
