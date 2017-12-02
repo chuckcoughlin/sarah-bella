@@ -115,22 +115,24 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1"
-     inkscape:cx="370.18095"
+     inkscape:cx="326.33916"
      inkscape:cy="463.72407"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="2560"
      inkscape:window-height="1320"
-     inkscape:window-x="18"
-     inkscape:window-y="54"
+     inkscape:window-x="42"
+     inkscape:window-y="16"
      inkscape:window-maximized="0"
      inkscape:pagecheckerboard="false"
      showborder="true"
      showguides="false"
      borderlayer="false"
      inkscape:object-paths="true"
-     inkscape:snap-text-baseline="true" />
+     inkscape:snap-text-baseline="true"
+     inkscape:snap-path-clip="false"
+     objecttolerance="6" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -267,15 +269,6 @@
        height="37.797619"
        x="16.252975"
        y="126.15475" />
-    <image
-       y="100.17754"
-       x="15.497024"
-       id="image6133"
-       xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXwAAACbCAYAAABh0SBEAAAABHNCSVQICAgIfAhkiAAAAn5JREFU eJzt1rFpQgEARdGvSPilI/xCV7KMRcgS6d0jbRYTlDQiQbD5KTKDCLnnTPCqy1uM48s8bdYDAP/T 6fgz7F/f31bTZj0cvpbP3gPAg3we/k690gNECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+ QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5A hOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE 4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITg A0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOAD RAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANE CD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QI PkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+ QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5A hOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AxOr7fJ8/duP87CEAPMb1 cltsd8v7L12kE55gH+3OAAAAAElFTkSuQmCC "
-       style="image-rendering:optimizeSpeed"
-       preserveAspectRatio="none"
-       height="55.373512"
-       width="100.54166" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
@@ -287,17 +280,6 @@
          x="136.07144"
          y="124.26488"
          style="font-size:3.52777767px;stroke-width:0.26458332">Emulator</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="29.482141"
-       y="123.88691"
-       id="text6142"><tspan
-         sodipodi:role="line"
-         id="tspan6140"
-         x="29.482141"
-         y="123.88691"
-         style="stroke-width:0.26458332">Android Studio</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
@@ -353,6 +335,15 @@
        inkscape:connector-curvature="0"
        inkscape:connector-type="polyline" />
     <image
+       y="100.17754"
+       x="15.497024"
+       id="image6133"
+       xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXwAAACbCAYAAABh0SBEAAAABHNCSVQICAgIfAhkiAAAAn5JREFU eJzt1rFpQgEARdGvSPilI/xCV7KMRcgS6d0jbRYTlDQiQbD5KTKDCLnnTPCqy1uM48s8bdYDAP/T 6fgz7F/f31bTZj0cvpbP3gPAg3we/k690gNECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+ QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5A hOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE 4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITg A0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOAD RAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANE CD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QI PkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+ QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5A hOADRAg+QITgA0QIPkCE4ANECD5AhOADRAg+QITgA0QIPkCE4ANECD5AxOr7fJ8/duP87CEAPMb1 cltsd8v7L12kE55gH+3OAAAAAElFTkSuQmCC "
+       style="image-rendering:optimizeSpeed"
+       preserveAspectRatio="none"
+       height="55.373512"
+       width="100.54166" />
+    <image
        width="13.695371"
        height="17.886497"
        preserveAspectRatio="none"
@@ -376,15 +367,14 @@
          style="font-size:5.64444447px;stroke:#1e0e0e;stroke-width:0.24676377;stroke-opacity:1">USB</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:5.64444447px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       style="font-style:normal;font-weight:normal;font-size:5.64444444px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332;-inkscape-font-specification:'sans-serif, Normal';font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;"
        x="131.49791"
        y="225.29791"
        id="text10486"><tspan
          sodipodi:role="line"
-         id="tspan10484"
-         x="131.49791"
-         y="225.29791"
-         style="font-size:5.64444447px;stroke-width:0.26458332">wi-fi (git,ftp)</tspan></text>
+         id="tspan912">  wifi </tspan><tspan
+         sodipodi:role="line"
+         id="tspan914">(git,ftp)</tspan></text>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.86500001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#Arrow1Lstart);marker-end:url(#marker11016)"
        d="m 248.44375,148.03958 -3.43959,52.3875"
@@ -393,20 +383,77 @@
        inkscape:connector-type="polyline" />
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:5.64444447px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="254.21291"
-       y="181.85875"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="204.62498"
+       y="179.31387"
        id="text12224"><tspan
          sodipodi:role="line"
-         id="tspan12222"
-         x="254.21291"
-         y="181.85875"
-         style="stroke-width:0.26458332">tcp/ip (ROS)</tspan></text>
+         id="tspan904"
+         x="204.62498"
+         y="179.31387">       wifi</tspan><tspan
+         sodipodi:role="line"
+         id="tspan906"
+         x="204.62498"
+         y="184.60555">(ROS messages)</tspan></text>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 106.89167,117.87708 33.60208,-6.08541"
        id="path12226"
        inkscape:connector-curvature="0"
        inkscape:connector-type="polyline" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:5.64444447px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="279.92917"
+       y="181.85875"
+       id="text894"><tspan
+         sodipodi:role="line"
+         id="tspan892"
+         x="279.92917"
+         y="186.85275"
+         style="stroke-width:0.26458332" /></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:5.64444447px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="279.92917"
+       y="181.85875"
+       id="text898"><tspan
+         sodipodi:role="line"
+         id="tspan896"
+         x="279.92917"
+         y="186.85275"
+         style="stroke-width:0.26458332" /></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:4.23333323px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26457179;-inkscape-font-specification:'sans-serif, Normal';font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;"
+       x="228.19315"
+       y="98.169899"
+       id="text902"
+       transform="scale(1.0000437,0.99995635)"><tspan
+         sodipodi:role="line"
+         id="tspan900"
+         x="228.19315"
+         y="98.169899"
+         style="stroke-width:0.26457179;-inkscape-font-specification:'sans-serif, Normal';font-family:sans-serif;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;font-size:4.23333323px;text-anchor:start;text-align:start;writing-mode:lr;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;">Android Tablet</tspan></text>
+    <text
+       transform="scale(1.0000437,0.99995633)"
+       id="text918"
+       y="280.74039"
+       x="257.8252"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333327px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26457179;"
+       xml:space="preserve"><tspan
+         sodipodi:role="line"
+         id="tspan920">Turtlebot3</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="29.482141"
+       y="123.88691"
+       id="text6142"><tspan
+         sodipodi:role="line"
+         id="tspan6140"
+         x="29.482141"
+         y="123.88691"
+         style="stroke-width:0.26458332">Android Studio</tspan></text>
   </g>
 </svg>

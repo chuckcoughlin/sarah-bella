@@ -17,6 +17,8 @@ Here is a diagram that shows the relationships between the various development c
 On the host system:
  * Android Studio is used to create the Android application 'SBAssistant' which executes on the tablet and is used as the user interface to command the robot.
  * The Linux VM is a Virtual Box virtual machine with the Robot Operating System (ROS) libraries. It is used to create and test-compile the robot code. When done, the code is checked into ''git'' and subsequently checked out and built on the robot.
+
+This drawing and others is constructed using **InkScape** from https://inkscape.org/en/release/0.92.2.
 *********************************************************
 ### Android
 The control application is a standard Android application built using Android Studio 3.0. The studio may be downloaded from http://developer.android.com. It runs on the OSX build system, creating a run image
@@ -40,6 +42,15 @@ repository (```git clone http://github.com/chuckcoughlin/sarah-bella``` Load and
 
 #### Emulator
 In order to test the application in the emulator, after configuring a suitable target device with the AVD manager, select the studio menu Tools->Android->Enable ADB Integration and Run->Edit Configuration. Thereafter use the green "run" arrow in the toolbar to launch the application in the emulator. Output is viewable directly in the studio's ''logcat'' tab.
+
+#### Persistent storage
+Configuration parameters, maps and other data that are meant to remain in place even through application changes, are stored in a SQLite database accessible through the tablet application and externally.
+
+On the tablet:
+```
+/data/user/0/chuckcoughlin.sb.assistant/databases/SBAssistant.db
+```
+Unfortunately there appears to be a bug in the Android device manager that prevents it from observing the database on the emulator.
 
 #### Transfer to tablet
 The tablet must be set in "developer" mode. This is accomplished under Settings->About Tablet. Tap on "Build number" 7 times. (Yes, really). Under Settings->Developer options, enable USB debugging. Connect the tablet and host using the same USB cable that is used to charge the device. Once the cable is connected a dialog should popup asking you to allow file transfer. (If this does not appear, you may have to fiddle with Developer options->USB Configuration).

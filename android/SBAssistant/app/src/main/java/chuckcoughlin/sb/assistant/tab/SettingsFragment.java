@@ -5,17 +5,20 @@
 
 package chuckcoughlin.sb.assistant.tab;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -27,15 +30,22 @@ import chuckcoughlin.sb.assistant.utilities.NameValue;
  * Display the current values of global application settings and allow
  * editing.
  */
-
-public class SettingsFragment extends BasicAssistantListFragment {
+public class SettingsFragment extends BasicAssistantListFragment implements AdapterView.OnItemClickListener {
     private final static String CLSS = "SettingsFragment";
-    private SettingsListAdapter adapter = null;
-    private View contentView = null;
 
     public SettingsFragment() {
         super();
+    }
 
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        List<NameValue> nvpairs = SBDbHelper.getInstance().getSettings();
+        NameValue [] nvarray = nvpairs.toArray(new NameValue[nvpairs.size()]);
+        Log.i(CLSS,String.format("onActivityCreated: will display %d name-values",nvarray.length));
+        SettingsListAdapter adapter = new SettingsListAdapter(getContext(),nvarray);
+        setListAdapter(adapter);
+        getListView().setOnItemClickListener(this);
     }
 
     // Called to have the fragment instantiate its user interface view.
@@ -43,23 +53,16 @@ public class SettingsFragment extends BasicAssistantListFragment {
     // the text fields from the database.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-        contentView = inflater.inflate(R.layout.fragment_settings, container, false);
+        View contentView = inflater.inflate(R.layout.fragment_settings, container, false);
         TextView textView = contentView.findViewById(R.id.fragmentSettingsText);
         textView.setText(R.string.fragmentSettingsLabel);
-
-        List<NameValue> nvpairs = SBDbHelper.getInstance().getSettings();
-        NameValue [] nvarray = nvpairs.toArray(new NameValue[nvpairs.size()]);
-        Log.i(CLSS,String.format("onCreateView: displaying %d name-values",nvarray.length));
-        adapter = new SettingsListAdapter(container.getContext(),nvarray);
-        setListAdapter(adapter);
         return contentView;
     }
 
-    private class SettingsListAdapter extends ArrayAdapter<NameValue> implements ListAdapter {
+    public class SettingsListAdapter extends ArrayAdapter<NameValue> implements ListAdapter {
 
         public SettingsListAdapter(Context context, NameValue[] values) {
-            super(context, 0, values);
+            super(context,R.layout.settings_item, values);
         }
 
         /**
@@ -67,57 +70,40 @@ public class SettingsFragment extends BasicAssistantListFragment {
          */
         @Override
         public int getCount() {
-            Log.i(CLSS,String.format("SettingsListAdapter.getCount =  %d",super.getCount()));
+            //Log.i(CLSS,String.format("SettingsListAdapter.getCount =  %d",super.getCount()));
             return super.getCount();
         }
 
         @Override
-        public NameValue getItem(int position) {
-            Log.i(CLSS,String.format("SettingsListAdapter.getItem at %d = %s",position,super.getItem(position).getName()));
-            return super.getItem(position);
+        public long getItemId(int position) {
+            return getItem(position).hashCode();
         }
 
         @Override
-        public long getItemId(int position) {
-            NameValue nv = getItem(position);
-            return 10000*nv.getName().hashCode()+nv.getValue().hashCode();
-        }
-        /**
-         * Extract the nth view in the list. In our case this is a RelativeLayout
-         * containing a TextView (name) and EditView (value).
-         *
-         * @param position
-         * @param convertView convert this view for display
-         * @param parent
-         * @return
-         */
-        @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            Log.i(CLSS,String.format("SettingsListAdapter.getView position %d",position));
-            // Check if an existing view is being reused, else inflate the view
-            if (convertView == null) {
-                //Log.i(CLSS,String.format("SettingsListAdapter.getView convert view was null"));
-                convertView = getLayoutInflater().inflate(R.layout.settings_item, parent, false);
-            }
+            Log.i(CLSS,String.format("SettingsListAdapter.getView position =  %d",position));
             // Get the data item for this position
             NameValue nv = getItem(position);
-            Log.i(CLSS,String.format("SettingsListAdapter.getView name at %d = %s",position,nv.getName()));
+            // Check if an existing view is being reused, otherwise inflate the view
+            if (convertView == null) {
+                Log.i(CLSS,String.format("SettingsListAdapter.getView convertView was null"));
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.settings_item, parent, false);
+            }
             // Lookup view for data population
-            TextView nameView  = (TextView) convertView.findViewById(R.id.settingsNameView);
-            if( nameView==null) return convertView;
-            //Log.i(CLSS,String.format("getView %d : %s ",position,(nv==null?"NULL":nv.getName())));
-            EditText valueView = (EditText) convertView.findViewById(R.id.settingsEditView);
-            if( valueView==null) return convertView;
-            Log.i(CLSS,String.format("===================== %s",nv.getValue()));
+            TextView nameView = (TextView) convertView.findViewById(R.id.settingsNameView);
+            EditText editText = (EditText) convertView.findViewById(R.id.settingsEditView);
             // Populate the data into the template view using the data object
             nameView.setText(nv.getName());
-            valueView.setText(nv.getValue());
-            // Update the database
-            SBDbHelper.getInstance().updateSetting(nv);
+            editText.setText(nv.getValue());
+            Log.i(CLSS,String.format("SettingsListAdapter.getView set %s = %s",nv.getName(),nv.getValue()));
             // Return the completed view to render on screen
             return convertView;
         }
-
     }
 
+    // ============================= itemClickListener =============================
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Toast.makeText(getContext(), "Item: " + position, Toast.LENGTH_SHORT).show();
+    }
 }

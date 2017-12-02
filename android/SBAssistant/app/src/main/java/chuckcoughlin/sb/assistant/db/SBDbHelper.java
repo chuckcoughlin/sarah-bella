@@ -128,8 +128,9 @@ public class SBDbHelper extends SQLiteOpenHelper {
         String SQL = "SELECT name,value FROM Settings ORDER BY Name";
         Cursor cursor = database.rawQuery(SQL,args);
         cursor.moveToFirst();
-        NameValue nv = new NameValue();
+
         while( !cursor.isAfterLast() ) {
+            NameValue nv = new NameValue();
             nv.setName(cursor.getString(0));
             nv.setValue(cursor.getString(1));
             Log.i(CLSS,String.format("getSettings: %s = %s",nv.getName(),nv.getValue()));

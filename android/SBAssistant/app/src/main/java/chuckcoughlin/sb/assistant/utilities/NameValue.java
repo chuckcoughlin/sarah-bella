@@ -32,4 +32,9 @@ public class NameValue {
     public void setValue(String val) {
         this.value = val;
     }
+
+    @Override
+    public int hashCode () {
+        return getName().hashCode()+getValue().hashCode();
+    }
 }
