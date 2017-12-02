@@ -19,6 +19,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Toast;
 
@@ -49,12 +50,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Log.i(CLSS,"onCreate: entering ...");
         setContentView(R.layout.activity_main);
+        // Close the soft keyboard - it will still open on an EditText
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
         // Get the ViewPager and set it's PagerAdapter so that it can display items
         ViewPager viewPager = findViewById(R.id.viewpager);
         pagerAdapter = new MainActivityPagerAdapter(getSupportFragmentManager(),getApplicationContext());
         viewPager.setAdapter(pagerAdapter);
-        Log.i(CLSS,"onCreate: complete");
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {

@@ -8,6 +8,8 @@ package chuckcoughlin.sb.assistant.tab;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,7 +32,7 @@ import chuckcoughlin.sb.assistant.utilities.NameValue;
  * Display the current values of global application settings and allow
  * editing.
  */
-public class SettingsFragment extends BasicAssistantListFragment implements AdapterView.OnItemClickListener {
+public class SettingsFragment extends BasicAssistantListFragment  {
     private final static String CLSS = "SettingsFragment";
 
     public SettingsFragment() {
@@ -45,7 +47,7 @@ public class SettingsFragment extends BasicAssistantListFragment implements Adap
         Log.i(CLSS,String.format("onActivityCreated: will display %d name-values",nvarray.length));
         SettingsListAdapter adapter = new SettingsListAdapter(getContext(),nvarray);
         setListAdapter(adapter);
-        getListView().setOnItemClickListener(this);
+        getListView().setItemsCanFocus(true);
     }
 
     // Called to have the fragment instantiate its user interface view.
@@ -59,19 +61,11 @@ public class SettingsFragment extends BasicAssistantListFragment implements Adap
         return contentView;
     }
 
+
     public class SettingsListAdapter extends ArrayAdapter<NameValue> implements ListAdapter {
 
         public SettingsListAdapter(Context context, NameValue[] values) {
             super(context,R.layout.settings_item, values);
-        }
-
-        /**
-         * We've verified that this works.
-         */
-        @Override
-        public int getCount() {
-            //Log.i(CLSS,String.format("SettingsListAdapter.getCount =  %d",super.getCount()));
-            return super.getCount();
         }
 
         @Override
@@ -81,12 +75,12 @@ public class SettingsFragment extends BasicAssistantListFragment implements Adap
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            Log.i(CLSS,String.format("SettingsListAdapter.getView position =  %d",position));
+            // Log.i(CLSS,String.format("SettingsListAdapter.getView position =  %d",position));
             // Get the data item for this position
             NameValue nv = getItem(position);
             // Check if an existing view is being reused, otherwise inflate the view
             if (convertView == null) {
-                Log.i(CLSS,String.format("SettingsListAdapter.getView convertView was null"));
+                // Log.i(CLSS,String.format("SettingsListAdapter.getView convertView was null"));
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.settings_item, parent, false);
             }
             // Lookup view for data population
@@ -95,15 +89,26 @@ public class SettingsFragment extends BasicAssistantListFragment implements Adap
             // Populate the data into the template view using the data object
             nameView.setText(nv.getName());
             editText.setText(nv.getValue());
+            editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    /*
+                     * When focus is lost save the entered value both into the current array
+                     * and the database
+                     */
+                    if (!hasFocus) {
+                        Log.i(CLSS,String.format("SettingsListAdapter.getView.onFocusChange %d = %s",position,((EditText) v).getText().toString()));
+                        nv.setValue(((EditText)v).getText().toString());
+                        SBDbHelper.getInstance().updateSetting(nv);
+                    }
+                }
+            });
+
+
             Log.i(CLSS,String.format("SettingsListAdapter.getView set %s = %s",nv.getName(),nv.getValue()));
             // Return the completed view to render on screen
             return convertView;
         }
     }
 
-    // ============================= itemClickListener =============================
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Toast.makeText(getContext(), "Item: " + position, Toast.LENGTH_SHORT).show();
-    }
 }
