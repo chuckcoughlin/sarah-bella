@@ -4,6 +4,9 @@ The robot repertoire consists of a set of separate activities or applications, e
 on the development virtual machine, and a transfer bundle for installation on the robot's Raspberry Pi. The applications are denoted by separate "roslaunch"
 files that co-ordinate underlying packages. Packages are separately developed, reusable libraries for control of specific ROS nodes or devices.
 
+![SB Assistant](/images/sb-cover.png)
+````                        SB Assistant - Cover Page ````
+
 The android assistant contains control and monitoring code for all applications.
 
 ******************************************************
