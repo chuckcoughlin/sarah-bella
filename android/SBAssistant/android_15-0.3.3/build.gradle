@@ -1,0 +1,2 @@
+configurations.maybeCreate("default")
+artifacts.add("default", file('android_15-0.3.3.aar'))

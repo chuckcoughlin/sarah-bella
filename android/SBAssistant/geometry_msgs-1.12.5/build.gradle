@@ -1,0 +1,2 @@
+configurations.maybeCreate("default")
+artifacts.add("default", file('geometry_msgs-1.12.5.jar'))

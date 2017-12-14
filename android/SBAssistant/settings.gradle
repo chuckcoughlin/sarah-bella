@@ -1,1 +1,1 @@
-include ':app'
+include ':app', ':android_15-0.3.3', ':geometry_msgs-1.12.5', ':rosjava_utils-0.2.0', ':rosjava-0.3.5', ':application_management-0.1.4'

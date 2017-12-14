@@ -26,15 +26,25 @@ for the android tablet.
 
 Configure the host build system, making the Android home environment variable available by adding
 ```ANDROID_HOME=~/Library/Android/sdk``` to ~/.bashrc.
-The next step makes ROS libraries available to the Android build environment. From https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/android_core/android_15/0.3.3 download android_15-0.3.3.aar.
+
+#### External Libraries
+The next step makes ROS libraries available to the Android build environment.
+
+The android core package may be found at:  https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/android_core/android_15/0.3.3. Download android_15-0.3.3.aar to **~/robotics/library**. Then create a module from inside Android Studio.
 ```
-	DIR="~/Library/Android/sdk/extras/m2repository/org/ros/android_core/android_15/0.3.3"
-	mkdir -p $DIR
-	cd $DIR
-	mv ~/downloads/android_15-0.3.3.aar .
-	jar -xf android_15-0.3.3.aar classes.jar
-	mv classes.jar android_15.0.3.3.jar
+  File->New->Module
+  select "Import .JAR/.AAR Package"
+  Next
+  select the file path
+  Finish
 ```
+Do the same for the following:<br/>
+* https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_core/rosjava/0.3.5  rosjava-0.3.5.jar
+* https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_messages/geometry_msgs/1.12.5  geometry_msgs-1.12.5.jar
+* https://github.com/rosjava/rosjava_mvn_repo/tree/master/com/github/robotics_in_concert/rocon_rosjava_core/rosjava_utils/0.2.0 rosjava_utils-0.2.0.jar
+* https://github.com/rosjava/rosjava_mvn_repo/tree/master/com/github/rosjava/android_apps/application_management/0.1.4 application_management-0.1.4.aar
+
+Note that the above steps are necessary only if creating a project from scratch. For an existing project, the modules have been saved in the repository.
 
 #### SB-Assistant
 This notepad application is designed to command the robot, perform compute-intensive analyses and display results. The SBAssistant project is contained in the overall project

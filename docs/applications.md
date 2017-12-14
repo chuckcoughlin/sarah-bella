@@ -1,13 +1,12 @@
 ## Application Descriptions
 
-The robot repertoire consists of a set of separate activities or applications, each independent of the others. Each activity requires a separate build
-on the development virtual machine, and a transfer bundle for installation on the robot's Raspberry Pi. The applications are denoted by separate "roslaunch"
-files that co-ordinate underlying packages. Packages are separately developed, reusable libraries for control of specific ROS nodes or devices.
+The robot repertoire consists of a set of separate activities or applications, each largely independent of the others. In general, activities require separate ROS packages
+on the development virtual machine for subsequent transfer and compilation on the robot's Raspberry Pi. Packages are separately developed, reusable libraries for control of specific ROS nodes or devices. ROS messaging, the communication mechanism between packages and for the Android control application, is defined below for each application. The robot initiates all packages on startup.
 
 ![SB Assistant](/images/sb-cover.png)
 ````                        SB Assistant - Cover Page ````
 
-The android assistant contains control and monitoring code for all applications.
+The android assistant contains command and monitoring code for all applications installed on the robot.
 
 ******************************************************
 ### 01 - SystemCheck
