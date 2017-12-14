@@ -3,7 +3,7 @@
 This document summarizes the tools and build procedures required to build the Sarah-Bella application suite. Current hardware consists of the following:
   * Host system - iMac running OSX High Sierra (10.13).
   * Tablet - Samsung Galaxy S3 - 10"
-  * Robot - ROBOTIS Turtlebot3, monitor, USB keyboard
+  * Robot - ROBOTIS µÂTurtlebot3, monitor, USB keyboard
 
 We use the kinetic version of ROS. This is the current version used by ROBOTIS for Turtlebot.
 
@@ -40,9 +40,16 @@ The android core package may be found at:  https://github.com/rosjava/rosjava_mv
 ```
 Do the same for the following:<br/>
 * https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_core/rosjava/0.3.5  rosjava-0.3.5.jar
-* https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_messages/geometry_msgs/1.12.5  geometry_msgs-1.12.5.jar
-* https://github.com/rosjava/rosjava_mvn_repo/tree/master/com/github/robotics_in_concert/rocon_rosjava_core/rosjava_utils/0.2.0 rosjava_utils-0.2.0.jar
 * https://github.com/rosjava/rosjava_mvn_repo/tree/master/com/github/rosjava/android_apps/application_management/0.1.4 application_management-0.1.4.aar
+* https://github.com/rosjava/rosjava_mvn_repo/tree/master/com/github/rosjava/android_apps/application_management/0.1.4 application_management-0.1.4.aar
+
+Finally declare the modules as dependencies:
+```
+  File->Project Structure
+  select the module "app"
+  on Dependencies tab click "+", then Module Dependency
+  select the .jar or .aar files that were just downloaded
+```
 
 Note that the above steps are necessary only if creating a project from scratch. For an existing project, the modules have been saved in the repository.
 
@@ -76,7 +83,7 @@ The robot's ROS control code is developed on a Linux machine. We implement this 
 This machine contains a development area which is linked to the robot's Raspberry Pi via a shared *git* source code repository.
 Python (mostly) and C++ code for the entire repertoire of applications and support packages is edited and compiled here. Actual tryout and testing must take place on the robot.
 
-#### VirtualBox Setup
+##### VirtualBox Setup
 We use VirtualBox on an iMac host to implement our Linux virtual machines. The application may be downloaded from http://www.oracle.com/technetwork/server-storage/virtualbox/downloads/index.html.
 
 The VirtualBox installation requires an additional package in order to support a file system shared with the host. From https://www.virtualbox.org/wiki/Downloads download, then from the VirtualBox "devices" menu,
@@ -104,7 +111,7 @@ on startup. In this case 'sudo umount share' and mount manually. The equivalent 
 ```
 The VirtualBox additions also provide for a shared clipboard.
 
-#### ROSDev Setup
+##### ROSDev Setup
 On the host OSX system, create a virtual machine "ROSDev" to house ROS development activities. These activities include package development as well as construction of the entire suite of
 applications that will eventually run on the robot.
 Use an Unbuntu 16.04 boot image downloaded from https://www.ubuntu.com/download/desktop/contribute?version=16.04.3&architecture=amd64r.
@@ -121,7 +128,7 @@ Now install dependent packages for Turtlebot3 control:
 		ros-kinetic-rqt-image-view ros-kinetic-gmapping ros-kinetic-navigation
 ```
 
-#### Turtlebot3 Support
+##### Turtlebot3 Support
 Install the source code for turtlebot ROS support packages.
 
 ```
@@ -131,7 +138,7 @@ Install the source code for turtlebot ROS support packages.
 		git clone https://github.com/ROBOTIS-GIT/turtlebot3.git
 		cd .. && catkin_make
 ```
-#### Package Creation
+##### Package Creation
 A package encapsulates a related set of robot functionality. Ultimately we need to transfer the package definition onto the
 robot, but first we checkout and build on the virtual machine.
 
@@ -271,6 +278,6 @@ Download the **wiringPi** GPIO library and build the 'gpio' tool. Copy into our 
 We use ftp to transfer miscellaneous files from the host to the Raspberry Pi. To do this install
 the vsftpd package.
 
-#### Backup
+##### Backup
 To backup an SD card, mount it on the host system. Then use the Disk Utility application to save the SD card contents
 to an image file on disk. Be sure to select the entire device, not just the named partition. Save as "compressed".

@@ -9,7 +9,6 @@ android {
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -32,4 +31,5 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:26.0.2'
     implementation 'com.android.support:design:26.0.2'
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    implementation project(':application_management-0.1.4')
 }

@@ -16,14 +16,14 @@ import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import com.github.rosjava.android_apps.application_management.RobotDescription;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import chuckcoughlin.sb.assistant.R;
 import chuckcoughlin.sb.assistant.db.SBDbHelper;
 import chuckcoughlin.sb.assistant.utilities.NameValue;
-
-import ros.android.util.RobotDescription;
 
 /**
  * Search the networks for robots. Based on ros.activity.MasterChooserActivity
