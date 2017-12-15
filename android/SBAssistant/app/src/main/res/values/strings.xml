@@ -22,4 +22,9 @@
     <string name="log_title">Log</string>
     <string name="settings_title">Settings</string>
     <string name="system_title">System</string>
+    <!-- Imported from ros-android -->
+    <string-array name="context_menu">
+        <item>Select Robot</item>
+        <item>Delete Robot</item>
+    </string-array>
 </resources>
