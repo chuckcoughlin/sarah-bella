@@ -13,7 +13,10 @@
     <string name="fragmentSystemLabel">Robot Systems Parameters</string>
     <string name="name_label">Name:</string>
     <!-- Strings within fragments -->
-    <string name="fragmentDiscoverySelectMaster">Select Master Robot</string>
+    <string name="discoverySelectMaster">Select Master Robot</string>
+    <string name="discoveryButtonAdd">Add</string>
+    <string name="discoveryButtonClear">Clear</string>
+    <string name="discoveryButtonScan">Scan</string>
     <!-- Labels as they appear in the central tab bar -->
     <string name="cover_title">Cover</string>
     <string name="discovery_title">Discovery</string>

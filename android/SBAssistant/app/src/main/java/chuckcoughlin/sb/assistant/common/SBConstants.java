@@ -2,7 +2,7 @@
  * Copyright (C) 2017 Chuck Coughlin
  *  (MIT License)
  */
-package chuckcoughlin.sb.assistant.utilities;
+package chuckcoughlin.sb.assistant.common;
 
 /**
  * This class contains static strings used throughout
@@ -11,7 +11,7 @@ package chuckcoughlin.sb.assistant.utilities;
 public class SBConstants {
 
     public static final String DB_NAME = "SBAssistant.db";
-    public static final int DB_VERSION = 1;
+    public static final int DB_VERSION = 2;
     // These are the Settings table columns
     public static final String SETTINGS_NAME  = "name";
     public static final String SETTINGS_VALUE = "value";
@@ -23,4 +23,8 @@ public class SBConstants {
     // These are the default values for the settings
     public static final String DEFAULT_ROS_MASTER_URI="http://xxx.xxx.xxx:11311";
     public static final String DEFAULT_ROS_HOSTNAME="xxx.xxx.xxx";
+
+    // Dialog transaction key
+    public static final String DIALOG_TRANSACTION_KEY = "dialog";
+
 }

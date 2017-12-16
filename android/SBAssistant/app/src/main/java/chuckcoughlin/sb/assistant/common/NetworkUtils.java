@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package chuckcoughlin.sb.assistant.utilities;
+package chuckcoughlin.sb.assistant.common;
 
 import android.net.Uri;
 

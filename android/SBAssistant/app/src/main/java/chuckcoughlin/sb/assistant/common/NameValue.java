@@ -3,7 +3,7 @@
  * (MIT License)
  */
 
-package chuckcoughlin.sb.assistant.utilities;
+package chuckcoughlin.sb.assistant.common;
 
 /**
  * Create a model class for various lists - a name/value pair

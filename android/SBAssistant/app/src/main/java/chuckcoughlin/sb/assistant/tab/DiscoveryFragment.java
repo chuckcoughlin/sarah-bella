@@ -5,12 +5,7 @@
 
 package chuckcoughlin.sb.assistant.tab;
 
-import android.app.Activity;
-import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,15 +18,11 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import chuckcoughlin.sb.assistant.R;
-import chuckcoughlin.sb.assistant.db.SBDbHelper;
 import chuckcoughlin.sb.assistant.ros.SBRosHelper;
-import chuckcoughlin.sb.assistant.utilities.NameValue;
 import ros.android.util.RobotDescription;
-import ros.android.util.RobotsContentProvider;
 
 /**
  * Search the networks for robots. Based on ros.activity.MasterChooserActivity
@@ -40,19 +31,14 @@ import ros.android.util.RobotsContentProvider;
 public class DiscoveryFragment extends BasicAssistantListFragment  {
     private final static String CLSS = "DiscoveryFragment";
     private boolean[] selections;
-    private final SBRosHelper rosHelper;
-
-    public DiscoveryFragment() {
-        super();
-        this.rosHelper = SBRosHelper.getInstance();
-    }
+    private SBRosHelper rosHelper;
 
     // Called when the fragment's instance initializes
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTitle(getString(R.string.fragmentDiscoverySelectMaster));
-        rosHelper.readRobotList();
+        setTitle(getString(R.string.discoverySelectMaster));
+        this.rosHelper = SBRosHelper.getInstance();
     }
 
     // Called to have the fragment instantiate its user interface view.
@@ -63,6 +49,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment  {
         View contentView = inflater.inflate(R.layout.fragment_discovery, container, false);
         TextView textView = contentView.findViewById(R.id.fragmentDiscoveryText);
         textView.setText(R.string.fragmentDiscoveryLabel);
+
         return contentView;
     }
 
@@ -159,7 +146,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment  {
             // Lookup view for data population
             TextView nameView = (TextView) convertView.findViewById(R.id.name);
             TextView uriView = (EditText) convertView.findViewById(R.id.uri);
-            TextView statusView = (EditText) convertView.findViewById(R.id.uri);
+            TextView statusView = (EditText) convertView.findViewById(R.id.status);
 
             // Populate the data into the template view using the data object
             nameView.setText(description.getRobotName());
@@ -184,6 +171,14 @@ public class DiscoveryFragment extends BasicAssistantListFragment  {
             }
             // Return the completed view to render on screen
             return convertView;
+        }
+
+        //======================================== Button Callbacks ======================================
+        public void addRobotClicked(View v) {
+        }
+        public void clearRobotClicked(View v) {
+        }
+        public void scanRobotClicked(View v) {
         }
     }
 

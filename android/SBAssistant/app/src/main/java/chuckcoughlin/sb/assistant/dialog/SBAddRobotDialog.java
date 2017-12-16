@@ -3,7 +3,7 @@
  * Code derived from https://developer.android.com/guide/topics/ui/dialogs.html
  * (MIT License)
  */
-package chuckcoughlin.sb.assistant.utilities;
+package chuckcoughlin.sb.assistant.dialog;
 
 import android.app.Dialog;
 import android.os.Bundle;
@@ -16,7 +16,6 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,10 +26,6 @@ import chuckcoughlin.sb.assistant.ros.SBRosHelper;
 import ros.android.util.InvalidRobotDescriptionException;
 import ros.android.util.RobotDescription;
 import ros.android.util.RobotId;
-
-/**
- * Created by chuckc on 12/15/17.
- */
 
 public class SBAddRobotDialog extends DialogFragment {
     private static final String CLSS = "SBAddRobotDialog";

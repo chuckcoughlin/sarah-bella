@@ -5,28 +5,22 @@
 
 package chuckcoughlin.sb.assistant.tab;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.List;
 
 import chuckcoughlin.sb.assistant.R;
 import chuckcoughlin.sb.assistant.db.SBDbHelper;
-import chuckcoughlin.sb.assistant.utilities.NameValue;
+import chuckcoughlin.sb.assistant.common.NameValue;
 
 /**
  * Display the current values of global application settings and allow
@@ -105,7 +99,7 @@ public class SettingsFragment extends BasicAssistantListFragment  {
             });
 
 
-            Log.i(CLSS,String.format("SettingsListAdapter.getView set %s = %s",nv.getName(),nv.getValue()));
+            //Log.i(CLSS,String.format("SettingsListAdapter.getView set %s = %s",nv.getName(),nv.getValue()));
             // Return the completed view to render on screen
             return convertView;
         }

@@ -6,13 +6,12 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import chuckcoughlin.sb.assistant.utilities.NameValue;
-import chuckcoughlin.sb.assistant.utilities.SBConstants;
+import chuckcoughlin.sb.assistant.common.NameValue;
+import chuckcoughlin.sb.assistant.common.SBConstants;
 
 /**
  * Since we access from multiple fragments, make this a singleton class to avoid repeated
@@ -25,7 +24,7 @@ public class SBDbHelper extends SQLiteOpenHelper {
 
     /**
      * Constructor is private per Singleton pattern. This forces use of the single instance.
-     * @param context
+     * @param context main activity
      */
     private SBDbHelper(Context context) {
         super(context, SBConstants.DB_NAME, null, SBConstants.DB_VERSION);
@@ -34,7 +33,7 @@ public class SBDbHelper extends SQLiteOpenHelper {
 
     /**
      * Use this method in the initial activity. We need to assign the context.
-     * @param context
+     * @param context main activity
      * @return the Singleton instance
      */
     public static synchronized SBDbHelper initialize(Context context) {
@@ -78,7 +77,21 @@ public class SBDbHelper extends SQLiteOpenHelper {
         SQL.append("  value TEXT DEFAULT ''");
         SQL.append(")");
         sqLiteDatabase.execSQL(SQL.toString());
-        // Add initial rows
+
+        SQL = new StringBuilder();
+        SQL.append("CREATE TABLE IF NOT EXISTS Robots (");
+        SQL.append("  masterUri TEXT PRIMARY KEY,");
+        SQL.append("  robotName TEXT DEFAULT '',");
+        SQL.append("  robotType TEXT DEFAULT '',");
+        SQL.append("  controlUri TEXT DEFAULT '',");
+        SQL.append("  wifi TEXT DEFAULT '',");
+        SQL.append("  wifiEncryption TEXT DEFAULT '',");
+        SQL.append("  wifiPassword TEXT DEFAULT '',");
+        SQL.append("  connectionStatus TEXT DEFAULT ''");
+        SQL.append(")");
+        sqLiteDatabase.execSQL(SQL.toString());
+
+        // Add initial rows - fail silently if they exist
         String query = "INSERT INTO Settings(Name,Value) VALUES('"+SBConstants.ROS_HOSTNAME+"','"+SBConstants.DEFAULT_ROS_HOSTNAME+"')";
         execLenient(sqLiteDatabase,query);
         query = "INSERT INTO Settings(Name,Value) VALUES('"+SBConstants.ROS_MASTER_URI+"','"+SBConstants.DEFAULT_ROS_MASTER_URI+"')";
@@ -87,11 +100,25 @@ public class SBDbHelper extends SQLiteOpenHelper {
     }
 
     /**
+     * Trap and log any errors.
+     * @param sql
+     */
+    public void execSQL(String sql) {
+        SQLiteDatabase database = this.getWritableDatabase();
+        try {
+            database.execSQL(sql);
+        }
+        catch(SQLException sqle) {
+            Log.e(CLSS,String.format("execSQL:%s; SQLException ignored (%s)",sql,sqle.getLocalizedMessage()));
+        }
+    }
+
+    /**
      * Trap and ignore any errors.
      * @param sqLiteDatabase
      * @param sql
      */
-    private void execLenient(SQLiteDatabase sqLiteDatabase,String sql) {
+    public void execLenient(SQLiteDatabase sqLiteDatabase,String sql) {
         try {
             sqLiteDatabase.execSQL(sql);
         }
@@ -117,7 +144,11 @@ public class SBDbHelper extends SQLiteOpenHelper {
             Log.e(CLSS, String.format("onUpgrade: SQLError: %s", sqle.getLocalizedMessage()));
         }
     }
-    // ================================================ Access Methods =============================
+    // ================================================= Robot ===============================
+    /**
+     * For access to the robot table, see SBRosHelper.
+     */
+    // ================================================ Settings =============================
     /**
      * Read name/value pairs from the database.
      */

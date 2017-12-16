@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package chuckcoughlin.sb.assistant.utilities;
+package chuckcoughlin.sb.assistant.common;
 
 import android.content.Context;
 import android.util.AttributeSet;

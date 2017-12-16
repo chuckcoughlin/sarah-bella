@@ -8,6 +8,8 @@ package chuckcoughlin.sb.assistant.ros;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 import android.util.Log;
 
@@ -15,7 +17,6 @@ import org.ros.exception.RosException;
 import org.ros.namespace.GraphName;
 import org.ros.namespace.NameResolver;
 import org.ros.node.NodeConfiguration;
-import org.yaml.snakeyaml.Yaml;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -23,11 +24,15 @@ import java.net.SocketException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import chuckcoughlin.sb.assistant.db.SBDbHelper;
+import ros.android.util.InvalidRobotDescriptionException;
 import ros.android.util.RobotDescription;
 import ros.android.util.RobotId;
 import ros.android.util.RobotsContentProvider;
@@ -39,9 +44,9 @@ import ros.android.util.RobotsContentProvider;
 public class SBRosHelper  {
     private final static String CLSS = "SBRosHelper";
     private static SBRosHelper instance = null;
+    private final SBDbHelper dbHelper;
     private final Context context;
     private RobotDescription currentRobot = null;
-    private List<RobotDescription>robots;
 
     /**
      * Constructor is private per Singleton pattern. This forces use of the single instance.
@@ -49,7 +54,7 @@ public class SBRosHelper  {
      */
     private SBRosHelper(Context context) {
         this.context = context.getApplicationContext();
-        this.robots = new ArrayList<RobotDescription>();
+        this.dbHelper= SBDbHelper.getInstance();
     }
 
     /**
@@ -75,9 +80,73 @@ public class SBRosHelper  {
         return instance;
     }
 
-    public void addRobot(RobotDescription robot) { this.robots.add(robot); }
+
+    public void addRobot(RobotDescription robot) {
+        RobotId id = robot.getRobotId();
+        StringBuilder sql = new StringBuilder("INSERT INTO Robots(masterUri,robotName,robotType,");
+        sql.append("controlUri,wifi,wifiEncryption ,wifiPassword ,connectionStatus) ");
+        sql.append("VALUES(?,?,?,?,?,?,?,?)");
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        SQLiteStatement stmt = db.compileStatement(sql.toString());
+        stmt.bindString(1,id.getMasterUri());
+        stmt.bindString(2,robot.getRobotName());
+        stmt.bindString(3,robot.getRobotType());
+        stmt.bindString(4,id.getControlUri());
+        stmt.bindString(5,id.getWifi());
+        stmt.bindString(6,id.getWifiEncryption());
+        stmt.bindString(7,id.getWifiPassword());
+        stmt.bindString(8,robot.getConnectionStatus());
+        stmt.executeInsert();
+    }
+    public void clearRobots() {
+        String sql = "DELETE FROM Robots";
+        dbHelper.execSQL(sql);
+    }
     public RobotDescription getCurrentRobot() { return this.currentRobot; }
-    public List<RobotDescription> getRobots() { return this.robots; }
+    public List<RobotDescription> getRobots() {
+        List<RobotDescription> robots = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        String table = "Robots";
+        String[] columns = { "masterUri","robotName","robotType","controlUri","wifi","wifiEncryption","wifiPassword","connectionStatus" };
+        Cursor cursor = db.query(table, columns, null, null, null, null, "robotName");
+        cursor.moveToFirst();
+        while(!cursor.isAfterLast()) {
+            Map<String,Object> map = new HashMap<>();
+            map.put("URL",cursor.getString(1));
+            map.put("CURL",cursor.getString(4));
+            map.put("WIFI",cursor.getString(5));
+            map.put("WIFIENC",cursor.getString(6));
+            map.put("WIFIPW",cursor.getString(7));
+            RobotId id = new RobotId(map);
+            try {
+                RobotDescription robot = new RobotDescription(id, cursor.getString(2), cursor.getString(3), new Date());
+                robots.add(robot);
+            }
+            catch(InvalidRobotDescriptionException irde) {
+                Log.i(CLSS, String.format("getRobots %s caught InvalidRobotDescriptionException: %s ",cursor.getString(2),irde.getMessage()));
+            }
+            cursor.moveToNext();
+        }
+        return robots;
+    }
+    public void setCurrentRobot(RobotDescription description) { this.currentRobot = description; }
+    public void setCurrentRobot(int position) {
+        List<RobotDescription> robots = getRobots();
+        if( position<robots.size() ) {
+            this.currentRobot = robots.get(position);
+        }
+    }
+
+    /***
+     * Replace the list of robots with the list specified.
+     * @param robots
+     */
+    public void setRobots(List<RobotDescription> robots) {
+        clearRobots(); // Start clean.
+        for( RobotDescription robot:robots) {
+            addRobot(robot);
+        }
+    }
     /**
      * Returns true if current master URI and robot name are set in memory, false
      * otherwise. Does not read anything from disk.
@@ -91,46 +160,6 @@ public class SBRosHelper  {
 
 
 
-    @SuppressWarnings("unchecked")
-    public List<RobotDescription> readRobotList() {
-        String str = null;
-        List<RobotDescription>robotList = new ArrayList<RobotDescription>();
-        Cursor c = context.getContentResolver().query(RobotsContentProvider.CONTENT_URI, null, null, null, null);
-        if (c == null) {
-            Log.e(CLSS, "No robots returned by content provider");
-        }
-        else if (c.getCount() > 0) {
-            c.moveToFirst();
-            str = c.getString(c.getColumnIndex(RobotsContentProvider.TABLE_COLUMN));
-            Log.i(CLSS, "Found  robot: " + str);
-            if (str != null) {
-                Yaml yaml = new Yaml();
-                robotList = (List<RobotDescription>) yaml.load(str);
-            }
-        }
-        return robotList;
-    }
-    public void setCurrentRobot(int position) {
-        if( position<robots.size() ) {
-            this.currentRobot = robots.get(position);
-        }
-    }
-
-    public void writeRobotList(List<RobotDescription> robotList) {
-        Log.i(CLSS, "Saving robots ...");
-        Yaml yaml = new Yaml();
-        String txt = null;
-        final List<RobotDescription> finalRobotList = robotList;  //Avoid race conditions
-        if (finalRobotList != null) {
-            txt = yaml.dump(finalRobotList);
-        }
-        ContentValues cv = new ContentValues();
-        cv.put(RobotsContentProvider.TABLE_COLUMN, txt);
-        Uri newEmp = context.getContentResolver().insert(RobotsContentProvider.CONTENT_URI, cv);
-        if (newEmp != RobotsContentProvider.CONTENT_URI) {
-            Log.e(CLSS, "Could not save robots, non-equal URI's");
-        }
-    }
 
     /**
      * Create and return a new ROS NodeContext object based on the current value
@@ -151,7 +180,7 @@ public class SBRosHelper  {
      * @throws RosException If masterUri is invalid or if we cannot get a hostname for the
      *                      device we are running on.
      */
-    static public NodeConfiguration createConfiguration(RobotId robotId) throws RosException {
+    public NodeConfiguration createConfiguration(RobotId robotId) throws RosException {
         Log.i(CLSS, "createConfiguration(" + robotId.toString() + ")");
         if (robotId == null || robotId.getMasterUri() == null) {
             // TODO: different exception type for invalid master uri
@@ -182,43 +211,7 @@ public class SBRosHelper  {
 
 
 
-    public void deleteAllRobots() {
-        robots.clear();
-        //fireRobotsChanged();
-        this.currentRobot = null;
-        //saveCurrentRobot();
-    }
-    public void deleteSelectedRobots(boolean[] array) {
-        int j=0;
-        for (int i=0; i<array.length; i++) {
-            if (array[i]) {
-                if( robots.get(j).equals( getCurrentRobot() )) {
-                    this.currentRobot = null;
-                    //saveCurrentRobot();
-                }
-                robots.remove(j);
-            }
-            else {
-                j++;
-            }
-        }
-    }
-    public void deleteUnresponsiveRobots() {
-        Iterator<RobotDescription> iter = robots.iterator();
-        while (iter.hasNext()) {
-            RobotDescription robot = iter.next();
-            if (robot == null || robot.getConnectionStatus() == null
-                    || robot.getConnectionStatus().equals(robot.ERROR)) {
-                Log.i("RosAndroid", "Removing robot with connection status '" + robot.getConnectionStatus()
-                        + "'");
-                iter.remove();
-                if( robot != null && robot.equals( getCurrentRobot() )) {
-                    this.currentRobot = null;
-                    //saveCurrentRobot();
-                }
-            }
-        }
-    }
+
     /**
      * @return The first valid non-loopback, IPv4 host name (address in text form
      * like "10.0.129.222" found for this device.

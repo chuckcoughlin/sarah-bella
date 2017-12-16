@@ -1,4 +1,4 @@
-package chuckcoughlin.sb.assistant.utilities;
+package chuckcoughlin.sb.assistant.dialog;
 
 import android.app.Activity;
 import android.app.ProgressDialog;

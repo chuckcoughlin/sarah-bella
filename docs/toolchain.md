@@ -24,13 +24,13 @@ This drawing and others is constructed using **InkScape** from https://inkscape.
 The control application is a standard Android application built using Android Studio 3.0. The studio may be downloaded from http://developer.android.com. It runs on the OSX build system, creating a run image
 for the android tablet.
 
-CoµÂnfigure the host build system, making the Android home environment variable available by adding
+Configure the host build system, making the Android home environment variable available by adding
 ```ANDROID_HOME=~/Library/AndroµÂid/sdk``` to ~/.bashrc.
 
 #### External Libraries
-The next steps make ROS libraries aÂµvailable to the Android build environment. Note that the following are necessary only if creating a project from scratch. For an existing project, the modules are already part of the SBAssistant repository.
+The next steps make ROS libraries available to the Android build environment. Note that the following are necessary only if creating a project from scratch. For an existing project, the modules are already part of the SBAssistant repository.
 
-Load this library directly into the project as source: https://github.com/ros-android/android_app_manager. (It was not distributed a .jar or .aar file and has been heavily pruned to reduce dependencies).
+Load this library directly into the project as source: https://github.com/ros-android/android_app_manager. (It was not distributed a .jar or .aar file and we have pruned it drastically to reduce dependencies).
 
 The android core package may be found at:  https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_core/rosjava/0.3.5. Download rosjava-0.3.5.jar to **~/robotics/library**. Then create a module from inside Android Studio as follows.
 ```
@@ -43,7 +43,7 @@ The android core package may be found at:  https://github.com/rosjava/rosjava_mv
 
 Perform similar operations on the following:<br/>
 * https://hc.apache.org/downloads.cgi httpclient-4.5.4.jar, httpcore-4.4.7.jar (download httpcomponents-4.5.4, then untar)
-* https://repo1.maven.org/maven2/org/yaml/snakeyaml/1.19/snakeyaml-1.19-android.jar snakeyaml-1.19-android.jar
+
 
 Finally declare the modules as dependencies:
 ```

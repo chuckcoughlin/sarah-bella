@@ -2,7 +2,7 @@
  * Copyright 2017 Charles Coughlin. All rights reserved.
  *            (MIT License)
  */
-package chuckcoughlin.sb.assistant.utilities;
+package chuckcoughlin.sb.assistant.dialog;
 
 
 import android.app.Activity;
@@ -26,12 +26,11 @@ public class SBRemoveRobotDialog {
     private int state;
     private AlertDialog dialog;
     private Activity context;
-    private AlertDialog.Builder builder;
 
     public SBRemoveRobotDialog(Activity context) {
         state = 0;
         this.context = context;
-        this.builder = new AlertDialog.Builder(context);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         SBRosHelper rosHelper = SBRosHelper.getInstance();
         List<RobotDescription> robots = rosHelper.getRobots();
         String newline = System.getProperty("line.separator");
