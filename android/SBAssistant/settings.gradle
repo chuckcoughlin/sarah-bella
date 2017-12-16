@@ -1,1 +1,1 @@
-include ':app', ':rosjava-0.3.5', ':snakeyaml-1.19-android', ':httpclient-4.5.4', ':httpcore-4.4.7'
+include ':app', ':snakeyaml-1.19-android', ':httpclient-4.5.4', ':rosjava-0.3.5'

@@ -8,6 +8,17 @@
               android:padding="10dp"
               android:gravity="center"
               >
+  <TextView
+      android:id="@+id/add_robot_title"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:layout_marginBottom="32dp"
+      android:layout_marginEnd="@dimen/activity_horizontal_margin"
+      android:layout_marginStart="@dimen/activity_horizontal_margin"
+      android:layout_marginTop="@dimen/activity_vertical_margin"
+      android:gravity="center"
+      android:textAppearance="@style/TabTitle" />
   <TextView android:text="Fields marked with an asterisk (*) are required."
             android:layout_width="fill_parent"
             android:textColor="#FF0000"

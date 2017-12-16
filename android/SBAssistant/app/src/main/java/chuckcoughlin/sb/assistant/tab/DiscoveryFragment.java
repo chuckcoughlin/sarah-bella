@@ -6,15 +6,21 @@
 package chuckcoughlin.sb.assistant.tab;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -22,9 +28,10 @@ import java.util.List;
 
 import chuckcoughlin.sb.assistant.R;
 import chuckcoughlin.sb.assistant.db.SBDbHelper;
+import chuckcoughlin.sb.assistant.ros.SBRosHelper;
 import chuckcoughlin.sb.assistant.utilities.NameValue;
-import ros.android.util.MasterChooser;
 import ros.android.util.RobotDescription;
+import ros.android.util.RobotsContentProvider;
 
 /**
  * Search the networks for robots. Based on ros.activity.MasterChooserActivity
@@ -32,21 +39,20 @@ import ros.android.util.RobotDescription;
  */
 public class DiscoveryFragment extends BasicAssistantListFragment  {
     private final static String CLSS = "DiscoveryFragment";
-    private List<RobotDescription> robots;
-    private MasterChooser currentRobotAccessor;
     private boolean[] selections;
+    private final SBRosHelper rosHelper;
 
     public DiscoveryFragment() {
         super();
-        robots = new ArrayList<>();
-        currentRobotAccessor = new MasterChooser(this.getActivity());
+        this.rosHelper = SBRosHelper.getInstance();
     }
 
-
+    // Called when the fragment's instance initializes
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-// add your code here which executes when fragment's instance initializes
+        setTitle(getString(R.string.fragmentDiscoverySelectMaster));
+        rosHelper.readRobotList();
     }
 
     // Called to have the fragment instantiate its user interface view.
@@ -60,67 +66,77 @@ public class DiscoveryFragment extends BasicAssistantListFragment  {
         return contentView;
     }
 
+    // Executes after onCreateView()
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-// add your code here which executes after the execution of onCreateView() method.
-
     }
+
     // The host activity has been created.
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        List<NameValue> nvpairs = SBDbHelper.getInstance().getSettings();
-        NameValue [] nvarray = nvpairs.toArray(new NameValue[nvpairs.size()]);
-        Log.i(CLSS,String.format("onActivityCreated: will display %d name-values",nvarray.length));
-        SettingsListAdapter adapter = new SettingsListAdapter(getContext(),nvarray);
+        List<RobotDescription> robotList = rosHelper.getRobots();
+        Log.i(CLSS,String.format("onActivityCreated: will display %d robot descriptions",robotList.size()));
+        RobotListAdapter adapter = new RobotListAdapter(getContext(),robotList);
         setListAdapter(adapter);
         getListView().setItemsCanFocus(true);
     }
 
+    // The fragment is visible
     @Override
     public void onStart() {
         super.onStart();
-// add your code here which executes when the Fragment gets visible.
     }
 
+    // The Fragment is visible and inter-actable
     @Override
     public void onResume() {
         super.onResume();
-// add your code here which executes when the Fragment is visible and intractable.
     }
 
+    // Called when user leaves the current fragment or fragment is no longer inter-actable
     @Override
     public void onPause() {
         super.onPause();
-// add your code here which executes when user leaving the current fragment or fragment is no longer intractable.
     }
+
+    // The fragment is going to be stopped
     @Override
     public void onStop() {
         super.onStop();
-// add your code here which executes Fragment going to be stopped.
     }
+
+    // Cleanup resources created in onCreateView()
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-// add your code here which executes when the view's and other related resources created in onCreateView() method are removed
     }
+    // Execute any final cleanup for the fragment's state
     @Override
     public void onDestroy() {
         super.onDestroy();
-// add your code here which executes when the final clean up for the Fragment's state is needed.
     }
 
+    // The fragment has been disassociated from its hosting activity
     @Override
     public void onDetach() {
         super.onDetach();
-// add your code here which executes when fragment has been disassociated from its hosting activity
     }
 
-    public class SettingsListAdapter extends ArrayAdapter<NameValue> implements ListAdapter {
+    // =========================================== Private helper methods =====================================
 
-        public SettingsListAdapter(Context context, NameValue[] values) {
-            super(context,R.layout.settings_item, values);
+    private void choose(int position) {
+        SBRosHelper.getInstance().setCurrentRobot(position);
+    }
+
+
+    //======================================== Array Adapter ======================================
+    public class RobotListAdapter extends ArrayAdapter<RobotDescription> implements ListAdapter {
+        private final List<RobotDescription> robotList;
+        public RobotListAdapter(Context context, List<RobotDescription> values) {
+            super(context,R.layout.robot_item, values);
+            this.robotList = values;
         }
 
         @Override
@@ -132,35 +148,40 @@ public class DiscoveryFragment extends BasicAssistantListFragment  {
         public View getView(int position, View convertView, ViewGroup parent) {
             // Log.i(CLSS,String.format("SettingsListAdapter.getView position =  %d",position));
             // Get the data item for this position
-            NameValue nv = getItem(position);
+            RobotDescription description = getItem(position);
             // Check if an existing view is being reused, otherwise inflate the view
             if (convertView == null) {
                 // Log.i(CLSS,String.format("SettingsListAdapter.getView convertView was null"));
-                convertView = LayoutInflater.from(getContext()).inflate(R.layout.settings_item, parent, false);
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.robot_item, parent, false);
             }
+
+            ListView listView = (ListView)convertView;
             // Lookup view for data population
-            TextView nameView = (TextView) convertView.findViewById(R.id.settingsNameView);
-            EditText editText = (EditText) convertView.findViewById(R.id.settingsEditView);
+            TextView nameView = (TextView) convertView.findViewById(R.id.name);
+            TextView uriView = (EditText) convertView.findViewById(R.id.uri);
+            TextView statusView = (EditText) convertView.findViewById(R.id.uri);
+
             // Populate the data into the template view using the data object
-            nameView.setText(nv.getName());
-            editText.setText(nv.getValue());
-            editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            nameView.setText(description.getRobotName());
+            uriView.setText(description.getRobotId().getMasterUri());
+            statusView.setText(description.getConnectionStatus());
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
-                public void onFocusChange(View v, boolean hasFocus) {
-                    /*
-                     * When focus is lost save the entered value both into the current array
-                     * and the database
-                     */
-                    if (!hasFocus) {
-                        Log.i(CLSS,String.format("SettingsListAdapter.getView.onFocusChange %d = %s",position,((EditText) v).getText().toString()));
-                        nv.setValue(((EditText)v).getText().toString());
-                        SBDbHelper.getInstance().updateSetting(nv);
-                    }
+                public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+                    choose(position);
                 }
             });
 
-
-            Log.i(CLSS,String.format("SettingsListAdapter.getView set %s = %s",nv.getName(),nv.getValue()));
+            Log.i(CLSS,String.format("RobotListAdapter.getView set %s(%s) = %s",description.getRobotName(),description.getRobotId(),description.getConnectionStatus()));
+            int index = 0;
+            for( RobotDescription robot: robotList ) {
+                if( robot != null && robot.equals( rosHelper.getCurrentRobot() )) {
+                    Log.i(CLSS, "Highlighting index " + index);
+                    listView.setItemChecked(index, true);
+                    break;
+                }
+                index++;
+            }
             // Return the completed view to render on screen
             return convertView;
         }

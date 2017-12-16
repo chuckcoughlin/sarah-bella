@@ -6,33 +6,32 @@
 
 package chuckcoughlin.sb.assistant;
 
-import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
+import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.Toast;
 
-import chuckcoughlin.sb.assistant.R;
 import chuckcoughlin.sb.assistant.db.SBDbHelper;
+import chuckcoughlin.sb.assistant.ros.SBRosHelper;
+import chuckcoughlin.sb.assistant.utilities.SBAddRobotDialog;
 import chuckcoughlin.sb.assistant.utilities.SBAlertDialog;
-import chuckcoughlin.sb.assistant.utilities.SBConstants;
 import chuckcoughlin.sb.assistant.utilities.SBProgressDialog;
+import chuckcoughlin.sb.assistant.utilities.SBRemoveRobotDialog;
+
 
 public class MainActivity extends AppCompatActivity {
     private static final String CLSS = "MainActivity";
+    private static final String DIALOG_TAG = "dialog";
     /**
      * A specialized {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the application pages. We use a
@@ -45,11 +44,14 @@ public class MainActivity extends AppCompatActivity {
      */
     private ViewPager viewPager;
     private Thread nodeThread;
+    private SBRosHelper rosHelper;
 
     private SBAlertDialog wifiDialog;  // See if the user wants to switch WiFi networks
     private SBAlertDialog evictDialog; // See if the user wants to evict another user.
     private SBAlertDialog errorDialog; // Misc issues.
     private SBProgressDialog progress;
+    private SBAddRobotDialog addRobotDialog;
+    private SBRemoveRobotDialog removeRobotDialog;
 
     public MainActivity() {
         Log.i(CLSS,"Constructor ...");
@@ -58,6 +60,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SBRosHelper.initialize(this.getApplicationContext());
+        this.rosHelper = SBRosHelper.getInstance();
+
         Log.i(CLSS,"onCreate: entering ...");
         setContentView(R.layout.activity_main);
         // Close the soft keyboard - it will still open on an EditText
@@ -122,6 +127,12 @@ public class MainActivity extends AppCompatActivity {
                 if (progress != null) {
                     progress.dismiss();
                 }
+                if (addRobotDialog != null) {
+                    addRobotDialog.dismiss();
+                }
+                if (removeRobotDialog != null) {
+                    removeRobotDialog.dismiss();
+                }
             }});
     }
 
@@ -133,5 +144,60 @@ public class MainActivity extends AppCompatActivity {
         errorDialog = new SBAlertDialog(this,
                 new AlertDialog.Builder(this).setTitle("Could Not Connect").setCancelable(false), "Ok");
         progress = new SBProgressDialog(this);
+        addRobotDialog = new SBAddRobotDialog();
+        addRobotDialog.setTitle("Add Robot");
+        removeRobotDialog = new SBRemoveRobotDialog(this);
     }
+
+    // ============================================== Menu Handling ===============================================
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.robot_chooser_options_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.add_robot) {
+            // DialogFragment.show() will take care of adding the fragment
+            // in a transaction.  We also want to remove any currently showing
+            // dialog, so make our own transaction and take care of that here.
+            FragmentTransaction ft = getFragmentManager().beginTransaction();
+            Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+            if (prev != null) {
+                ft.remove(prev);
+            }
+            ft.addToBackStack(null);
+            addRobotDialog.show(getSupportFragmentManager(),DIALOG_TAG);
+            return true;
+        }
+        else if (id == R.id.delete_selected) {
+            removeRobotDialog.show();
+            return true;
+        }
+        else if (id == R.id.delete_unresponsive) {
+            SBRosHelper.getInstance().deleteUnresponsiveRobots();
+            return true;
+        }
+        else if (id == R.id.delete_all) {
+            SBRosHelper.getInstance().deleteAllRobots();
+            return true;
+        }
+        else if (id == R.id.kill) {
+            android.os.Process.killProcess(android.os.Process.myPid());
+            return true;
+        }
+        else {
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+
+
+
+
+
+
 }
