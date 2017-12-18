@@ -27,9 +27,14 @@ import ros.android.util.InvalidRobotDescriptionException;
 import ros.android.util.RobotDescription;
 import ros.android.util.RobotId;
 
-public class SBAddRobotDialog extends DialogFragment {
-    private static final String CLSS = "SBAddRobotDialog";
+public class SBRobotAddDialog extends SBBasicDialogFragment {
+    private static final String CLSS = "SBRobotAddDialog";
     private String title = "no title";
+
+
+    public SBRobotAddDialog() {super();}
+
+    public String getDialogType() { return CLSS; }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

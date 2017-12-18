@@ -5,30 +5,40 @@
 
 package chuckcoughlin.sb.assistant.tab;
 
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.app.FragmentManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.List;
+import java.util.Map;
 
 import chuckcoughlin.sb.assistant.R;
+import chuckcoughlin.sb.assistant.dialog.SBDialogCallbackHandler;
+import chuckcoughlin.sb.assistant.dialog.SBRobotAddDialog;
+import chuckcoughlin.sb.assistant.dialog.SBRobotScanDialog;
 import chuckcoughlin.sb.assistant.ros.SBRosHelper;
 import ros.android.util.RobotDescription;
+
+import static chuckcoughlin.sb.assistant.common.SBConstants.DIALOG_TRANSACTION_KEY;
 
 /**
  * Search the networks for robots. Based on ros.activity.MasterChooserActivity
  * Lifecycle methods are presented in chronological order.
  */
-public class DiscoveryFragment extends BasicAssistantListFragment  {
+public class DiscoveryFragment extends BasicAssistantListFragment implements SBDialogCallbackHandler {
     private final static String CLSS = "DiscoveryFragment";
     private boolean[] selections;
     private SBRosHelper rosHelper;
@@ -50,6 +60,27 @@ public class DiscoveryFragment extends BasicAssistantListFragment  {
         TextView textView = contentView.findViewById(R.id.fragmentDiscoveryText);
         textView.setText(R.string.fragmentDiscoveryLabel);
 
+        Button button = (Button) contentView.findViewById(R.id.addButton);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addRobotClicked();
+            }
+        });
+        button = (Button) contentView.findViewById(R.id.clearButton);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clearRobotClicked();
+            }
+        });
+        button = (Button) contentView.findViewById(R.id.scanButton);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                scanRobotClicked();
+            }
+        });
         return contentView;
     }
 
@@ -111,16 +142,17 @@ public class DiscoveryFragment extends BasicAssistantListFragment  {
         super.onDetach();
     }
 
-    // =========================================== Private helper methods =====================================
+    // =========================================== Dialog Callback =====================================
 
-    private void choose(int position) {
-        SBRosHelper.getInstance().setCurrentRobot(position);
+    public void handleDialogResult(String id,Map results) {
+        Log.i(CLSS,String.format("handleDialogResults for %s",id));
     }
 
 
     //======================================== Array Adapter ======================================
     public class RobotListAdapter extends ArrayAdapter<RobotDescription> implements ListAdapter {
         private final List<RobotDescription> robotList;
+
         public RobotListAdapter(Context context, List<RobotDescription> values) {
             super(context,R.layout.robot_item, values);
             this.robotList = values;
@@ -173,13 +205,26 @@ public class DiscoveryFragment extends BasicAssistantListFragment  {
             return convertView;
         }
 
-        //======================================== Button Callbacks ======================================
-        public void addRobotClicked(View v) {
-        }
-        public void clearRobotClicked(View v) {
-        }
-        public void scanRobotClicked(View v) {
+        private void choose(int position) {
+            SBRosHelper.getInstance().setCurrentRobot(position);
         }
     }
+    //======================================== Button Callbacks ======================================
+    public void addRobotClicked() {
+        Log.i(CLSS,"Add robot clicked");
+        SBRobotAddDialog addDialog = new SBRobotAddDialog();
+        addDialog.setHandler(this);
+        addDialog.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
 
+    }
+    public void clearRobotClicked() {
+        Log.i(CLSS,"Clear robots clicked");
+        rosHelper.clearRobots();
+    }
+    public void scanRobotClicked() {
+        Log.i(CLSS,"Scan for robots clicked");
+        SBRobotScanDialog scanDialog = new SBRobotScanDialog();
+        scanDialog.setHandler(this);
+        scanDialog.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
+    }
 }

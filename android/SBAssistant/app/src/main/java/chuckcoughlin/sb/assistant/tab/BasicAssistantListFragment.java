@@ -1,9 +1,8 @@
 package chuckcoughlin.sb.assistant.tab;
 
 
-import android.support.v4.app.ListFragment;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.v4.app.ListFragment;
 
 /**
  * This is a base class for all the page fragments that aare lists.

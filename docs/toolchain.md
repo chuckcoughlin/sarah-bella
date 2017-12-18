@@ -2,7 +2,7 @@
 
 This document summarizes the tools and build procedures required to build the Sarah-Bella application suite. Current hardware consists of the following:
   * Host system - iMac running OSX High Sierra (10.13).
-  * Tablet - Samsung Galaxy S3 - 10"
+  * Tablet - Samsung Galaxy S3 - 10" Android 7.0 (SDK version 24).
   * Robot - ROBOTIS Turtlebot3, monitor, USB keyboard
 
 We use the kinetic version of ROS. This is the current version used by ROBOTIS for Turtlebot.
@@ -30,7 +30,9 @@ Configure the host build system, making the Android home environment variable av
 #### External Libraries
 The next steps make ROS libraries available to the Android build environment. Note that the following are necessary only if creating a project from scratch. For an existing project, the modules are already part of the SBAssistant repository.
 
-Load this library directly into the project as source: https://github.com/ros-android/android_app_manager. (It was not distributed a .jar or .aar file and we have pruned it drastically to reduce dependencies).
+Load these libraries directly into the project as source. They were not distributed as .jar or .aar file and have been pruned drastically to reduce dependencies.<br/>
+* https://github.com/ros-android/android_app_manager
+* https://github.com/ollide/rosjava_android_template
 
 The android core package may be found at:  https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_core/rosjava/0.3.5. Download rosjava-0.3.5.jar to **~/robotics/library**. Then create a module from inside Android Studio as follows.
 ```
@@ -41,7 +43,7 @@ The android core package may be found at:  https://github.com/rosjava/rosjava_mv
   Finish
 ```
 
-Perform similar operations on the following:<br/>
+Create modules in a similar way from the following:<br/>
 * https://hc.apache.org/downloads.cgi httpclient-4.5.4.jar, httpcore-4.4.7.jar (download httpcomponents-4.5.4, then untar)
 
 
