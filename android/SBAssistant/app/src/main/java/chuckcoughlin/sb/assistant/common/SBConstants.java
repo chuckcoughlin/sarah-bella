@@ -26,5 +26,14 @@ public class SBConstants {
 
     // Dialog transaction key
     public static final String DIALOG_TRANSACTION_KEY = "dialog";
+    // Dialog results keys
+    public static final String DIALOG_ERROR = "error";     // Text is error message
+    public static final String DIALOG_RESULT = "result";   // Button that was pushed
+    // Dialog results buttons
+    public static final String DIALOG_RESULT_ADD = "add";
+    public static final String DIALOG_RESULT_CANCEL = "cancel";
+    // Various payloads
+    public static final String DIALOG_ROBOT_DESCRIPTION = "robot";
+
 
 }

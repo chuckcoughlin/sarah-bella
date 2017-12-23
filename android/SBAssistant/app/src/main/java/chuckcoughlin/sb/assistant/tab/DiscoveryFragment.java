@@ -5,6 +5,7 @@
 
 package chuckcoughlin.sb.assistant.tab;
 
+import android.app.Dialog;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.os.Bundle;
@@ -21,16 +22,21 @@ import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 import java.util.Map;
 
 import chuckcoughlin.sb.assistant.R;
+import chuckcoughlin.sb.assistant.common.SBConstants;
+import chuckcoughlin.sb.assistant.dialog.SBBasicDialogFragment;
 import chuckcoughlin.sb.assistant.dialog.SBDialogCallbackHandler;
 import chuckcoughlin.sb.assistant.dialog.SBRobotAddDialog;
 import chuckcoughlin.sb.assistant.dialog.SBRobotScanDialog;
 import chuckcoughlin.sb.assistant.ros.SBRosHelper;
+import ros.android.util.InvalidRobotDescriptionException;
 import ros.android.util.RobotDescription;
+import ros.android.util.RobotId;
 
 import static chuckcoughlin.sb.assistant.common.SBConstants.DIALOG_TRANSACTION_KEY;
 
@@ -42,6 +48,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
     private final static String CLSS = "DiscoveryFragment";
     private boolean[] selections;
     private SBRosHelper rosHelper;
+    private Dialog pdialog = null;
 
     // Called when the fragment's instance initializes
     @Override
@@ -144,8 +151,16 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
 
     // =========================================== Dialog Callback =====================================
 
-    public void handleDialogResult(String id,Map results) {
-        Log.i(CLSS,String.format("handleDialogResults for %s",id));
+    public void handleDialogResult(SBBasicDialogFragment dialog, Map map) {
+        Log.i(CLSS,String.format("handleDialogResults for %s",dialog.getDialogType()));
+        if( dialog.getDialogType().equalsIgnoreCase(SBRobotAddDialog.CLSS)) {
+            String result = (String)map.get(SBConstants.DIALOG_RESULT);
+            if( result.equalsIgnoreCase(SBConstants.DIALOG_RESULT_ADD)) {
+
+            }
+            //final Toast toast = Toast.makeText(getActivity(),String.format("Invalid robot description: %s",irde.getLocalizedMessage()),Toast.LENGTH_LONG);
+            //toast.show();
+        }
     }
 
 
@@ -215,6 +230,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
         SBRobotAddDialog addDialog = new SBRobotAddDialog();
         addDialog.setHandler(this);
         addDialog.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
+        pdialog = addDialog.getDialog();
 
     }
     public void clearRobotClicked() {
@@ -227,4 +243,6 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
         scanDialog.setHandler(this);
         scanDialog.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
     }
+
+
 }

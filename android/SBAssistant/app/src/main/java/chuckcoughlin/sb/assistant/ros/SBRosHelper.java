@@ -83,6 +83,9 @@ public class SBRosHelper  {
 
     public void addRobot(RobotDescription robot) {
         RobotId id = robot.getRobotId();
+        if(robot.getConnectionStatus()==null) {
+            robot.setConnectionStatus("");
+        }
         StringBuilder sql = new StringBuilder("INSERT INTO Robots(masterUri,robotName,robotType,");
         sql.append("controlUri,wifi,wifiEncryption ,wifiPassword ,connectionStatus) ");
         sql.append("VALUES(?,?,?,?,?,?,?,?)");

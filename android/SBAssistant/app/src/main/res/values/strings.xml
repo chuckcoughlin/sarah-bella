@@ -17,6 +17,13 @@
     <string name="discoveryButtonAdd">Add</string>
     <string name="discoveryButtonClear">Clear</string>
     <string name="discoveryButtonScan">Scan</string>
+    <string name="discoveryPopupAddTitle">Define Robot</string>
+    <!-- Strings that are generically useful -->
+    <string name="defaultMasterURI">http://192.168.1.113:11311</string>
+    <string name="defaultSSID">g6-coughlin</string>
+    <string name="genericAddButton">Add</string>
+    <string name="genericCancelButton">Cancel</string>
+    <string name="genericDismissButton">Dismiss</string>
     <!-- Labels as they appear in the central tab bar -->
     <string name="cover_title">Cover</string>
     <string name="discovery_title">Discovery</string>
