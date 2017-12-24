@@ -1,6 +1,7 @@
 package chuckcoughlin.sb.assistant.dialog;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.ProgressDialog;
 
@@ -16,6 +17,7 @@ public class SBRobotScanDialog extends SBBasicDialogFragment {
     public String getDialogType() { return CLSS; }
 
     public void show(String title, String text) {
+        Dialog dialog = getDialog();
         if (dialog != null) {
             this.dismiss();
         }

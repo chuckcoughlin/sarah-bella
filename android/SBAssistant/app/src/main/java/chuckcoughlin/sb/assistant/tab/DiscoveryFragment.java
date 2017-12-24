@@ -151,11 +151,11 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
 
     // =========================================== Dialog Callback =====================================
 
-    public void handleDialogResult(SBBasicDialogFragment dialog, Map map) {
+    public void handleDialogResult(SBBasicDialogFragment dialog) {
         Log.i(CLSS,String.format("handleDialogResults for %s",dialog.getDialogType()));
         if( dialog.getDialogType().equalsIgnoreCase(SBRobotAddDialog.CLSS)) {
-            String result = (String)map.get(SBConstants.DIALOG_RESULT);
-            if( result.equalsIgnoreCase(SBConstants.DIALOG_RESULT_ADD)) {
+            String btn = dialog.getSelectedButton();
+            if( btn.equalsIgnoreCase(SBConstants.DIALOG_BUTTON_ADD)) {
 
             }
             //final Toast toast = Toast.makeText(getActivity(),String.format("Invalid robot description: %s",irde.getLocalizedMessage()),Toast.LENGTH_LONG);

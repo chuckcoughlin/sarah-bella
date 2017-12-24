@@ -36,7 +36,9 @@
         android:layout_height="0dip"
         android:layout_weight="1"
         android:gravity="center|bottom"
-        android:orientation="horizontal" >
+        android:orientation="horizontal"
+        android:layout_marginBottom="32dp"
+        android:layout_alignParentBottom="true">
         <!-- change button color by setting android:backgroundTint -->
         <Button android:id="@+id/addButton"
             android:text="@string/discoveryButtonAdd"
@@ -60,10 +62,5 @@
             android:background="@drawable/rounded_button"
             android:layout_gravity="center_vertical|center"/>
     </LinearLayout>
-
-
-
-
-
 
 </LinearLayout>

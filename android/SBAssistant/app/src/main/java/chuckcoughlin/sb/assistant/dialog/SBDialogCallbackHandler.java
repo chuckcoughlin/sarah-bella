@@ -14,7 +14,6 @@ public interface SBDialogCallbackHandler  {
     /**
      * Called by the dialog before it is dismissed.
      * @param dialog the instance of dialog that is displayed
-     * @param results map containing results
      */
-    public void handleDialogResult(SBBasicDialogFragment dialog, Map<String,Object> results);
+    public void handleDialogResult(SBBasicDialogFragment dialog);
 }

@@ -41,9 +41,6 @@ public class SBRobotAddDialog extends SBBasicDialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        int style = DialogFragment.STYLE_NORMAL;
-        int theme = android.R.style.Theme_Black_NoTitleBar;
-        setStyle(style, theme);
     }
 
     @Override
@@ -59,14 +56,13 @@ public class SBRobotAddDialog extends SBBasicDialogFragment {
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 editRobotInfo(view);
-                resultsMap.put(SBConstants.DIALOG_RESULT,SBConstants.DIALOG_RESULT_ADD);
-                handler.handleDialogResult(SBRobotAddDialog.this,resultsMap);
+                SBRobotAddDialog dfrag = SBRobotAddDialog.this;
+                dfrag.setSelectedButton(SBConstants.DIALOG_BUTTON_ADD);
+
                 if( robot!= null ) {
-                    resultsMap.put(SBConstants.DIALOG_ROBOT_DESCRIPTION,robot);
+                    dfrag.setPayload(robot);
                 }
-                else {
-                    resultsMap.put(SBConstants.DIALOG_ERROR,getErrorMessage());
-                }
+                handler.handleDialogResult(dfrag);
                 dismiss();
             }
         });
@@ -90,15 +86,13 @@ public class SBRobotAddDialog extends SBBasicDialogFragment {
         return view;
     }
 
-    /** The system calls this only when creating the layout in a dialog. */
+    /** The system calls this only when creating the layout in a dialog.
+     * Override this to modify dialog characteristics
+     */
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        // The only reason you might override this method when using onCreateView() is
-        // to modify any dialog characteristics. For example, the dialog includes a
-        // title by default, but your custom layout might not need it. So here you can
-        // remove the dialog title, but you must call the superclass to get the Dialog.
-        this.dialog = super.onCreateDialog(savedInstanceState);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        Dialog dialog = super.onCreateDialog(savedInstanceState);
+        decorateDialog(dialog);
         return dialog;
     }
 
