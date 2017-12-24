@@ -44,7 +44,7 @@ public abstract class SBBasicDialogFragment extends DialogFragment {
     protected void setErrorMessage(String msg) { this.errorMessage=msg; }
     public Object getPayload() { return this.payload; }
     protected void setPayload(Object obj) { this.payload=obj; }
-    public String getSelectedButton() { return this.errorMessage; }
+    public String getSelectedButton() { return this.selectedButton; }
     protected void setSelectedButton(String btn) { this.selectedButton=btn; }
     public void setHandler(SBDialogCallbackHandler h) {
         this.handler = h;

@@ -46,15 +46,12 @@ import static chuckcoughlin.sb.assistant.common.SBConstants.DIALOG_TRANSACTION_K
  */
 public class DiscoveryFragment extends BasicAssistantListFragment implements SBDialogCallbackHandler {
     private final static String CLSS = "DiscoveryFragment";
-    private boolean[] selections;
     private SBRosHelper rosHelper;
-    private Dialog pdialog = null;
 
     // Called when the fragment's instance initializes
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTitle(getString(R.string.discoverySelectMaster));
         this.rosHelper = SBRosHelper.getInstance();
     }
 
@@ -151,26 +148,36 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
 
     // =========================================== Dialog Callback =====================================
 
-    public void handleDialogResult(SBBasicDialogFragment dialog) {
-        Log.i(CLSS,String.format("handleDialogResults for %s",dialog.getDialogType()));
-        if( dialog.getDialogType().equalsIgnoreCase(SBRobotAddDialog.CLSS)) {
-            String btn = dialog.getSelectedButton();
+    public void handleDialogResult(SBBasicDialogFragment dfrag) {
+        Log.i(CLSS,String.format("handleDialogResults for %s",dfrag.getDialogType()));
+        if( dfrag.getDialogType().equalsIgnoreCase(SBRobotAddDialog.CLSS)) {
+            String btn = dfrag.getSelectedButton();
+            Log.i(CLSS,String.format("handleDialogResults clicked on %s",btn));
             if( btn.equalsIgnoreCase(SBConstants.DIALOG_BUTTON_ADD)) {
-
+                String msg = dfrag.getErrorMessage();
+                Log.i(CLSS,String.format("handleDialogResults error is %s",msg));
+                RobotDescription robot = (RobotDescription) dfrag.getPayload();
+                if (msg != null && !msg.isEmpty()) {
+                    final Toast toast = Toast.makeText(getActivity(), msg, Toast.LENGTH_LONG);
+                    toast.show();
+                }
+                else if (robot != null) {
+                    rosHelper.addRobot(robot);
+                    RobotListAdapter adapter = (RobotListAdapter) getListAdapter();
+                    adapter.add(robot);
+                    adapter.notifyDataSetInvalidated();
+                    Log.i(CLSS,String.format("handleDialogResults added %s - now have %d",robot.getRobotName(),rosHelper.getRobots().size()));
+                }
             }
-            //final Toast toast = Toast.makeText(getActivity(),String.format("Invalid robot description: %s",irde.getLocalizedMessage()),Toast.LENGTH_LONG);
-            //toast.show();
         }
     }
 
 
     //======================================== Array Adapter ======================================
     public class RobotListAdapter extends ArrayAdapter<RobotDescription> implements ListAdapter {
-        private final List<RobotDescription> robotList;
 
         public RobotListAdapter(Context context, List<RobotDescription> values) {
             super(context,R.layout.robot_item, values);
-            this.robotList = values;
         }
 
         @Override
@@ -180,25 +187,25 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            // Log.i(CLSS,String.format("SettingsListAdapter.getView position =  %d",position));
+            Log.i(CLSS,String.format("RobotListAdapter.getView position =  %d",position));
             // Get the data item for this position
             RobotDescription description = getItem(position);
             // Check if an existing view is being reused, otherwise inflate the view
             if (convertView == null) {
-                // Log.i(CLSS,String.format("SettingsListAdapter.getView convertView was null"));
+                Log.i(CLSS,String.format("RobotListAdapter.getView convertView was null"));
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.robot_item, parent, false);
             }
 
-            ListView listView = (ListView)convertView;
             // Lookup view for data population
             TextView nameView = (TextView) convertView.findViewById(R.id.name);
-            TextView uriView = (EditText) convertView.findViewById(R.id.uri);
-            TextView statusView = (EditText) convertView.findViewById(R.id.status);
+            TextView uriView = (TextView)  convertView.findViewById(R.id.uri);
+            TextView statusView=(TextView) convertView.findViewById(R.id.status);
 
             // Populate the data into the template view using the data object
             nameView.setText(description.getRobotName());
             uriView.setText(description.getRobotId().getMasterUri());
             statusView.setText(description.getConnectionStatus());
+            /*
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
@@ -208,7 +215,9 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
 
             Log.i(CLSS,String.format("RobotListAdapter.getView set %s(%s) = %s",description.getRobotName(),description.getRobotId(),description.getConnectionStatus()));
             int index = 0;
-            for( RobotDescription robot: robotList ) {
+            int count = getCount();
+            while( index<count ) {
+                RobotDescription robot = getItem(index);
                 if( robot != null && robot.equals( rosHelper.getCurrentRobot() )) {
                     Log.i(CLSS, "Highlighting index " + index);
                     listView.setItemChecked(index, true);
@@ -216,6 +225,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
                 }
                 index++;
             }
+            */
             // Return the completed view to render on screen
             return convertView;
         }
@@ -230,12 +240,13 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
         SBRobotAddDialog addDialog = new SBRobotAddDialog();
         addDialog.setHandler(this);
         addDialog.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
-        pdialog = addDialog.getDialog();
-
     }
     public void clearRobotClicked() {
         Log.i(CLSS,"Clear robots clicked");
         rosHelper.clearRobots();
+        RobotListAdapter adapter = (RobotListAdapter)getListAdapter();
+        adapter.clear();
+        adapter.notifyDataSetInvalidated();
     }
     public void scanRobotClicked() {
         Log.i(CLSS,"Scan for robots clicked");

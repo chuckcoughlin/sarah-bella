@@ -60,6 +60,7 @@ public class SBRobotAddDialog extends SBBasicDialogFragment {
                 dfrag.setSelectedButton(SBConstants.DIALOG_BUTTON_ADD);
 
                 if( robot!= null ) {
+                    Log.i(CLSS,String.format("enter_button: %s %s",dfrag.getSelectedButton(),robot.getRobotName()));
                     dfrag.setPayload(robot);
                 }
                 handler.handleDialogResult(dfrag);
@@ -67,6 +68,7 @@ public class SBRobotAddDialog extends SBBasicDialogFragment {
             }
         });
         button = (Button) view.findViewById(R.id.scan_robot_button);
+        // Scan a QR code
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -97,6 +99,8 @@ public class SBRobotAddDialog extends SBBasicDialogFragment {
     }
 
     private void editRobotInfo(View parent) {
+        EditText nameField = (EditText) parent.findViewById(R.id.robot_name);
+        String name = nameField.getText().toString();
         EditText uriField = (EditText) parent.findViewById(R.id.uri_editor);
         String newMasterUri = uriField.getText().toString();
         EditText controlUriField = (EditText) parent.findViewById(R.id.control_uri_editor);
@@ -110,28 +114,32 @@ public class SBRobotAddDialog extends SBBasicDialogFragment {
             data.put("URL", newMasterUri);
             if (newControlUri != null && newControlUri.length() > 0) {
                 data.put("CURL", newControlUri);
-            } else {
+            }
+            else {
                 data.put("CURL", "");
             }
             if (newWifiName != null && newWifiName.length() > 0) {
                 data.put("WIFI", newWifiName);
-            } else {
+            }
+            else {
                 data.put("WIFI", "");
             }
             if (newWifiPassword != null && newWifiPassword.length() > 0) {
                 data.put("WIFIPW", newWifiPassword);
-            } else {
+            }
+            else {
                 data.put("WIFIPW", "");
             }
             data.put("WIFIENC", "");
-            this.robot = createMaster(new RobotId(data));
+            this.robot = createMaster(name,new RobotId(data));
+            Log.i(CLSS,"editRobotInfo: created master "+this.robot.getRobotName());
         }
         else {
             setErrorMessage("Must specify Master URI.");
         }
     }
 
-    private RobotDescription createMaster(RobotId robotId) {
+    private RobotDescription createMaster(String name,RobotId robotId) {
         Log.i(CLSS, "createMaster ["+robotId.toString()+"]");
         RobotDescription newRobot = null;
         SBRosHelper helper = SBRosHelper.getInstance();
@@ -149,13 +157,14 @@ public class SBRobotAddDialog extends SBBasicDialogFragment {
             Log.i(CLSS, "creating robot description: "+robotId.toString());
             try {
                 newRobot = RobotDescription.createUnknown(robotId);
+                newRobot.setRobotName(name);
             }
             catch(InvalidRobotDescriptionException irde) {
                 setErrorMessage("Invalid robot description: "+irde.getLocalizedMessage());
             }
         }
         else {
-            setErrorMessage("Robot Id is null");
+            setErrorMessage("A valid robot Id is required");
         }
         return newRobot;
     }
