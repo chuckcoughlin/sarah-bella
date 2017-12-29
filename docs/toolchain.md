@@ -25,36 +25,42 @@ The control application is a standard Android application built using Android St
 for the android tablet.
 
 Configure the host build system, making the Android home environment variable available by adding
-```ANDROID_HOME=~/Library/AndroµÂid/sdk``` to ~/.bashrc.
+```ANDROID_HOME=~/Library/Androd/sdk``` to ~/.bashrc.
 
 #### External Libraries
 The next steps make ROS libraries available to the Android build environment. Note that the following are necessary only if creating a project from scratch. For an existing project, the modules are already part of the SBAssistant repository.
 
-Load these libraries directly into the project as source. They were not distributed as .jar or .aar file and have been pruned drastically to reduce dependencies.<br/>
+Load these libraries directly into the project as source. They were not distributed as .jar or .aar file and have been pruned drastically to reduce user interface dependencies.<br/>
 * https://github.com/ros-android/android_app_manager
 * https://github.com/ollide/rosjava_android_template
 
-The android core package may be found at:  https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_core/rosjava/0.3.5. Download rosjava-0.3.5.jar to **~/robotics/library**. Then create a module from inside Android Studio as follows.
+The android core package may be found at (you may have to download the entire Maven repository to get at the individual files):  https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_core/rosjava/0.3.5. Download rosjava-0.3.5.jar (org.ros) to ~/robotics/sara-bella/SBAssistant/app/libs. Then from inside Android Studio:
 ```
-  File->New->Module
-  select "Import .JAR/.AAR Package"
-  Next
-  select the path to the .jar/.aar file
-  Finish
+  File->Synchronize
+  right-click on app/libs/rosjava-0.3.5.jar and select "Import as Library"
 ```
 
-Create modules in a similar way from the following:<br/>
-* https://hc.apache.org/downloads.cgi httpclient-4.5.4.jar, httpcore-4.4.7.jar (download httpcomponents-4.5.4, then untar)
+Create libraries in a similar way from the following:<br/>
+* https://hc.apache.org/downloads.cgi httpclient-4.5.4.jar, httpcore-4.4.7.jar (download httpcomponents-4.5.4, then untar to extract)
+* https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_messages/app_manager/1.0.2 app_manager-1.0.2.jar (app_manager)
+* https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_bootstrap/message_generation/0.3.0 message_generation-0.3.0.jar (org.ros.internal.message)
 
 
-Finally declare the modules as dependencies:
+The following are sources of various ROS message definitions. Some class definitions were decompiled into java.
+* https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_messages/rocon_app_manager_msgs/0.9.0 rocon_app_manager_msgs-0.9.0.jar (also rocon_app_manager_msgs-0.6.0.jar)
+
+
+#### Genjava
+``genjava``is used to convert ROS message files into java classes. Instructions for installation and use are based on: http://wiki.ros.org/kinetic/Installation/OSX/Homebrew/Source, http://wiki.ros.org/wstool#Installation and http://wiki.ros.org/rosjava/Tutorials/indigo/RosJava%20Message%20Artifacts.
 ```
-  File->Project Structure
-  select the module "app"
-  on Dependencies tab click "+", then Module Dependency
-  select the .jar or .aar files that were just downloaded
-```
+    brew update
+    brew install cmake
+    brew tap ros/deps
+    brew install Python
+    sudo -H python2 -m pip install -U wstool rosdep rosinstall rosinstall_generator rospkg catkin-pkg sphinx
 
+    wstool set genjava --git https://github.com/rosjava/genjava --version=kinetic
+```
 #### SB-Assistant
 This notepad application is designed to command the robot, perform compute-intensive analyses and display results. The SBAssistant project is contained in the overall project
 repository (```git clone http://github.com/chuckcoughlin/sarah-bella``` Load android/SBAssistant into Android Studio). Internet access is required to build.
@@ -62,16 +68,30 @@ repository (```git clone http://github.com/chuckcoughlin/sarah-bella``` Load and
 #### Emulator
 In order to test the application in the emulator, after configuring a suitable target device with the AVD manager, select the studio menu Tools->Android->Enable ADB Integration and Run->Edit Configuration. Thereafter use the green "run" arrow in the toolbar to launch the application in the emulator. Output is viewable directly in the studio's ''logcat'' tab.
 
-#### Persistent storage
-Configuration parameters, maps and other data that are meant to remain in place even through application changes, are stored in a SQLite database accessible through the tablet application and externally.
+#### Persistent Storage
+Configuration parameters, maps and other data that are meant to remain in place even through application changes, are stored in a SQLite database accessible through the tablet application. The database can also be debugged externally.
 
 On the tablet:
 ```
 /data/user/0/chuckcoughlin.sb.assistant/databases/SBAssistant.db
 ```
-Unfortunately there appears to be a bug in the Android device manager that prevents it from observing the database on the emulator.
 
-#### Transfer to tablet
+On the emulator:
+```
+cd /path/to/my/sdk/platform-tools
+./adb shell
+run-as <app package name>
+cd /data/data/<app package name>/databases
+ls
+chmod 666 <database file name>
+sqlite3 <database file name>
+> (semi-colon terminated commands can be run here to query the data)
+> .exit
+(copy full database path)
+exit
+```
+
+#### Transfer to Tablet
 The tablet must be set in "developer" mode. This is accomplished under Settings->About Tablet. Tap on "Build number" 7 times. (Yes, really). Under Settings->Developer options, enable USB debugging. Connect the tablet and host using the same USB cable that is used to charge the device. Once the cable is connected a dialog should popup asking you to allow file transfer. (If this does not appear, you may have to fiddle with Developer options->USB Configuration).
 
 On the build system, configure Android Studio (Tools->Run>Edit Configurations) to target the build output directly to a USB device. After a successful build, merely select the "run" button to transfer the **apk** executable to the tablet.
@@ -122,12 +142,32 @@ Create a virtual machine sized at 6gb of RAM and 50gb of disk.
 Next, install the Robot Operation System (ROS) build environment.
 For details, see http:wiki.ros.org/kinetic/installation/Ubuntu. Complete the steps in section 1. Install the *ros-kinetic-desktop-full* suite.
 
-Now install dependent packages for Turtlebot3 control:
+Now install dependent packages for Turtlebot3 control and Java message generation:
 ```
     sudo apt-get install ros-kinetic-joy ros-kinetic-teleop-twist-joy ros-kinetic-teleop-twist-keyboard ros-kinetic-laser-proc ros-kinetic-rgbd-launch \
 		ros-kinetic-depthimage-to-laserscan ros-kinetic-rosserial-arduino ros-kinetic-rosserial-python ros-kinetic-rosserial-server ros-kinetic-rosserial-client \
 		ros-kinetic-rosserial-msgs ros-kinetic-amcl ros-kinetic-map-server ros-kinetic-move-base ros-kinetic-urdf ros-kinetic-xacro ros-kinetic-compressed-image-transport \
 		ros-kinetic-rqt-image-view ros-kinetic-gmapping ros-kinetic-navigation
+```
+
+##### RosJava Support
+This section configures the virtual machine to build .jar files suitable for use in the Android build environment. These files are Java equivalents of the ROS message files. Install ``rosjava``.
+
+```
+    sudo apt-get install ros-kinetic-catkin ros-kinetic-rospack python-wstool openjdk-8-jdk
+    sudo apt-get install ros-kinetic-genjava
+    sudo apt-get install --only-upgrade ros-kinetic-*
+```
+
+Build a catkin workspace specifically for ``rosjava``.
+```
+  cd ~/robotics
+  mkdir -p rosjava_messages/src
+  cd rosjava_messages/src
+  source /opt/ros/kinetic/setup.bash
+  cd ..
+
+
 ```
 
 ##### Turtlebot3 Support

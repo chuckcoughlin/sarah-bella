@@ -17,16 +17,16 @@ import chuckcoughlin.sb.assistant.common.SBConstants;
  * Since we access from multiple fragments, make this a singleton class to avoid repeated
  * allocations. We encapsulate all the database operations here.
  */
-public class SBDbHelper extends SQLiteOpenHelper {
-    private final static String CLSS = "SBDbHelper";
-    private static SBDbHelper instance = null;
+public class SBDbManager extends SQLiteOpenHelper {
+    private final static String CLSS = "SBDbManager";
+    private static SBDbManager instance = null;
     private final Context context;
 
     /**
      * Constructor is private per Singleton pattern. This forces use of the single instance.
      * @param context main activity
      */
-    private SBDbHelper(Context context) {
+    private SBDbManager(Context context) {
         super(context, SBConstants.DB_NAME, null, SBConstants.DB_VERSION);
         this.context = context.getApplicationContext();
     }
@@ -36,11 +36,11 @@ public class SBDbHelper extends SQLiteOpenHelper {
      * @param context main activity
      * @return the Singleton instance
      */
-    public static synchronized SBDbHelper initialize(Context context) {
+    public static synchronized SBDbManager initialize(Context context) {
         // Use the application context, which will ensure that you
         // don't accidentally leak an Activity's context.
         if (instance == null) {
-            instance = new SBDbHelper(context.getApplicationContext());
+            instance = new SBDbManager(context.getApplicationContext());
         }
         return instance;
     }
@@ -50,7 +50,7 @@ public class SBDbHelper extends SQLiteOpenHelper {
      * a convenient context.
      * @return the Singleton instance.
      */
-    public static synchronized SBDbHelper getInstance() {
+    public static synchronized SBDbManager getInstance() {
         return instance;
     }
 
@@ -87,7 +87,19 @@ public class SBDbHelper extends SQLiteOpenHelper {
         SQL.append("  wifi TEXT DEFAULT '',");
         SQL.append("  wifiEncryption TEXT DEFAULT '',");
         SQL.append("  wifiPassword TEXT DEFAULT '',");
+        SQL.append("  gateway TEXT DEFAULT '',");
+        SQL.append("  platform TEXT DEFAULT '',");
         SQL.append("  connectionStatus TEXT DEFAULT ''");
+        SQL.append(")");
+        sqLiteDatabase.execSQL(SQL.toString());
+
+        // masterUri and appName constitute primary key
+        SQL = new StringBuilder();
+        SQL.append("CREATE TABLE IF NOT EXISTS RobotApplications (");
+        SQL.append("  masterUri TEXT NOT NULL,");
+        SQL.append("  appName TEXT NOT NULL,");
+        SQL.append("  displayName TEXT NOT NULL,");
+        SQL.append("  PRIMARY KEY (masterUri,appName)");
         SQL.append(")");
         sqLiteDatabase.execSQL(SQL.toString());
 
@@ -146,7 +158,7 @@ public class SBDbHelper extends SQLiteOpenHelper {
     }
     // ================================================= Robot ===============================
     /**
-     * For access to the robot table, see SBRosHelper.
+     * For access to the robot table, see SBRosManager.
      */
     // ================================================ Settings =============================
     /**

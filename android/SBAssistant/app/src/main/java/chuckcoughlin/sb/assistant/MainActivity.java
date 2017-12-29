@@ -16,8 +16,8 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import chuckcoughlin.sb.assistant.common.SBConstants;
-import chuckcoughlin.sb.assistant.db.SBDbHelper;
-import chuckcoughlin.sb.assistant.ros.SBRosHelper;
+import chuckcoughlin.sb.assistant.db.SBDbManager;
+import chuckcoughlin.sb.assistant.ros.SBRosManager;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private ViewPager viewPager;
     private Thread nodeThread;
-    private SBRosHelper rosHelper;
+    private SBRosManager rosHelper;
 
     public MainActivity() {
         Log.i(CLSS,"Constructor ...");
@@ -72,9 +72,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        SBDbHelper.initialize(this);
-        SBRosHelper.initialize(this.getApplicationContext());
-        this.rosHelper = SBRosHelper.getInstance();
+        SBDbManager.initialize(this);
+        SBRosManager.initialize(this.getApplicationContext());
+        this.rosHelper = SBRosManager.getInstance();
         // If I absolutely have to start over again with the database
         this.deleteDatabase(SBConstants.DB_NAME);
     }

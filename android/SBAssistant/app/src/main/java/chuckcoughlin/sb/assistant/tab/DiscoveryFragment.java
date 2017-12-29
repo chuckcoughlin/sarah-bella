@@ -5,54 +5,48 @@
 
 package chuckcoughlin.sb.assistant.tab;
 
-import android.app.Dialog;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.app.FragmentManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.List;
-import java.util.Map;
 
+import app_manager.App;
 import chuckcoughlin.sb.assistant.R;
 import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.dialog.SBBasicDialogFragment;
 import chuckcoughlin.sb.assistant.dialog.SBDialogCallbackHandler;
-import chuckcoughlin.sb.assistant.dialog.SBRobotAddDialog;
-import chuckcoughlin.sb.assistant.dialog.SBRobotScanDialog;
-import chuckcoughlin.sb.assistant.ros.SBRosHelper;
-import ros.android.util.InvalidRobotDescriptionException;
+import chuckcoughlin.sb.assistant.dialog.SBRobotCreateDialog;
+import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
+import chuckcoughlin.sb.assistant.ros.SBRosManager;
 import ros.android.util.RobotDescription;
-import ros.android.util.RobotId;
 
 import static chuckcoughlin.sb.assistant.common.SBConstants.DIALOG_TRANSACTION_KEY;
 
 /**
- * Search the networks for robots. Based on ros.activity.MasterChooserActivity
- * Lifecycle methods are presented in chronological order.
+ * Display the current robot. Provide for its creation if it doesn't exist and for
+ * its editing if it does. We can validate, if needed and then start or stop applications.
+ * Lifecycle methods are presented here in chronological order.
  */
 public class DiscoveryFragment extends BasicAssistantListFragment implements SBDialogCallbackHandler {
     private final static String CLSS = "DiscoveryFragment";
-    private SBRosHelper rosHelper;
+    private SBRosManager rosManager;
+    private SBRosApplicationManager applicationManager;
 
     // Called when the fragment's instance initializes
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.rosHelper = SBRosHelper.getInstance();
+        this.rosManager = SBRosManager.getInstance();
+        this.applicationManager = SBRosApplicationManager.getInstance();
     }
 
     // Called to have the fragment instantiate its user interface view.
@@ -64,25 +58,39 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
         TextView textView = contentView.findViewById(R.id.fragmentDiscoveryText);
         textView.setText(R.string.fragmentDiscoveryLabel);
 
-        Button button = (Button) contentView.findViewById(R.id.addButton);
+        RobotDescription robot = rosManager.getRobot();
+        Button button = (Button) contentView.findViewById(R.id.defineButton);
+        if( robot==null ) button.setText(R.string.discoveryButtonDefine);
+        else              button.setText((R.string.discoveryButtonEdit));
+
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addRobotClicked();
+                defineRobotClicked();
             }
         });
         button = (Button) contentView.findViewById(R.id.clearButton);
+        button.setEnabled(robot!=null);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 clearRobotClicked();
             }
         });
-        button = (Button) contentView.findViewById(R.id.scanButton);
+        button = (Button) contentView.findViewById(R.id.validateButton);
+        button.setEnabled(robot!=null);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                scanRobotClicked();
+                validateRobotClicked();
+            }
+        });
+        button = (Button) contentView.findViewById(R.id.startButton);
+        button.setEnabled(robot!=null);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                validateRobotClicked();
             }
         });
         return contentView;
@@ -98,11 +106,14 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        List<RobotDescription> robotList = rosHelper.getRobots();
-        Log.i(CLSS,String.format("onActivityCreated: will display %d robot descriptions",robotList.size()));
-        RobotListAdapter adapter = new RobotListAdapter(getContext(),robotList);
-        setListAdapter(adapter);
-        getListView().setItemsCanFocus(true);
+        RobotDescription robot = rosManager.getRobot();
+        if( robot!=null ) {
+            List<App> applicationList = applicationManager.getApplications();
+            Log.i(CLSS, String.format("onActivityCreated: will display %d applications for %s", applicationList.size(), rosManager.getRobot().getRobotName()));
+            RobotApplicationsAdapter adapter = new RobotApplicationsAdapter(getContext(), applicationList);
+            setListAdapter(adapter);
+            getListView().setItemsCanFocus(true);
+        }
     }
 
     // The fragment is visible
@@ -150,7 +161,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
 
     public void handleDialogResult(SBBasicDialogFragment dfrag) {
         Log.i(CLSS,String.format("handleDialogResults for %s",dfrag.getDialogType()));
-        if( dfrag.getDialogType().equalsIgnoreCase(SBRobotAddDialog.CLSS)) {
+        if( dfrag.getDialogType().equalsIgnoreCase(SBRobotCreateDialog.CLSS)) {
             String btn = dfrag.getSelectedButton();
             Log.i(CLSS,String.format("handleDialogResults clicked on %s",btn));
             if( btn.equalsIgnoreCase(SBConstants.DIALOG_BUTTON_ADD)) {
@@ -162,11 +173,16 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
                     toast.show();
                 }
                 else if (robot != null) {
-                    rosHelper.addRobot(robot);
-                    RobotListAdapter adapter = (RobotListAdapter) getListAdapter();
-                    adapter.add(robot);
+                    rosManager.updateRobot(robot);
+                    RobotApplicationsAdapter adapter = (RobotApplicationsAdapter) getListAdapter();
+                    List<App> apps = applicationManager.getApplications();
+                    adapter.clear();
+                    for( App app:apps) {
+                        adapter.add(app);
+                        Log.i(CLSS,String.format("handleDialogResults added %s - now have %d",app.getName(), applicationManager.getApplicationCount()));
+                    }
                     adapter.notifyDataSetInvalidated();
-                    Log.i(CLSS,String.format("handleDialogResults added %s - now have %d",robot.getRobotName(),rosHelper.getRobots().size()));
+
                 }
             }
         }
@@ -174,10 +190,10 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
 
 
     //======================================== Array Adapter ======================================
-    public class RobotListAdapter extends ArrayAdapter<RobotDescription> implements ListAdapter {
+    public class RobotApplicationsAdapter extends ArrayAdapter<App> implements ListAdapter {
 
-        public RobotListAdapter(Context context, List<RobotDescription> values) {
-            super(context,R.layout.robot_item, values);
+        public RobotApplicationsAdapter(Context context, List<App> values) {
+            super(context,R.layout.ros_application_item, values);
         }
 
         @Override
@@ -187,13 +203,13 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            Log.i(CLSS,String.format("RobotListAdapter.getView position =  %d",position));
+            Log.i(CLSS,String.format("RobotApplicationsAdapter.getView position =  %d",position));
             // Get the data item for this position
-            RobotDescription description = getItem(position);
+            App app = getItem(position);
             // Check if an existing view is being reused, otherwise inflate the view
             if (convertView == null) {
-                Log.i(CLSS,String.format("RobotListAdapter.getView convertView was null"));
-                convertView = LayoutInflater.from(getContext()).inflate(R.layout.robot_item, parent, false);
+                Log.i(CLSS,String.format("RobotApplicationsAdapter.getView convertView was null"));
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.ros_application_item, parent, false);
             }
 
             // Lookup view for data population
@@ -202,9 +218,9 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
             TextView statusView=(TextView) convertView.findViewById(R.id.status);
 
             // Populate the data into the template view using the data object
-            nameView.setText(description.getRobotName());
-            uriView.setText(description.getRobotId().getMasterUri());
-            statusView.setText(description.getConnectionStatus());
+            nameView.setText(app.getName());
+            //uriView.setText(description.getRobotId().getMasterUri());
+            //statusView.setText(description.getConnectionStatus());
             /*
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
@@ -213,12 +229,12 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
                 }
             });
 
-            Log.i(CLSS,String.format("RobotListAdapter.getView set %s(%s) = %s",description.getRobotName(),description.getRobotId(),description.getConnectionStatus()));
+            Log.i(CLSS,String.format("RobotApplicationsAdapter.getView set %s(%s) = %s",description.getRobotName(),description.getRobotId(),description.getConnectionStatus()));
             int index = 0;
             int count = getCount();
             while( index<count ) {
                 RobotDescription robot = getItem(index);
-                if( robot != null && robot.equals( rosHelper.getCurrentRobot() )) {
+                if( robot != null && robot.equals( rosManager.getCurrentRobot() )) {
                     Log.i(CLSS, "Highlighting index " + index);
                     listView.setItemChecked(index, true);
                     break;
@@ -231,28 +247,30 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
         }
 
         private void choose(int position) {
-            SBRosHelper.getInstance().setCurrentRobot(position);
+            //SBRosApplicationManager.getInstance().setCurrentApplication(position);
         }
     }
     //======================================== Button Callbacks ======================================
-    public void addRobotClicked() {
+    public void defineRobotClicked() {
         Log.i(CLSS,"Add robot clicked");
-        SBRobotAddDialog addDialog = new SBRobotAddDialog();
+        SBRobotCreateDialog addDialog = new SBRobotCreateDialog();
         addDialog.setHandler(this);
         addDialog.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
     }
     public void clearRobotClicked() {
         Log.i(CLSS,"Clear robots clicked");
-        rosHelper.clearRobots();
-        RobotListAdapter adapter = (RobotListAdapter)getListAdapter();
+        applicationManager.clearApplications();
+        RobotApplicationsAdapter adapter = (RobotApplicationsAdapter)getListAdapter();
         adapter.clear();
         adapter.notifyDataSetInvalidated();
     }
-    public void scanRobotClicked() {
-        Log.i(CLSS,"Scan for robots clicked");
+    public void validateRobotClicked() {
+        Log.i(CLSS,"Validate robot clicked");
+        /*
         SBRobotScanDialog scanDialog = new SBRobotScanDialog();
         scanDialog.setHandler(this);
         scanDialog.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
+        */
     }
 
 

@@ -46,8 +46,8 @@ public class RobotId implements java.io.Serializable {
   }
   
   public RobotId(Map<String, Object> map) {
-    if (map.containsKey("URL")) {
-      this.masterUri = map.get("URL").toString();
+    if (map.containsKey("URI")) {
+      this.masterUri = map.get("URI").toString();
     }
     if (map.containsKey("CURL")) {
       this.controlUri = map.get("CURL").toString();

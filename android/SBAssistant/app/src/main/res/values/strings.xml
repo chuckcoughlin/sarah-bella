@@ -14,10 +14,13 @@
     <string name="name_label">Name:</string>
     <!-- Strings within fragments -->
     <string name="discoverySelectMaster">Select Master Robot</string>
-    <string name="discoveryButtonAdd">Add</string>
     <string name="discoveryButtonClear">Clear</string>
-    <string name="discoveryButtonScan">Scan</string>
-    <string name="discoveryPopupAddTitle">Define Robot</string>
+    <string name="discoveryButtonDefine">Define</string>
+    <string name="discoveryButtonEdit">Define</string>
+    <string name="discoveryButtonStart">Start</string>
+    <string name="discoveryButtonStop">Stop</string>
+    <string name="discoveryButtonValidate">Validate</string>
+    <string name="discoveryPopupDefineTitle">Define Robot</string>
     <!-- Strings that are generically useful -->
     <string name="defaultMasterURI">http://192.168.1.113:11311</string>
     <string name="defaultSSID">g6-coughlin</string>

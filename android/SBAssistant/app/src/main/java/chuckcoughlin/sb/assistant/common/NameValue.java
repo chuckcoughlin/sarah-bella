@@ -5,6 +5,7 @@
 
 package chuckcoughlin.sb.assistant.common;
 
+
 /**
  * Create a model class for various lists - a name/value pair
  */
@@ -26,6 +27,7 @@ public class NameValue {
     public String getValue() {
         return this.value;
     }
+
     public void setName(String nam) {
         this.name = nam;
     }

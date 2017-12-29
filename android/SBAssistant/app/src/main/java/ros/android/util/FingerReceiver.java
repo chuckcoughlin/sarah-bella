@@ -41,4 +41,3 @@ public interface FingerReceiver {
 
   void onUp();
 }
-

@@ -7,16 +7,13 @@ package chuckcoughlin.sb.assistant.dialog;
 
 import android.app.Dialog;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,17 +21,17 @@ import java.util.Map;
 
 import chuckcoughlin.sb.assistant.R;
 import chuckcoughlin.sb.assistant.common.SBConstants;
-import chuckcoughlin.sb.assistant.ros.SBRosHelper;
+import chuckcoughlin.sb.assistant.ros.SBRosManager;
 import ros.android.util.InvalidRobotDescriptionException;
 import ros.android.util.RobotDescription;
 import ros.android.util.RobotId;
 
-public class SBRobotAddDialog extends SBBasicDialogFragment {
-    public static final String CLSS = "SBRobotAddDialog";
+public class SBRobotCreateDialog extends SBBasicDialogFragment {
+    public static final String CLSS = "SBRobotCreateDialog";
     private RobotDescription robot = null;
 
 
-    public SBRobotAddDialog() {super();}
+    public SBRobotCreateDialog() {super();}
 
     public String getDialogType() { return CLSS; }
 
@@ -50,13 +47,13 @@ public class SBRobotAddDialog extends SBBasicDialogFragment {
         //LayoutInflater blower = (LayoutInflater)getActivity().getSystemService(getActivity().LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.discovery_add_dialog, container, true);
         View titleView = view.findViewById(R.id.add_robot_title);
-        ((TextView)titleView).setText(R.string.discoveryPopupAddTitle);
+        ((TextView)titleView).setText(R.string.discoveryPopupDefineTitle);
 
         Button button =(Button) view.findViewById(R.id.enter_button);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 editRobotInfo(view);
-                SBRobotAddDialog dfrag = SBRobotAddDialog.this;
+                SBRobotCreateDialog dfrag = SBRobotCreateDialog.this;
                 dfrag.setSelectedButton(SBConstants.DIALOG_BUTTON_ADD);
 
                 if( robot!= null ) {
@@ -72,7 +69,7 @@ public class SBRobotAddDialog extends SBBasicDialogFragment {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //scanRobotClicked(v);
+                //validateRobotClicked(v);
             }
         });
         // No need to inform the caller, just go away
@@ -142,22 +139,18 @@ public class SBRobotAddDialog extends SBBasicDialogFragment {
     private RobotDescription createMaster(String name,RobotId robotId) {
         Log.i(CLSS, "createMaster ["+robotId.toString()+"]");
         RobotDescription newRobot = null;
-        SBRosHelper helper = SBRosHelper.getInstance();
         if (robotId != null && robotId.getMasterUri() != null) {
-            List<RobotDescription> robotList = helper.getRobots();
-            int index = 0;
-            while( index<robotList.size() ) {
-                RobotDescription robot = robotList.get(index);
-                if (robot.getRobotId().equals(robotId)) {
-                        Log.i(CLSS, "That robot is already listed.");
-                        return newRobot;
-                }
-                index++;
+            SBRosManager rosManager = SBRosManager.getInstance();
+            RobotDescription robot = rosManager.getRobot();
+            if (robot.getRobotId().equals(robotId)) {
+                Log.i(CLSS, "That robot is already listed.");
+                rosManager.updateRobot(newRobot);
             }
             Log.i(CLSS, "creating robot description: "+robotId.toString());
             try {
                 newRobot = RobotDescription.createUnknown(robotId);
                 newRobot.setRobotName(name);
+                rosManager.createRobot(newRobot);
             }
             catch(InvalidRobotDescriptionException irde) {
                 setErrorMessage("Invalid robot description: "+irde.getLocalizedMessage());

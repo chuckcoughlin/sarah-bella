@@ -39,8 +39,14 @@ import org.ros.namespace.GraphName;
 import java.net.URI;
 import java.util.Date;
 
+import app_manager.Icon;
+import ros.android.msgs.PlatformInfo;
+
 public class RobotDescription implements java.io.Serializable {
+	// Connection Status
 	public static final String CONNECTING = "connecting...";
+	public static final String UNAVAILABLE = "unavailable";
+
 	public static final String OK = "ok";
 	public static final String ERROR = "exception";
 	public static final String WIFI = "invalid wifi";
@@ -53,19 +59,30 @@ public class RobotDescription implements java.io.Serializable {
 	private RobotId robotId;
 	private String robotName;
 	private String robotType;
+	private Icon robotIcon;
+	private String platformType;
+	private String gatewayName;
 	private String connectionStatus;
 	private Date timeLastSeen;
 
-	// TODO(kwc): add in canonicalization of robotName
-
 	public RobotDescription() {
+	}
+
+	public RobotDescription(RobotId robotId, String robotName, String robotType, Icon robotIcon, String gatewayName, Date timeLastSeen) throws InvalidRobotDescriptionException {
+		this(robotId,robotName,robotType,timeLastSeen);
+		this.robotType = robotType;
+		this.robotIcon = robotIcon;
+		this.gatewayName = gatewayName;
+		this.timeLastSeen = timeLastSeen;
 	}
 
 	public RobotDescription(RobotId robotId, String robotName, String robotType, Date timeLastSeen) throws InvalidRobotDescriptionException {
 		setRobotName(robotName);
 		setRobotId(robotId);
-		this.robotName = robotName;
 		this.robotType = robotType;
+		this.robotIcon = null;
+		this.gatewayName = "192.168.0.1";
+		this.platformType= PlatformInfo.PLATFORM_LINUX;
 		this.timeLastSeen = timeLastSeen;
 	}
 
@@ -106,15 +123,19 @@ public class RobotDescription implements java.io.Serializable {
 	public String getRobotType() {
 		return robotType;
 	}
-
 	public void setRobotType(String robotType) {
 		this.robotType = robotType;
 	}
+	public String getGatewayName() { return this.gatewayName; }
+	public void setGatewayName(String name) { this.gatewayName = name; }
+	public String getPlatformType() { return this.platformType; }
+	public void setPlatformType(String type) { this.platformType = type; }
+	public Icon getRobotIcon() { return this.robotIcon; }
+	public void setRobotIcon(Icon icon) { this.robotIcon=icon; }
 
 	public String getConnectionStatus() {
 		return connectionStatus;
 	}
-
 	public void setConnectionStatus(String connectionStatus) {
 		this.connectionStatus = connectionStatus;
 	}
@@ -122,7 +143,6 @@ public class RobotDescription implements java.io.Serializable {
 	public Date getTimeLastSeen() {
 		return timeLastSeen;
 	}
-
 	public void setTimeLastSeen(Date timeLastSeen) {
 		this.timeLastSeen = timeLastSeen;
 	}
