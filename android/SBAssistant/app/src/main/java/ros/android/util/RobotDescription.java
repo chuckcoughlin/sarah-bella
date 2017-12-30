@@ -33,6 +33,8 @@
 
 package ros.android.util;
 
+import android.util.Log;
+
 import org.ros.exception.RosException;
 import org.ros.namespace.GraphName;
 
@@ -43,6 +45,7 @@ import app_manager.Icon;
 import ros.android.msgs.PlatformInfo;
 
 public class RobotDescription implements java.io.Serializable {
+	private static final String CLSS = "RobotDescription";
 	// Connection Status
 	public static final String CONNECTING = "connecting...";
 	public static final String UNAVAILABLE = "unavailable";
@@ -83,27 +86,26 @@ public class RobotDescription implements java.io.Serializable {
 		this.robotIcon = null;
 		this.gatewayName = "192.168.0.1";
 		this.platformType= PlatformInfo.PLATFORM_LINUX;
+		this.connectionStatus = CONNECTING;
 		this.timeLastSeen = timeLastSeen;
 	}
 
-	public void copyFrom(RobotDescription other) {
-		robotId = other.robotId;
-		robotName = other.robotName;
-		robotType = other.robotType;
-		connectionStatus = other.connectionStatus;
-		timeLastSeen = other.timeLastSeen;
+	public RobotDescription clone() {
+		RobotDescription newRobot = null;
+		try {
+			newRobot = new RobotDescription(this.robotId, this.robotName, this.robotType, new Date());
+		}
+		catch(InvalidRobotDescriptionException irde) {
+			Log.i(CLSS,"Exception while cloning (??)"+ irde.getLocalizedMessage() );
+		}
+		return newRobot;
 	}
 
 	public RobotId getRobotId() {
 		return robotId;
 	}
 
-	public void setRobotId(RobotId robotId) throws InvalidRobotDescriptionException {
-		// TODO: ensure the robot id is sane.
-//		if(false) {
-//			throw new InvalidRobotDescriptionException("Empty Master URI");
-//		}
-		// TODO: validate
+	public void setRobotId(RobotId robotId)  {
 		this.robotId = robotId;
 	}
 
@@ -111,12 +113,7 @@ public class RobotDescription implements java.io.Serializable {
 		return robotName;
 	}
 
-	public void setRobotName(String robotName) throws InvalidRobotDescriptionException {
-		// TODO: GraphName validation was removed. What replaced it?
-		// if (!GraphName.validate(robotName)) {
-		// throw new InvalidRobotDescriptionException("Bad robot name: " +
-		// robotName);
-		// }
+	public void setRobotName(String robotName)  {
 		this.robotName = robotName;
 	}
 

@@ -104,29 +104,7 @@ public class SBRosManager {
             robot.setConnectionStatus("");
         }
         StringBuilder sql = new StringBuilder("INSERT INTO Robots(masterUri,robotName,robotType,");
-        sql.append("controlUri,wifi,wifiEncryption ,wifiPassword,platform,gateway,connectionStatus) ");
-        sql.append("VALUES(?,?,?,?,?,?,?,?)");
-        SQLiteDatabase db = dbManager.getWritableDatabase();
-        SQLiteStatement stmt = db.compileStatement(sql.toString());
-        stmt.bindString(1,id.getMasterUri());
-        stmt.bindString(2,robot.getRobotName());
-        stmt.bindString(3,robot.getRobotType());
-        stmt.bindString(4,id.getControlUri());
-        stmt.bindString(5,id.getWifi());
-        stmt.bindString(6,id.getWifiEncryption());
-        stmt.bindString(7,id.getWifiPassword());
-        stmt.bindString(8,robot.getPlatformType());
-        stmt.bindString(9,robot.getGatewayName());
-        stmt.bindString(10,robot.getConnectionStatus());
-        stmt.executeInsert();
-    }
-    public void updateRobot(RobotDescription robot) {
-        RobotId id = robot.getRobotId();
-        if(robot.getConnectionStatus()==null) {
-            robot.setConnectionStatus("");
-        }
-        StringBuilder sql = new StringBuilder("INSERT INTO Robots(masterUri,robotName,robotType,");
-        sql.append("controlUri,wifi,wifiEncryption ,wifiPassword,platform,gateway,connectionStatus) ");
+        sql.append("controlUri,wifi,wifiEncryption,wifiPassword,platform,gateway,connectionStatus) ");
         sql.append("VALUES(?,?,?,?,?,?,?,?,?,?)");
         SQLiteDatabase db = dbManager.getWritableDatabase();
         SQLiteStatement stmt = db.compileStatement(sql.toString());
@@ -142,6 +120,15 @@ public class SBRosManager {
         stmt.bindString(10,robot.getConnectionStatus());
         stmt.executeInsert();
         stmt.close();
+    }
+
+    /**
+     * Only one robot description is allowed, so we simply delete then insert.
+     * @param robot the new robot definition
+     */
+    public void updateRobot(RobotDescription robot) {
+        dbManager.execSQL("DELETE FROM Robots");
+        createRobot(robot);
     }
 
     public void clearRobot() {
@@ -166,16 +153,16 @@ public class SBRosManager {
         cursor.moveToFirst();
         while(!cursor.isAfterLast()) {
             Map<String,Object> map = new HashMap<>();
-            map.put(URI_VALUE,cursor.getString(1));
-            map.put(CURL_VALUE,cursor.getString(4));
-            map.put(WIFI_VALUE,cursor.getString(5));
-            map.put(ENCRYPTION_VALUE,cursor.getString(6));
-            map.put(PASSWORD_VALUE,cursor.getString(7));
-            map.put(PLATFORM_VALUE,cursor.getString(8));
-            map.put(GATEWAY_VALUE,cursor.getString(9));
+            map.put(URI_VALUE,cursor.getString(0));
+            map.put(CURL_VALUE,cursor.getString(3));
+            map.put(WIFI_VALUE,cursor.getString(4));
+            map.put(ENCRYPTION_VALUE,cursor.getString(5));
+            map.put(PASSWORD_VALUE,cursor.getString(6));
+            map.put(PLATFORM_VALUE,cursor.getString(7));
+            map.put(GATEWAY_VALUE,cursor.getString(8));
             RobotId id = new RobotId(map);
             try {
-                r = new RobotDescription(id, cursor.getString(2), cursor.getString(3), new Date());
+                r = new RobotDescription(id, cursor.getString(1), cursor.getString(2), new Date());
             }
             catch(InvalidRobotDescriptionException irde) {
                 Log.i(CLSS, String.format("getRobots %s caught InvalidRobotDescriptionException: %s ",cursor.getString(2),irde.getMessage()));

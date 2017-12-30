@@ -19,7 +19,7 @@ android {
             zipAlignEnabled true
         }
         debug {
-            debuggable false
+            debuggable true
             minifyEnabled false
             proguardFiles 'proguard-android.txt', 'proguard-rules.pro'
         }

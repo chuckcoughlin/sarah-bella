@@ -44,10 +44,11 @@ Create libraries in a similar way from the following:<br/>
 * https://hc.apache.org/downloads.cgi httpclient-4.5.4.jar, httpcore-4.4.7.jar (download httpcomponents-4.5.4, then untar to extract)
 * https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_messages/app_manager/1.0.2 app_manager-1.0.2.jar (app_manager)
 * https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_bootstrap/message_generation/0.3.0 message_generation-0.3.0.jar (org.ros.internal.message)
+* http://repo1.maven.org/maven2/org/jboss/netty/netty/3.2.9.Final netty.3.2.9.Final.jar (org.jboss.netty)
 
 
-The following are sources of various ROS message definitions. Some class definitions were decompiled into java.
-* https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_messages/rocon_app_manager_msgs/0.9.0 rocon_app_manager_msgs-0.9.0.jar (also rocon_app_manager_msgs-0.6.0.jar)
+The following are sources of various ROS message definitions. Some class definitions were decompiled into java and moved to package ros.android.
+* https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_messages/rocon_app_manager_msgs/0.9.0 rocon_app_manager_msgs-0.9.0.jar, rocon_app_manager_msgs-0.6.0.jar
 
 
 #### Genjava
@@ -69,26 +70,24 @@ repository (```git clone http://github.com/chuckcoughlin/sarah-bella``` Load and
 In order to test the application in the emulator, after configuring a suitable target device with the AVD manager, select the studio menu Tools->Android->Enable ADB Integration and Run->Edit Configuration. Thereafter use the green "run" arrow in the toolbar to launch the application in the emulator. Output is viewable directly in the studio's ''logcat'' tab.
 
 #### Persistent Storage
-Configuration parameters, maps and other data that are meant to remain in place even through application changes, are stored in a SQLite database accessible through the tablet application. The database can also be debugged externally.
+Configuration parameters, maps and other data that are meant to remain in place even through application changes, are stored in a SQLite database accessible through the tablet application. The database can also be read externally.
 
 On the tablet:
 ```
 /data/user/0/chuckcoughlin.sb.assistant/databases/SBAssistant.db
 ```
 
-On the emulator:
+For the emulator (running the debug version):
 ```
-cd /path/to/my/sdk/platform-tools
-./adb shell
-run-as <app package name>
-cd /data/data/<app package name>/databases
-ls
-chmod 666 <database file name>
-sqlite3 <database file name>
-> (semi-colon terminated commands can be run here to query the data)
-> .exit
-(copy full database path)
-exit
+   cd ~/Library/Android/sdk/platform-tools
+   ./adb shell
+   run-as chuckcoughlin.sb.assistant
+   cd /data/data/chuckcoughlin.sb.assistant/databases
+   sqlite3 SBAssistant.db
+       (query the data and schema with SQLite commands)
+   .q
+   exit
+   exit
 ```
 
 #### Transfer to Tablet

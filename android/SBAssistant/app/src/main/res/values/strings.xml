@@ -16,7 +16,7 @@
     <string name="discoverySelectMaster">Select Master Robot</string>
     <string name="discoveryButtonClear">Clear</string>
     <string name="discoveryButtonDefine">Define</string>
-    <string name="discoveryButtonEdit">Define</string>
+    <string name="discoveryButtonEdit">Edit</string>
     <string name="discoveryButtonStart">Start</string>
     <string name="discoveryButtonStop">Stop</string>
     <string name="discoveryButtonValidate">Validate</string>

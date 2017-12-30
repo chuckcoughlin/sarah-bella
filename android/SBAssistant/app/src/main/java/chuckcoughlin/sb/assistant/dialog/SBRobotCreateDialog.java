@@ -28,6 +28,7 @@ import ros.android.util.RobotId;
 
 public class SBRobotCreateDialog extends SBBasicDialogFragment {
     public static final String CLSS = "SBRobotCreateDialog";
+    private SBRosManager rosManager;
     private RobotDescription robot = null;
 
 
@@ -37,17 +38,19 @@ public class SBRobotCreateDialog extends SBBasicDialogFragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
+        this.rosManager= SBRosManager.getInstance();
+        this.robot = rosManager.getRobot();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout to use as dialog or embedded fragment. dismiss() isn't working
-        //LayoutInflater blower = (LayoutInflater)getActivity().getSystemService(getActivity().LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.discovery_add_dialog, container, true);
         View titleView = view.findViewById(R.id.add_robot_title);
         ((TextView)titleView).setText(R.string.discoveryPopupDefineTitle);
+
 
         Button button =(Button) view.findViewById(R.id.enter_button);
         button.setOnClickListener(new View.OnClickListener() {
@@ -82,6 +85,19 @@ public class SBRobotCreateDialog extends SBBasicDialogFragment {
             }
         });
 
+        // Initialize edit fields
+        if( robot!=null ) {
+            EditText nameField = (EditText) view.findViewById(R.id.robot_name);
+            nameField.setText(robot.getRobotName());
+            EditText uriField = (EditText) view.findViewById(R.id.uri_editor);
+            uriField.setText(robot.getRobotId().getMasterUri());;
+            EditText controlUriField = (EditText) view.findViewById(R.id.control_uri_editor);
+            controlUriField.setText(robot.getRobotId().getControlUri());
+            EditText wifiNameField = (EditText) view.findViewById(R.id.wifi_name_editor);
+            wifiNameField.setText(robot.getRobotId().getWifi());
+            EditText wifiPasswordField = (EditText) view.findViewById(R.id.wifi_password_editor);
+            wifiPasswordField.setText(robot.getRobotId().getWifiPassword());
+        }
         return view;
     }
 
@@ -108,7 +124,7 @@ public class SBRobotCreateDialog extends SBBasicDialogFragment {
         String newWifiPassword = wifiPasswordField.getText().toString();
         if (newMasterUri != null && newMasterUri.length() > 0) {
             Map<String, Object> data = new HashMap<String, Object>();
-            data.put("URL", newMasterUri);
+            data.put("URI", newMasterUri);
             if (newControlUri != null && newControlUri.length() > 0) {
                 data.put("CURL", newControlUri);
             }
@@ -128,35 +144,47 @@ public class SBRobotCreateDialog extends SBBasicDialogFragment {
                 data.put("WIFIPW", "");
             }
             data.put("WIFIENC", "");
+
             this.robot = createMaster(name,new RobotId(data));
-            Log.i(CLSS,"editRobotInfo: created master "+this.robot.getRobotName());
+            Log.i(CLSS,"editRobotInfo: created master "+name);
         }
         else {
+            Log.w(CLSS,"editRobotInfo: No master URI specified");
             setErrorMessage("Must specify Master URI.");
         }
     }
 
+    /**
+     * Create or update a robot from the supplied data, if valid.
+     * @param name new name from the form
+     * @param robotId id created from form fields
+     * @return new current robot description
+     */
     private RobotDescription createMaster(String name,RobotId robotId) {
         Log.i(CLSS, "createMaster ["+robotId.toString()+"]");
+
         RobotDescription newRobot = null;
         if (robotId != null && robotId.getMasterUri() != null) {
-            SBRosManager rosManager = SBRosManager.getInstance();
-            RobotDescription robot = rosManager.getRobot();
-            if (robot.getRobotId().equals(robotId)) {
-                Log.i(CLSS, "That robot is already listed.");
-                rosManager.updateRobot(newRobot);
+            if( robot==null  ) {
+                // Create a new robot
+                try {
+                    newRobot = RobotDescription.createUnknown(robotId);
+                    newRobot.setRobotName(name);
+                }
+                catch (InvalidRobotDescriptionException irde) {
+                    Log.w(CLSS, String.format("Invalid robot description: %s",irde.getLocalizedMessage()));
+                    setErrorMessage("Invalid robot description: " + irde.getLocalizedMessage());
+                }
             }
-            Log.i(CLSS, "creating robot description: "+robotId.toString());
-            try {
-                newRobot = RobotDescription.createUnknown(robotId);
+            else {
+                // Update the current robot
+                newRobot = robot.clone();
                 newRobot.setRobotName(name);
-                rosManager.createRobot(newRobot);
-            }
-            catch(InvalidRobotDescriptionException irde) {
-                setErrorMessage("Invalid robot description: "+irde.getLocalizedMessage());
+                newRobot.setRobotId(robotId);
             }
         }
         else {
+            Log.w(CLSS, "WARNING: no robotId supplied");
             setErrorMessage("A valid robot Id is required");
         }
         return newRobot;

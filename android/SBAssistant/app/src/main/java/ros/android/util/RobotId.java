@@ -87,10 +87,10 @@ public class RobotId implements java.io.Serializable {
   public String toString() {
     String str = getMasterUri() == null ? "" : getMasterUri();
     if (getWifi() != null) {
-      str = str + " On Wifi: " + getWifi();
+      str = str + " On: " + getWifi();
     }
     if (getControlUri() != null) {
-      str = str + " Controlled By: " + getControlUri();
+      str = str + " Control: " + getControlUri();
     }
     return str;
   }

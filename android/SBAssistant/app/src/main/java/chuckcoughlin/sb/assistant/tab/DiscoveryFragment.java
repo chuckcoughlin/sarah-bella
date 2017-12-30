@@ -13,7 +13,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,10 +42,13 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
     private final static String CLSS = "DiscoveryFragment";
     private SBRosManager rosManager;
     private SBRosApplicationManager applicationManager;
+    private View contentView = null;
+
 
     // Called when the fragment's instance initializes
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.i(CLSS,"DiscoveryFragment.onCreate");
         super.onCreate(savedInstanceState);
         this.rosManager = SBRosManager.getInstance();
         this.applicationManager = SBRosApplicationManager.getInstance();
@@ -54,23 +59,20 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
     // the text fields from the database.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View contentView = inflater.inflate(R.layout.fragment_discovery, container, false);
+        Log.i(CLSS,"DiscoveryFragment.onCreateView");
+        this.contentView = inflater.inflate(R.layout.fragment_discovery, container, false);
         TextView textView = contentView.findViewById(R.id.fragmentDiscoveryText);
         textView.setText(R.string.fragmentDiscoveryLabel);
 
-        RobotDescription robot = rosManager.getRobot();
         Button button = (Button) contentView.findViewById(R.id.defineButton);
-        if( robot==null ) button.setText(R.string.discoveryButtonDefine);
-        else              button.setText((R.string.discoveryButtonEdit));
-
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 defineRobotClicked();
             }
         });
+
         button = (Button) contentView.findViewById(R.id.clearButton);
-        button.setEnabled(robot!=null);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -78,21 +80,20 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
             }
         });
         button = (Button) contentView.findViewById(R.id.validateButton);
-        button.setEnabled(robot!=null);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 validateRobotClicked();
             }
         });
-        button = (Button) contentView.findViewById(R.id.startButton);
-        button.setEnabled(robot!=null);
+        button = (Button) contentView.findViewById(R.id.startButton);;
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 validateRobotClicked();
             }
         });
+        updateUI();
         return contentView;
     }
 
@@ -108,7 +109,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
         super.onActivityCreated(savedInstanceState);
         RobotDescription robot = rosManager.getRobot();
         if( robot!=null ) {
-            List<App> applicationList = applicationManager.getApplications();
+            List<App> applicationList = SBRosApplicationManager.getInstance().getApplications();
             Log.i(CLSS, String.format("onActivityCreated: will display %d applications for %s", applicationList.size(), rosManager.getRobot().getRobotName()));
             RobotApplicationsAdapter adapter = new RobotApplicationsAdapter(getContext(), applicationList);
             setListAdapter(adapter);
@@ -144,6 +145,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        this.contentView = null;
     }
     // Execute any final cleanup for the fragment's state
     @Override
@@ -168,12 +170,19 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
                 String msg = dfrag.getErrorMessage();
                 Log.i(CLSS,String.format("handleDialogResults error is %s",msg));
                 RobotDescription robot = (RobotDescription) dfrag.getPayload();
+
                 if (msg != null && !msg.isEmpty()) {
                     final Toast toast = Toast.makeText(getActivity(), msg, Toast.LENGTH_LONG);
                     toast.show();
                 }
                 else if (robot != null) {
-                    rosManager.updateRobot(robot);
+                    if( rosManager.getRobot()==null) {
+                        rosManager.createRobot(robot);
+                    }
+                    else{
+                        rosManager.updateRobot(robot);
+                    }
+
                     RobotApplicationsAdapter adapter = (RobotApplicationsAdapter) getListAdapter();
                     List<App> apps = applicationManager.getApplications();
                     adapter.clear();
@@ -184,6 +193,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
                     adapter.notifyDataSetInvalidated();
 
                 }
+                updateUI();
             }
         }
     }
@@ -248,6 +258,60 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
 
         private void choose(int position) {
             //SBRosApplicationManager.getInstance().setCurrentApplication(position);
+        }
+    }
+    //======================================== Update the UI ======================================
+    /**
+     * Keep the views in-sync with the model state
+     */
+    private void updateUI() {
+        RobotDescription robot = rosManager.getRobot();
+        Button button = (Button) contentView.findViewById(R.id.defineButton);
+        if( robot==null ) button.setText(R.string.discoveryButtonDefine);
+        else              button.setText((R.string.discoveryButtonEdit));
+
+        button = (Button) contentView.findViewById(R.id.clearButton);
+        button.setEnabled(robot!=null);
+
+        button = (Button) contentView.findViewById(R.id.validateButton);
+        button.setEnabled(robot!=null);
+
+        button = (Button) contentView.findViewById(R.id.startButton);
+        button.setEnabled(robot!=null);
+
+        ImageView iview = (ImageView) contentView.findViewById(R.id.robot_icon);
+        if(robot==null) iview.setVisibility(View.INVISIBLE);
+        else            iview.setVisibility(View.VISIBLE);
+
+        iview = (ImageView) contentView.findViewById(R.id.error_icon);
+        if(robot==null) iview.setVisibility(View.INVISIBLE);
+        else            iview.setVisibility(View.VISIBLE);
+
+        ProgressBar bar = (ProgressBar) contentView.findViewById(R.id.progress_circle);
+        if(robot==null && !robot.getConnectionStatus().equalsIgnoreCase(RobotDescription.CONNECTING) ) bar.setVisibility(View.INVISIBLE);
+        else   {
+            bar.setVisibility(View.VISIBLE);
+            bar.setIndeterminate(true);
+        }
+        TextView tview = (TextView) contentView.findViewById(R.id.robot_name);
+        if(robot==null) tview.setVisibility(View.INVISIBLE);
+        else {
+            tview.setText(robot.getRobotName());
+            tview.setVisibility(View.VISIBLE);
+        }
+
+        tview = (TextView) contentView.findViewById(R.id.master_uri);
+        if(robot==null) tview.setVisibility(View.INVISIBLE);
+        else {
+            tview.setText(robot.getRobotId().getMasterUri());
+            tview.setVisibility(View.VISIBLE);
+        }
+
+        tview = (TextView) contentView.findViewById(R.id.status);
+        if(robot==null) tview.setVisibility(View.INVISIBLE);
+        else {
+            tview.setText(applicationManager.getStatusAsString());
+            tview.setVisibility(View.VISIBLE);
         }
     }
     //======================================== Button Callbacks ======================================

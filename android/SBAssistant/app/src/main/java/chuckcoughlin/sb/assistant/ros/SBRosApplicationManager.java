@@ -17,7 +17,6 @@ import org.ros.message.MessageFactory;
 import org.ros.node.NodeConfiguration;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +24,6 @@ import java.util.Map;
 import app_manager.App;
 import app_manager.StatusCodes;
 import chuckcoughlin.sb.assistant.db.SBDbManager;
-import ros.android.util.InvalidRobotDescriptionException;
 import ros.android.util.RobotDescription;
 import ros.android.util.RobotId;
 
@@ -166,6 +164,14 @@ public class SBRosApplicationManager {
     public String getCurrentApplication() { return this.currentApplication; }
     public void setCurrentApplication(String name) { this.currentApplication=name; }
     public int getStatus() { return this.status; }
+    public String getStatusAsString() {
+        switch (this.status) {
+            case StatusCodes.NOT_RUNNING:
+                return "Not running";
+            default:
+                return String.format("Unknown status(%d)",this.status);
+        }
+    }
     public void setCurrentStatus(int s) { this.status=s; }
     /***
      * Replace the list of apps with the list specified.
@@ -197,29 +203,6 @@ public class SBRosApplicationManager {
         int count = cursor.getCount();
         cursor.close();
         return count;
-    }
-
-    /**
-     * @param appName application name
-     * @return the current status for the named application
-     */
-    public int getStatus(String appName) {
-        RobotDescription robot = rosManager.getRobot();
-        if (robot == null) return 0;
-
-        SQLiteDatabase db = dbManager.getReadableDatabase();
-
-        String uri = robot.getRobotId().getMasterUri();
-        StringBuilder sql = new StringBuilder(
-                "SELECT status");
-        sql.append(" FROM RobotApplications");
-        sql.append(" WHERE masterUri = ?");
-        String[] args = new String[]{uri};
-        Cursor cursor = db.rawQuery(sql.toString(), args);
-        cursor.moveToFirst();
-        int status = cursor.getInt(1);
-        cursor.close();
-        return status;
     }
 
     /**

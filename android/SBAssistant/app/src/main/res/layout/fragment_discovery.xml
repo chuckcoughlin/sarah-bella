@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="match_parent"
-    >
+    android:orientation="vertical">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
+
         <TextView
             android:id="@+id/fragmentDiscoveryText"
             android:layout_width="match_parent"
@@ -19,88 +20,120 @@
             android:layout_weight="0"
             android:gravity="center"
             android:textAppearance="@style/TabTitle" />
-        <ImageView android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:id="@+id/robot_icon"
-            android:src="@drawable/turtlebot"
-            android:adjustViewBounds="true"/>
-        <ImageView android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:id="@+id/error_icon"
-            android:src="@drawable/error_triangle"
-            android:adjustViewBounds="true"/>
-        <ProgressBar android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:id="@+id/progress_circle"/>
+
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            android:orientation="vertical"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-            <TextView android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingLeft="60dp">
+
+            <ImageView
+                android:id="@+id/robot_icon"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:adjustViewBounds="true"
+                android:src="@drawable/turtlebot" />
+            <ImageView
+                android:id="@+id/error_icon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:paddingLeft="20dp"
+                android:adjustViewBounds="true"
+                android:src="@drawable/error_triangle" />
+            <ProgressBar
+                android:id="@+id/progress_circle"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:paddingLeft="40dp" />
+        </LinearLayout>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/robot_name"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:paddingLeft="60dp"
                 android:textColor="@color/black"
-                android:textSize="20sp"
-                android:id="@+id/name"
-                android:text="Robot Name"/>
-            <TextView android:layout_width="fill_parent"
+                android:textSize="24sp" />
+            <TextView
+                android:id="@+id/master_uri"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/uri"/>
-            <TextView android:layout_width="fill_parent"
+                android:paddingLeft="15dp"
+                android:textColor="@color/black"
+                android:textSize="24sp" />
+            <TextView
+                android:id="@+id/status"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#808080"
-                android:textSize="8sp"
-                android:id="@+id/status"/>
-        <ListView xmlns:android="http://schemas.android.com/apk/res/android"
-            android:id="@+id/android:list"
-            android:choiceMode="singleChoice"
-            android:layout_width="fill_parent"
-            android:layout_height="0dp"
-            android:padding="10dp"
-            android:dividerHeight="5dp"
-            android:divider="#000000"
-            android:layout_weight="2"
-            />
-    </LinearLayout>
+                android:paddingLeft="15dp"
+                android:gravity="right"
+                android:textColor="@color/black"
+                android:textSize="20sp"  />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="1"
-        android:gravity="center|bottom"
-        android:orientation="horizontal"
-        android:layout_marginBottom="32dp"
-        android:layout_alignParentBottom="true">
-        <!-- change button color by setting android:backgroundTint -->
-        <Button android:id="@+id/defineButton"
-            android:text="@string/discoveryButtonDefine"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="145dp"
-            android:layout_height="wrap_content"
-            android:background="@drawable/rounded_button"
-            android:layout_gravity="center_vertical|center"/>
-        <Button android:id="@+id/clearButton"
-            android:text="@string/discoveryButtonClear"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="145dp"
-            android:layout_height="wrap_content"
-            android:background="@drawable/rounded_button"
-            android:layout_gravity="center_vertical|center"/>
-        <Button android:id="@+id/validateButton"
-            android:text="@string/discoveryButtonValidate"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="145dp"
-            android:layout_height="wrap_content"
-            android:background="@drawable/rounded_button"
-            android:layout_gravity="center_vertical|center"/>
-        <ToggleButton android:id="@+id/startButton"
-            android:textOn="@string/discoveryButtonStart"
-            android:textOff="@string/discoveryButtonStop"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="145dp"
-            android:layout_height="wrap_content"
-            android:background="@drawable/rounded_button"
-            android:layout_gravity="center_vertical|center"/>
-    </LinearLayout>
+            <ListView xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/android:list"
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:layout_weight="2"
+                android:choiceMode="singleChoice"
+                android:divider="#000000"
+                android:dividerHeight="5dp"
+                android:padding="10dp" />
+        </LinearLayout>
 
-</LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dip"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="32dp"
+            android:layout_weight="1"
+            android:paddingTop="20dp"
+            android:gravity="center|bottom"
+            android:orientation="horizontal">
+            <!-- change button color by setting android:backgroundTint -->
+            <Button
+                android:id="@+id/defineButton"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="145dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|center"
+                android:background="@drawable/rounded_button"
+                android:text="@string/discoveryButtonDefine" />
+
+            <Button
+                android:id="@+id/clearButton"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="145dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|center"
+                android:background="@drawable/rounded_button"
+                android:text="@string/discoveryButtonClear" />
+
+            <Button
+                android:id="@+id/validateButton"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="145dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|center"
+                android:background="@drawable/rounded_button"
+                android:text="@string/discoveryButtonValidate" />
+
+            <ToggleButton
+                android:id="@+id/startButton"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="145dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|center"
+                android:background="@drawable/rounded_button"
+                android:textOff="@string/discoveryButtonStop"
+                android:textOn="@string/discoveryButtonStart" />
+        </LinearLayout>
+
+    </LinearLayout>
 </LinearLayout>
