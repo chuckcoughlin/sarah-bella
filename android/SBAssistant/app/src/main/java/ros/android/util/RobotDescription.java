@@ -47,8 +47,10 @@ import ros.android.msgs.PlatformInfo;
 public class RobotDescription implements java.io.Serializable {
 	private static final String CLSS = "RobotDescription";
 	// Connection Status
-	public static final String CONNECTING = "connecting...";
-	public static final String UNAVAILABLE = "unavailable";
+	public static final String CONNECTION_STATUS_UNCONNECTED="UNCONNECTED";
+	public static final String CONNECTION_STATUS_CONNECTING = "CONNECTING ...";
+	public static final String CONNECTION_STATUS_CONNECTED  = "CONNECTED";
+	public static final String CONNECTION_STATUS_UNAVAILABLE = "UNAVAILABLE";   // An error
 
 	public static final String OK = "ok";
 	public static final String ERROR = "exception";
@@ -86,7 +88,7 @@ public class RobotDescription implements java.io.Serializable {
 		this.robotIcon = null;
 		this.gatewayName = "192.168.0.1";
 		this.platformType= PlatformInfo.PLATFORM_LINUX;
-		this.connectionStatus = CONNECTING;
+		this.connectionStatus = CONNECTION_STATUS_UNCONNECTED;
 		this.timeLastSeen = timeLastSeen;
 	}
 

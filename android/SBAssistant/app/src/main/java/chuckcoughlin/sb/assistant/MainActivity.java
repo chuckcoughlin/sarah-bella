@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.db.SBDbManager;
 import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
 import chuckcoughlin.sb.assistant.ros.SBRosManager;
@@ -45,6 +46,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Initialize the ros managers ...
+        SBDbManager.initialize(this);
+        SBRosManager.initialize(this.getApplicationContext());
+        SBRosApplicationManager.initialize(this.getApplicationContext());
+        this.rosHelper = SBRosManager.getInstance();
+
         Log.i(CLSS,"onCreate: entering ...");
         setContentView(R.layout.activity_main);
         // Close the soft keyboard - it will still open on an EditText
@@ -72,12 +79,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+
         // If I absolutely have to start over again with the database
-        // this.deleteDatabase(SBConstants.DB_NAME);
-        SBDbManager.initialize(this);
-        SBRosManager.initialize(this.getApplicationContext());
-        SBRosApplicationManager.initialize(this.getApplicationContext());
-        this.rosHelper = SBRosManager.getInstance();
+        //this.deleteDatabase(SBConstants.DB_NAME);
 
     }
 }

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/rounded_dialog_background"
+    android:minWidth="400dp"
+    android:minHeight="200dp" >
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+    <ImageView
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:adjustViewBounds="true"
+        android:src="@drawable/warning" />
+    <TextView
+        android:id="@+id/alert_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TabTitle"
+        android:padding="10dp"/>
+    </LinearLayout>
+    <TextView android:id="@+id/alert_content"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textSize="28dp"
+        android:paddingBottom="40dp"
+        />
+
+        <Button android:text="@string/genericDismissButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/dismiss_button"
+            android:layout_gravity="center"/>
+
+
+</LinearLayout>

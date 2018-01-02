@@ -51,7 +51,7 @@ public class SBRosApplicationManager {
     private Thread nodeThread;
     private Handler uiThreadHandler = new Handler();
     private String currentApplication;
-    private int status;     // Status of current application
+    private int applicationStatus;     // Status of current application
 
 
     /**
@@ -63,7 +63,7 @@ public class SBRosApplicationManager {
         this.dbManager = SBDbManager.getInstance();
         this.rosManager = SBRosManager.getInstance();
         this.currentApplication = null;     // Name
-        this.status = StatusCodes.NOT_RUNNING;
+        this.applicationStatus = StatusCodes.NOT_RUNNING;
     }
 
     /**
@@ -163,16 +163,16 @@ public class SBRosApplicationManager {
 
     public String getCurrentApplication() { return this.currentApplication; }
     public void setCurrentApplication(String name) { this.currentApplication=name; }
-    public int getStatus() { return this.status; }
-    public String getStatusAsString() {
-        switch (this.status) {
+    public int getApplicationStatusStatus() { return this.applicationStatus; }
+    public String getApplicationStatusAsString() {
+        switch (this.applicationStatus) {
             case StatusCodes.NOT_RUNNING:
                 return "Not running";
             default:
-                return String.format("Unknown status(%d)",this.status);
+                return String.format("Unknown status(%d)",this.applicationStatus);
         }
     }
-    public void setCurrentStatus(int s) { this.status=s; }
+    public void setCurrentStatus(int s) { this.applicationStatus=s; }
     /***
      * Replace the list of apps with the list specified.
      * @param apps a list of applications defined on the current robot

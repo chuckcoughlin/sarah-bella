@@ -13,13 +13,12 @@
     <string name="fragmentSystemLabel">Robot Systems Parameters</string>
     <string name="name_label">Name:</string>
     <!-- Strings within fragments -->
-    <string name="discoverySelectMaster">Select Master Robot</string>
-    <string name="discoveryButtonClear">Clear</string>
+    <string name="discoveryButtonConnect">Connect</string>
     <string name="discoveryButtonDefine">Define</string>
     <string name="discoveryButtonEdit">Edit</string>
     <string name="discoveryButtonStart">Start</string>
     <string name="discoveryButtonStop">Stop</string>
-    <string name="discoveryButtonValidate">Validate</string>
+    <string name="discoveryButtonDisconnect">Disonnect</string>
     <string name="discoveryPopupDefineTitle">Define Robot</string>
     <!-- Strings that are generically useful -->
     <string name="defaultMasterURI">http://192.168.1.113:11311</string>

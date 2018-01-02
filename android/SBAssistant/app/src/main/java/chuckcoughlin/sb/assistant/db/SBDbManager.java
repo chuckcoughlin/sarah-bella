@@ -88,8 +88,7 @@ public class SBDbManager extends SQLiteOpenHelper {
         SQL.append("  wifiEncryption TEXT DEFAULT '',");
         SQL.append("  wifiPassword TEXT DEFAULT '',");
         SQL.append("  gateway TEXT DEFAULT '',");
-        SQL.append("  platform TEXT DEFAULT '',");
-        SQL.append("  connectionStatus TEXT DEFAULT ''");
+        SQL.append("  platform TEXT DEFAULT ''");
         SQL.append(")");
         sqLiteDatabase.execSQL(SQL.toString());
 

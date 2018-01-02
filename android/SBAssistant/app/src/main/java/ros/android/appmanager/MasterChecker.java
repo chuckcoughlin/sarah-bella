@@ -55,34 +55,26 @@ import ros.android.util.RobotId;
 
 
 public class MasterChecker {
-    public interface RobotDescriptionReceiver {
-        void receive(RobotDescription robotDescription);
-    }
-
-    public interface FailureHandler {
-        void handleFailure(String reason);
-    }
+    private final static String CLSS = "MasterChecker";
 
     private CheckerThread checkerThread;
-    private RobotDescriptionReceiver foundMasterCallback;
-    private FailureHandler failureCallback;
+    private SBRobotConnectionHandler handler;
 
-    public MasterChecker(RobotDescriptionReceiver foundMasterCallback, FailureHandler failureCallback) {
-        this.foundMasterCallback = foundMasterCallback;
-        this.failureCallback = failureCallback;
+    public MasterChecker(SBRobotConnectionHandler handler) {
+        this.handler = handler;
     }
 
     public void beginChecking(RobotId robotId) {
         stopChecking();
       if (robotId.getMasterUri() == null) {
-             failureCallback.handleFailure("empty master URI");
+             handler.handleConnectionError("empty master URI");
              return;
          }
          URI uri;
          try {
              uri = new URI(robotId.getMasterUri());
          } catch (URISyntaxException e) {
-             failureCallback.handleFailure("invalid master URI");
+             handler.handleConnectionError("invalid master URI");
              return;
          }
          checkerThread = new CheckerThread(robotId, uri);
@@ -107,7 +99,8 @@ public class MasterChecker {
              setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                  @Override
                  public void uncaughtException(Thread thread, Throwable ex) {
-                     failureCallback.handleFailure("exception: " + ex.getMessage());
+                     String reason = String.format("MasterChecker: Exception %s", ex.getLocalizedMessage());
+                     handler.handleConnectionError(reason);
                  }
              });
          }
@@ -149,26 +142,29 @@ public class MasterChecker {
                  RobotDescription robotDescription = new RobotDescription(robotId, robotName, robotType, robotIcon, gatewayName,
                          timeLastSeen);
                  if (statusClient.isAvailable()) {
-                     Log.i("ApplicationManagement", "rapp manager is available");
+                     Log.i(CLSS, "rapp manager is available");
                      robotDescription.setConnectionStatus(RobotDescription.OK);
                  } else {
-                     Log.i("ApplicationManagement", "rapp manager is unavailable");
-                     robotDescription.setConnectionStatus(RobotDescription.UNAVAILABLE);
+                     Log.i(CLSS, "rapp manager is unavailable");
+                     robotDescription.setConnectionStatus(RobotDescription.CONNECTION_STATUS_UNAVAILABLE);
                  }
-                 foundMasterCallback.receive(robotDescription);
+                 handler.receiveConnection(robotDescription);
                  return;
-             } catch ( java.lang.RuntimeException e) {
+             }
+             catch ( java.lang.RuntimeException e) {
                  // thrown if master could not be found in the getParam call (from java.net.ConnectException)
-                 Log.w("ApplicationManagement", "could not find the master [" + masterUri + "][" + e.toString() + "]");
-                 failureCallback.handleFailure(e.toString());
-             } catch (ServiceNotFoundException e) {
+                 Log.w(CLSS, "could not find the master [" + masterUri + "][" + e.toString() + "]");
+                 handler.handleConnectionError(e.toString());
+             }
+             catch (ServiceNotFoundException e) {
                  // thrown by client.waitForResponse() if it times out
-                 Log.w("ApplicationManagement", e.getMessage()); // e.getMessage() is a little less verbose (no org.ros.exception.ServiceNotFoundException prefix)
-                 failureCallback.handleFailure(e.getMessage());  // don't need the master uri, it's already shown above in the robot description from input method.
-             } catch (Throwable e) {
-                 Log.w("ApplicationManagement", "exception while creating node in masterchecker for master URI "
+                 Log.w(CLSS, e.getMessage()); // e.getMessage() is a little less verbose (no org.ros.exception.ServiceNotFoundException prefix)
+                 handler.handleConnectionError(e.getMessage());  // don't need the master uri, it's already shown above in the robot description from input method.
+             }
+             catch (Throwable e) {
+                 Log.w(CLSS, "exception while creating node in masterchecker for master URI "
                          + masterUri, e);
-                 failureCallback.handleFailure(e.toString());
+                 handler.handleConnectionError(e.toString());
              }
          }
   }

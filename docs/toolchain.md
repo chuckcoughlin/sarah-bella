@@ -30,10 +30,6 @@ Configure the host build system, making the Android home environment variable av
 #### External Libraries
 The next steps make ROS libraries available to the Android build environment. Note that the following are necessary only if creating a project from scratch. For an existing project, the modules are already part of the SBAssistant repository.
 
-Load these libraries directly into the project as source. They were not distributed as .jar or .aar file and have been pruned drastically to reduce user interface dependencies.<br/>
-* https://github.com/ros-android/android_app_manager
-* https://github.com/ollide/rosjava_android_template
-
 The android core package may be found at (you may have to download the entire Maven repository to get at the individual files):  https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_core/rosjava/0.3.5. Download rosjava-0.3.5.jar (org.ros) to ~/robotics/sara-bella/SBAssistant/app/libs. Then from inside Android Studio:
 ```
   File->Synchronize
@@ -47,7 +43,9 @@ Create libraries in a similar way from the following:<br/>
 * http://repo1.maven.org/maven2/org/jboss/netty/netty/3.2.9.Final netty.3.2.9.Final.jar (org.jboss.netty)
 
 
-The following are sources of various ROS message definitions. Some class definitions were decompiled into java and moved to package ros.android.
+These libraries (or portions of them) were loaded directly into the project as source and placed into package **ros.android**. In some cases class definitions were decompiled into java. These classes have been pruned drastically to remove user interface dependencies and references inconsistencies.<br/>
+* https://github.com/ros-android/android_app_manager
+* https://github.com/ollide/rosjava_android_template
 * https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_messages/rocon_app_manager_msgs/0.9.0 rocon_app_manager_msgs-0.9.0.jar, rocon_app_manager_msgs-0.6.0.jar
 
 

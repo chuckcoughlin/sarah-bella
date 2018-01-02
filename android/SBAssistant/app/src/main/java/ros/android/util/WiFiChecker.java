@@ -42,6 +42,8 @@ import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiInfo;
 import android.content.Context;
 
+import ros.android.appmanager.SBRobotConnectionHandler;
+
 
 /**
  * Threaded WiFi checker. Checks and tests if the WiFi is configured properly and if not, connects to the correct network.
@@ -49,34 +51,14 @@ import android.content.Context;
  * @author pratkanis@willowgarage.com
  */
 public class WiFiChecker {
-  public interface SuccessHandler {
-    /** Called on success with a description of the robot that got checked. */
-    void handleSuccess();
-  }
-
-  public interface FailureHandler {
-    /**
-     * Called on failure with a short description of why it failed, like
-     * "exception" or "timeout".
-     */
-    void handleFailure(String reason);
-  }
-
-  public interface ReconnectionHandler {
-    /** Called to prompt the user to connect to a different network */
-    boolean doReconnection(String from, String to);
-  }
+  private final static String CLSS = "WifiChecker";
 
   private CheckerThread checkerThread;
-  private SuccessHandler foundWiFiCallback;
-  private FailureHandler failureCallback;
-  private ReconnectionHandler reconnectionCallback;
+  private final SBRobotConnectionHandler handler ;
 
   /** Constructor. Should not take any time. */
-  public WiFiChecker(SuccessHandler foundWiFiCallback, FailureHandler failureCallback, ReconnectionHandler reconnectionCallback) {
-    this.foundWiFiCallback = foundWiFiCallback;
-    this.failureCallback = failureCallback;
-    this.reconnectionCallback = reconnectionCallback;
+  public WiFiChecker(SBRobotConnectionHandler h) {
+    this.handler = h;
   }
 
   /**
@@ -87,7 +69,7 @@ public class WiFiChecker {
     stopChecking();
     //If there's no wifi tag in the robot id, skip this step
     if (robotId.getWifi() == null) {
-      foundWiFiCallback.handleSuccess();
+      handler.handleWifiError("WifiChecker: No WiFi definition in robotId");
       return;
     }
 
@@ -136,7 +118,7 @@ public class WiFiChecker {
       setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
         @Override
         public void uncaughtException(Thread thread, Throwable ex) {
-          failureCallback.handleFailure("exception: " + ex.getMessage());
+          handler.handleWifiError("exception: " + ex.getMessage());
         }
       });
     }
@@ -149,8 +131,9 @@ public class WiFiChecker {
     public void run() {
       try {
         if (wifiValid()) {
-          foundWiFiCallback.handleSuccess();
-        } else if (reconnectionCallback.doReconnection(wifiManager.getConnectionInfo().getSSID(), robotId.getWifi())) {
+          handler.receiveWifiConnection();
+        }
+        else if (handler.handleWifiReconnection(wifiManager.getConnectionInfo().getSSID(), robotId.getWifi())) {
           Log.d("WiFiChecker", "Disable networking");
           wifiManager.setWifiEnabled(false);
           int i = 0;
@@ -160,7 +143,7 @@ public class WiFiChecker {
             i++;
           }
           if (wifiManager.isWifiEnabled()) {
-            failureCallback.handleFailure("Un-able to shutdown WiFi");
+            handler.handleWifiError("Un-able to shutdown WiFi");
             return;  
           }
           Log.d("WiFiChecker", "Wait for networking");
@@ -171,7 +154,7 @@ public class WiFiChecker {
             i++;
           }
           if (!wifiManager.isWifiEnabled()) {
-            failureCallback.handleFailure("Un-able to connect to WiFi");
+            handler.handleWifiError("Un-able to connect to WiFi");
             return;  
           }
 
@@ -229,7 +212,7 @@ public class WiFiChecker {
             n = wifiManager.addNetwork(wc);
             Log.d("WiFiChecker", "add Network returned " + n);
             if (n == -1) {
-              failureCallback.handleFailure("Failed to configure WiFi");
+              handler.handleWifiError("Failed to configure WiFi");
             }
           }
           
@@ -246,18 +229,20 @@ public class WiFiChecker {
               i++;
             }
             if (wifiValid()) {
-              foundWiFiCallback.handleSuccess();
+              handler.receiveWifiConnection();
             } else {
-              failureCallback.handleFailure("WiFi connection timed out");
+              handler.handleWifiError("WiFi connection timed out");
             }
           }
-        } else {
-          failureCallback.handleFailure("Wrong WiFi network");
         }
-      } catch (Throwable ex) {
+        else {
+          handler.handleWifiError("Wrong WiFi network");
+        }
+      }
+      catch (Throwable ex) {
         Log.e("RosAndroid", "Exception while searching for WiFi for "
               + robotId.getWifi(), ex);
-        failureCallback.handleFailure(ex.toString());
+        handler.handleWifiError(ex.toString());
       }
     }
   }

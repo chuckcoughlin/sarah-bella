@@ -53,12 +53,16 @@ public class SBRosManager {
     public static final String PLATFORM_VALUE   = "PLTFRM";
     public static final String ICON_PATH_VALUE  = "ICON";
 
+
+
     private static SBRosManager instance = null;
     private final SBDbManager dbManager;
     private final Context context;
     private Thread nodeThread;
     private Handler uiThreadHandler = new Handler();
     private RobotDescription robot = null;
+    private NodeConfiguration configuration = null;
+    private String connectionStatus = RobotDescription.CONNECTION_STATUS_UNCONNECTED;
 
 
     /**
@@ -96,16 +100,19 @@ public class SBRosManager {
 
 
     /*
-     * Valid only if there are no existing robots
+     * Create a new current robot
      */
-    public void createRobot(RobotDescription robot) {
+    public void createRobot(RobotDescription newRobot) {
+        this.robot = newRobot;
         RobotId id = robot.getRobotId();
         if(robot.getConnectionStatus()==null) {
-            robot.setConnectionStatus("");
+            robot.setConnectionStatus(RobotDescription.CONNECTION_STATUS_UNCONNECTED);
         }
+        this.connectionStatus = robot.getConnectionStatus();
+
         StringBuilder sql = new StringBuilder("INSERT INTO Robots(masterUri,robotName,robotType,");
-        sql.append("controlUri,wifi,wifiEncryption,wifiPassword,platform,gateway,connectionStatus) ");
-        sql.append("VALUES(?,?,?,?,?,?,?,?,?,?)");
+        sql.append("controlUri,wifi,wifiEncryption,wifiPassword,platform,gateway) ");
+        sql.append("VALUES(?,?,?,?,?,?,?,?,?)");
         SQLiteDatabase db = dbManager.getWritableDatabase();
         SQLiteStatement stmt = db.compileStatement(sql.toString());
         stmt.bindString(1,id.getMasterUri());
@@ -117,26 +124,32 @@ public class SBRosManager {
         stmt.bindString(7,id.getWifiPassword());
         stmt.bindString(8,robot.getPlatformType());
         stmt.bindString(9,robot.getGatewayName());
-        stmt.bindString(10,robot.getConnectionStatus());
         stmt.executeInsert();
         stmt.close();
     }
 
     /**
      * Only one robot description is allowed, so we simply delete then insert.
-     * @param robot the new robot definition
+     * @param updatedRobot the modified robot definition
      */
-    public void updateRobot(RobotDescription robot) {
+    public void updateRobot(RobotDescription updatedRobot) {
         dbManager.execSQL("DELETE FROM Robots");
-        createRobot(robot);
+        createRobot(updatedRobot);
+
     }
 
     public void clearRobot() {
         String sql = "DELETE FROM Robots";
         dbManager.execSQL(sql);
+        this.robot = null;
     }
 
     public RobotDescription getRobot() { return this.robot; }
+    public String getConnectionStatus() { return this.connectionStatus; }
+    public void setConnectionStatus(String status) {
+        this.connectionStatus = status;
+        if( robot!=null ) robot.setConnectionStatus(status);
+    }
 
     /**
      * Initialize the robot object from the database.
@@ -146,7 +159,7 @@ public class SBRosManager {
         RobotDescription r = null;
         SQLiteDatabase db = dbManager.getReadableDatabase();
         StringBuilder sql = new StringBuilder(
-                   "SELECT masterUri,robotName,robotType,controlUri,wifi,wifiEncryption,wifiPassword,platform,gateway,connectionStatus");
+                   "SELECT masterUri,robotName,robotType,controlUri,wifi,wifiEncryption,wifiPassword,platform,gateway");
         sql.append(" FROM Robots ");
         sql.append(" ORDER BY robotName");
         Cursor cursor = db.rawQuery(sql.toString(),null);
@@ -163,6 +176,8 @@ public class SBRosManager {
             RobotId id = new RobotId(map);
             try {
                 r = new RobotDescription(id, cursor.getString(1), cursor.getString(2), new Date());
+                connectionStatus = RobotDescription.CONNECTION_STATUS_UNCONNECTED;
+                r.setConnectionStatus(connectionStatus);
             }
             catch(InvalidRobotDescriptionException irde) {
                 Log.i(CLSS, String.format("getRobots %s caught InvalidRobotDescriptionException: %s ",cursor.getString(2),irde.getMessage()));
@@ -175,18 +190,7 @@ public class SBRosManager {
 
 
 
-
-    /**
-     * Create and return a new ROS NodeContext object based on the current value
-     * of the internal masterUri variable.
-     *
-     * @throws RosException If the master URI is invalid or if we cannot get a hostname for
-     *                      the device we are running on.
-     */
-    public NodeConfiguration createConfiguration() throws RosException {
-        return createConfiguration(robot.getRobotId());
-    }
-
+    public NodeConfiguration getNodeConfiguration() { return this.configuration; }
 
 
     /**
@@ -195,10 +199,13 @@ public class SBRosManager {
      * @throws RosException If masterUri is invalid or if we cannot get a hostname for the
      *                      device we are running on.
      */
-    public NodeConfiguration createConfiguration(RobotId robotId) throws RosException {
+    public NodeConfiguration createConfiguration() throws RosException {
+        if( robot==null ) {
+            throw new RosException("Robot description is undefined");
+        }
+        RobotId robotId = robot.getRobotId();
         Log.i(CLSS, "createConfiguration(" + robotId.toString() + ")");
         if (robotId == null || robotId.getMasterUri() == null) {
-            // TODO: different exception type for invalid master uri
             throw new RosException("ROS Master URI is not set");
         }
         String namespace = "/";
@@ -208,7 +215,8 @@ public class SBRosManager {
         URI uri;
         try {
             uri = new URI(robotId.getMasterUri());
-        } catch (URISyntaxException e) {
+        }
+        catch (URISyntaxException e) {
             Log.i(CLSS, "createConfiguration(" + robotId.toString() + ") invalid master uri.");
             throw new RosException("Invalid master URI");
         }

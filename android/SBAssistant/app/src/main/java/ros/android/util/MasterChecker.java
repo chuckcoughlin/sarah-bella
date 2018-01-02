@@ -43,6 +43,8 @@ import org.ros.namespace.GraphName;
 
 import android.util.Log;
 
+import ros.android.appmanager.SBRobotConnectionHandler;
+
 /**
  * Threaded ROS-master checker. Runs a thread which checks for a valid ROS
  * master and sends back a {@link RobotDescription} (with robot name and type)
@@ -51,27 +53,13 @@ import android.util.Log;
  * @author hersh@willowgarage.com
  */
 public class MasterChecker {
-	public interface RobotDescriptionReceiver {
-		/** Called on success with a description of the robot that got checked. */
-		void receive(RobotDescription robotDescription);
-	}
-
-	public interface FailureHandler {
-		/**
-		 * Called on failure with a short description of why it failed, like
-		 * "exception" or "timeout".
-		 */
-		void handleFailure(String reason);
-	}
 
 	private CheckerThread checkerThread;
-	private RobotDescriptionReceiver foundMasterCallback;
-	private FailureHandler failureCallback;
+	private final SBRobotConnectionHandler handler;
 
 	/** Constructor. Should not take any time. */
-	public MasterChecker(RobotDescriptionReceiver foundMasterCallback, FailureHandler failureCallback) {
-		this.foundMasterCallback = foundMasterCallback;
-		this.failureCallback = failureCallback;
+	public MasterChecker(SBRobotConnectionHandler h) {
+		this.handler = h;
 	}
 
 	/**
@@ -81,14 +69,14 @@ public class MasterChecker {
 	public void beginChecking(RobotId robotId) {
 		stopChecking();
 		if(robotId.getMasterUri() == null) {
-			failureCallback.handleFailure("empty master URI");
+			handler.handleConnectionError("empty master URI");
 			return;
 		}
 		URI uri;
 		try {
 			uri = new URI(robotId.getMasterUri());
 		} catch(URISyntaxException e) {
-			failureCallback.handleFailure("invalid master URI");
+			handler.handleConnectionError("invalid master URI");
 			return;
 		}
 
@@ -119,7 +107,7 @@ public class MasterChecker {
 			setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
 				@Override
 				public void uncaughtException(Thread thread, Throwable ex) {
-					failureCallback.handleFailure("exception: " + ex.getMessage());
+					handler.handleConnectionError("exception: " + ex.getMessage());
 				}
 			});
 		}
@@ -135,15 +123,16 @@ public class MasterChecker {
 					String robotType = (String) paramClient.getParam(GraphName.of("robot/type")).getResult();
 					Date timeLastSeen = new Date(); // current time.
 					RobotDescription robotDescription = new RobotDescription(robotId, robotName, robotType, timeLastSeen);
-					foundMasterCallback.receive(robotDescription);
+					handler.receiveConnection(robotDescription);
 				} else {
 					Log.e("RosAndroid", "No parameters");
-					failureCallback.handleFailure("The parameters on the server are not set. Please set robot/name and robot/type.");
+					handler.handleConnectionError("The parameters on the server are not set. Please set robot/name and robot/type.");
 				}
 				return;
-			} catch(Throwable ex) {
+			}
+			catch(Throwable ex) {
 				Log.e("RosAndroid", "Exception while creating node in MasterChecker for master URI " + masterUri, ex);
-				failureCallback.handleFailure(ex.toString());
+				handler.handleConnectionError(ex.toString());
 			}
 		}
 	}

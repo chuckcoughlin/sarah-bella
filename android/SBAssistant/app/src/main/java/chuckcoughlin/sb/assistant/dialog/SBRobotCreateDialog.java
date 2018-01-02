@@ -31,9 +31,7 @@ public class SBRobotCreateDialog extends SBBasicDialogFragment {
     private SBRosManager rosManager;
     private RobotDescription robot = null;
 
-
     public SBRobotCreateDialog() {super();}
-
     public String getDialogType() { return CLSS; }
 
     @Override
