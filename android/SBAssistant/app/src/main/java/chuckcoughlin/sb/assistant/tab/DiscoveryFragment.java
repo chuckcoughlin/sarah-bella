@@ -169,15 +169,15 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
     // =========================================== Checker Callback ====================================
     @Override
     public void handleConnectionError(String reason) {
-        Log.w(CLSS, "handlerConnectionError: " + reason);
+        Log.w(CLSS, "handleConnectionError: " + reason);
 
     }
 
     @Override
-    public void handleWifiError(String reason) {
-        Log.w(CLSS, "handlerWifiError: " + reason);
+    public void handleNetworkError(String reason) {
+        Log.w(CLSS, "handleNetworkError: " + reason);
 
-       SBWarningDialog warning = SBWarningDialog.newInstance( "Wifi Error", reason);
+       SBWarningDialog warning = SBWarningDialog.newInstance( "Network Error", reason);
        warning.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
     }
 
@@ -434,7 +434,7 @@ public class RobotApplicationsAdapter extends ArrayAdapter<App> implements ListA
         RobotDescription robot = rosManager.getRobot();
         if (robot == null) return; // Shouldn't happen
         WifiChecker checker = new WifiChecker(this);
-        checker.beginChecking(robot.getRobotId(), (WifiManager) getActivity().getSystemService(WIFI_SERVICE));
+        checker.beginChecking(robot.getRobotId(), (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE));
 
     }
 

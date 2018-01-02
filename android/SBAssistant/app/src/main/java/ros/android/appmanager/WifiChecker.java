@@ -73,7 +73,7 @@ public class WifiChecker {
     }
     if (wifiManager.isWifiEnabled()) {
       if (wifiInfo != null) {
-        Log.d("WiFiChecker", "WiFi Info: " + wifiInfo.toString() + " IP " + wifiInfo.getIpAddress());
+        Log.d("NetworkChecker", "WiFi Info: " + wifiInfo.toString() + " IP " + wifiInfo.getIpAddress());
       if (wifiInfo.getSSID() != null && wifiInfo.getIpAddress() != 0
              && wifiInfo.getSupplicantState() == SupplicantState.COMPLETED) {
            if (wifiInfo.getSSID().equals(robotId.getWifi())) {
@@ -95,7 +95,7 @@ public class WifiChecker {
        setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
          @Override
          public void uncaughtException(Thread thread, Throwable ex) {
-           handler.handleWifiError("exception: " + ex.getMessage());
+           handler.handleNetworkError("exception: " + ex.getMessage());
          }
        });
      }
@@ -109,16 +109,16 @@ public class WifiChecker {
            handler.receiveWifiConnection();
          }
          else if (handler.handleWifiReconnection(wifiManager.getConnectionInfo().getSSID(), robotId.getWifi())) {
-           Log.d("WiFiChecker", "Wait for networking");
+           Log.i("NetworkChecker", "Wait for networking");
            wifiManager.setWifiEnabled(true);
            int i = 0;
            while (i < 30 && !wifiManager.isWifiEnabled()) {
-             Log.d("WiFiChecker", "Waiting for WiFi enable");
+             Log.i("NetworkChecker", "Waiting for WiFi enable");
 
              i++;
            }
            if (!wifiManager.isWifiEnabled()) {
-             handler.handleWifiError("Un-able to connect to WiFi");
+             handler.handleNetworkError("Un-able to connect to WiFi");
              return;
            }
            int n = -1;
@@ -126,7 +126,7 @@ public class WifiChecker {
            WifiConfiguration wc = null;
            String SSID = "\"" + robotId.getWifi() + "\"";
            for (WifiConfiguration test : wifiManager.getConfiguredNetworks()) {
-             Log.d("WiFiChecker", "WIFI " + test.toString());
+             Log.i("NetworkChecker", "WIFI " + test.toString());
              if (test.priority > priority) {
                priority = test.priority;
              }
@@ -145,7 +145,7 @@ public class WifiChecker {
 
            //Add new network.
            if (n == -1) {
-             Log.d("WiFiChecker", "WIFI Unknown");
+             Log.i("NetworkChecker", "WIFI Unknown");
              wc = new WifiConfiguration();
              wc.SSID = "\"" + robotId.getWifi() + "\"";
              if (robotId.getWifiPassword() != null) {
@@ -172,21 +172,21 @@ public class WifiChecker {
              wc.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
 
              n = wifiManager.addNetwork(wc);
-             Log.d("WiFiChecker", "add Network returned " + n);
+             Log.i("NetworkChecker", "add Network returned " + n);
              if (n == -1) {
-               handler.handleWifiError("Failed to configure WiFi");
+               handler.handleNetworkError("Failed to configure WiFi");
           }
            }
 
            //Connect to the network
            boolean b = wifiManager.enableNetwork(n, true);
-           Log.d("WiFiChecker", "enableNetwork returned " + b);
+           Log.i("NetworkChecker", "enableNetwork returned " + b);
            if (b) {
              wifiManager.reconnect();
-             Log.d("WiFiChecker", "Wait for wifi network");
+             Log.i("NetworkChecker", "Wait for wifi network");
              i = 0;
              while (i < 30 && !wifiValid()) {
-               Log.d("WiFiChecker", "Waiting for network: " + i + " " + wifiManager.getWifiState());
+               Log.d("NetworkChecker", "Waiting for network: " + i + " " + wifiManager.getWifiState());
 
                i++;
              }
@@ -194,18 +194,18 @@ public class WifiChecker {
                handler.receiveWifiConnection();
              }
              else {
-               handler.handleWifiError("WiFi connection timed out");
+               handler.handleNetworkError("WiFi connection timed out");
              }
            }
          }
          else {
-           handler.handleWifiError("Wrong WiFi network");
+           handler.handleNetworkError("Wrong WiFi network");
          }
        }
        catch (Throwable ex) {
          Log.e("RosAndroid", "Exception while searching for WiFi for "
                + robotId.getWifi(), ex);
-         handler.handleWifiError(ex.toString());
+         handler.handleNetworkError(ex.toString());
        }
      }
    }

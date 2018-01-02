@@ -18,7 +18,7 @@ public interface SBRobotConnectionHandler {
      * There was an error in the connection attempt.
      * @param reason error description
      */
-    public void handleWifiError(String reason);
+    public void handleNetworkError(String reason);
     /**
      * There was an error in the connection attempt.
      * @param SSID wifi network name
