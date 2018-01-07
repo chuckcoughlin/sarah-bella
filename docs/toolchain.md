@@ -28,7 +28,7 @@ Configure the host build system, making the Android home environment variable av
 ```ANDROID_HOME=~/Library/Androd/sdk``` to ~/.bashrc.
 
 #### External Libraries
-The next steps make ROS libraries available to the Android build environment. Note that the following are necessary only if creating a project from scratch. For an existing project, the modules are already part of the SBAssistant repository.
+These next steps make ROS libraries available to the Android build environment. Note that the following are necessary only if creating a project from scratch. For an existing project, the modules are already part of the SBAssistant repository.
 
 The android core package may be found at (you may have to download the entire Maven repository to get at the individual files):  https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_core/rosjava/0.3.5. Download rosjava-0.3.5.jar (org.ros) to ~/robotics/sara-bella/SBAssistant/app/libs. Then from inside Android Studio:
 ```
@@ -43,23 +43,12 @@ Create libraries in a similar way from the following:<br/>
 * http://repo1.maven.org/maven2/org/jboss/netty/netty/3.2.9.Final netty.3.2.9.Final.jar (org.jboss.netty)
 
 
-These libraries (or portions of them) were loaded directly into the project as source and placed into package **ros.android**. In some cases class definitions were decompiled into java. These classes have been pruned drastically to remove user interface dependencies and references inconsistencies.<br/>
+These libraries (or portions of them) were loaded directly into the project as source and placed into package **ros.android**. A compendium of java source files may be found at: http://do.dellin.net/ros-indigo-20150929T22:30:44Z.html. In some cases these classes have been pruned drastically to remove user interface dependencies and references inconsistencies.<br/>
 * https://github.com/ros-android/android_app_manager
 * https://github.com/ollide/rosjava_android_template
 * https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_messages/rocon_app_manager_msgs/0.9.0 rocon_app_manager_msgs-0.9.0.jar, rocon_app_manager_msgs-0.6.0.jar
 
 
-#### Genjava
-``genjava``is used to convert ROS message files into java classes. Instructions for installation and use are based on: http://wiki.ros.org/kinetic/Installation/OSX/Homebrew/Source, http://wiki.ros.org/wstool#Installation and http://wiki.ros.org/rosjava/Tutorials/indigo/RosJava%20Message%20Artifacts.
-```
-    brew update
-    brew install cmake
-    brew tap ros/deps
-    brew install Python
-    sudo -H python2 -m pip install -U wstool rosdep rosinstall rosinstall_generator rospkg catkin-pkg sphinx
-
-    wstool set genjava --git https://github.com/rosjava/genjava --version=kinetic
-```
 #### SB-Assistant
 This notepad application is designed to command the robot, perform compute-intensive analyses and display results. The SBAssistant project is contained in the overall project
 repository (```git clone http://github.com/chuckcoughlin/sarah-bella``` Load android/SBAssistant into Android Studio). Internet access is required to build.
@@ -148,24 +137,20 @@ Now install dependent packages for Turtlebot3 control and Java message generatio
 ```
 
 ##### RosJava Support
-This section configures the virtual machine to build .jar files suitable for use in the Android build environment. These files are Java equivalents of the ROS message files. Install ``rosjava``.
+The virtual machine is the master location for ROS topic/message development. Once created here, we build .jar files suitable for use in the Android build environment. These files are Java equivalents of the ROS message files. The following directions are based on: http://wiki.ros.org/rosjava/Tutorials/indigo/RosJava%20Message%20Artifacts.
 
 ```
-    sudo apt-get install ros-kinetic-catkin ros-kinetic-rospack python-wstool openjdk-8-jdk
     sudo apt-get install ros-kinetic-genjava
     sudo apt-get install --only-upgrade ros-kinetic-*
 ```
-
-Build a catkin workspace specifically for ``rosjava``.
-```
-  cd ~/robotics
-  mkdir -p rosjava_messages/src
-  cd rosjava_messages/src
-  source /opt/ros/kinetic/setup.bash
-  cd ..
-
+Whenever custom messages change or additional packages are used execute:
 
 ```
+    cd ~/robotics/catkin_ws
+    genjava_message_artifacts --verbose -p turtlebot3_msgs system_check
+    extract_jar_files    #Copy jar files into ~/robotics/repo/robot/lib
+```
+The **genjava_message_artifacts** command only needs to list changed packages or dependencies. When the **robot** branch is committed and merged on the build system, these jar files will be available for transfer into the SBAssistant Android project app/libs directory.
 
 ##### Turtlebot3 Support
 Install the source code for turtlebot ROS support packages.
