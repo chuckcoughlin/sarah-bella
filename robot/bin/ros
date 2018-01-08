@@ -51,6 +51,7 @@ case "$1" in
 
 	echo "=============================== /etc/init.d/ros start ===========================" >> ${ROSLOG}
 	roslaunch ${LAUNCH_PKG} ${LAUNCH_FILE} >>${ROSLOG} 2>&1
+	${HOME}/robotics/repo/robot/config/apps.conf
 	echo "=============================== /etc/init.d/ros exited ===========================" >> ${ROSLOG}
   ;;
 
