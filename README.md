@@ -9,4 +9,4 @@ The repository code is divided into 2 sections:
 2) android: An Android tablet is used as the robot user interface, communicating via wi-fi and ROS messaging. The android application
  "SBAssistant" makes use of ROSJava. The device is assumed to be Android 7.0 or higher. The single application may be used to execute any of the robot packages.
 
- For further details see [applications](http://github.com/chuckcoughlin/sarah-bella/tree/master/docs/applications.md) and [toolchain](https://github.com/chuckcoughlin/sarah-bella/tree/master/docs/toolchain.md).
+ For further details see [applications](http://github.com/chuckcoughlin/sarah-bella/tree/master/docs/applications.md),[toolchain](https://github.com/chuckcoughlin/sarah-bella/tree/master/docs/toolchain.md) and [extensions](https://github.com/chuckcoughlin/sarah-bella/tree/master/docs/extensions.md).

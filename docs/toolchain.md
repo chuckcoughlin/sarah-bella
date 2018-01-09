@@ -43,12 +43,6 @@ Create libraries in a similar way from the following:<br/>
 * http://repo1.maven.org/maven2/org/jboss/netty/netty/3.2.9.Final netty.3.2.9.Final.jar (org.jboss.netty)
 
 
-These libraries (or portions of them) were loaded directly into the project as source and placed into package **ros.android**. A compendium of java source files may be found at: http://do.dellin.net/ros-indigo-20150929T22:30:44Z.html. In some cases these classes have been pruned drastically to remove user interface dependencies and references inconsistencies.<br/>
-* https://github.com/ros-android/android_app_manager
-* https://github.com/ollide/rosjava_android_template
-* https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_messages/rocon_app_manager_msgs/0.9.0 rocon_app_manager_msgs-0.9.0.jar, rocon_app_manager_msgs-0.6.0.jar
-
-
 #### SB-Assistant
 This notepad application is designed to command the robot, perform compute-intensive analyses and display results. The SBAssistant project is contained in the overall project
 repository (```git clone http://github.com/chuckcoughlin/sarah-bella``` Load android/SBAssistant into Android Studio). Internet access is required to build.
@@ -136,22 +130,15 @@ Now install dependent packages for Turtlebot3 control and Java message generatio
 		ros-kinetic-rqt-image-view ros-kinetic-gmapping ros-kinetic-navigation
 ```
 
-##### RosJava Support
-The virtual machine is the master location for ROS topic/message development. Once created here, we build .jar files suitable for use in the Android build environment. These files are Java equivalents of the ROS message files. The following directions are based on: http://wiki.ros.org/rosjava/Tutorials/indigo/RosJava%20Message%20Artifacts.
-
+##### Source Repository
+Make **robotics/repo** the root of our **git** repository. We will use **git** as the integrating mechanism with both our development machine and the robot itself. Establish
 ```
-    sudo apt-get install ros-kinetic-genjava
-    sudo apt-get install --only-upgrade ros-kinetic-*
+  mkdir -p ~/robotics/repo
+  cd ~/robotics/repo
+  git clone http://github.com/chuckcoughlin/sarah-bella robot
+  git checkout --track origin/robot      # Always use the 'robot' branch
+  git branch -d master
 ```
-Whenever custom messages change or additional packages are used execute:
-
-```
-    cd ~/robotics/catkin_ws
-    genjava_message_artifacts --verbose -p turtlebot3_msgs system_check
-    extract_jar_files    #Copy jar files into ~/robotics/repo/robot/lib
-```
-The **genjava_message_artifacts** command only needs to list changed packages or dependencies. When the **robot** branch is committed and merged on the build system, these jar files will be available for transfer into the SBAssistant Android project app/libs directory.
-
 ##### Turtlebot3 Support
 Install the source code for turtlebot ROS support packages.
 
@@ -197,6 +184,22 @@ Once the package has been created and compiles with its dependencies, proceed to
 http:://wiki.ros.org/rospy_tutorials for guidance. The custom code consists of execution nodes, messages,
 services and topic files, as appropriate.
 
+##### RosJava Support
+The virtual machine is the master location for ROS topic/message development. Once created here, we build .jar files suitable for use in the Android build environment. These files are Java equivalents of the ROS message files. The following directions are based on: http://wiki.ros.org/rosjava/Tutorials/indigo/RosJava%20Message%20Artifacts.
+
+```
+    sudo apt-get install ros-kinetic-genjava
+    sudo apt-get install --only-upgrade ros-kinetic-*
+```
+Whenever custom messages change or additional packages are used execute:
+
+```
+    cd ~/robotics/catkin_ws
+    genjava_message_artifacts --verbose -p turtlebot3_msgs system_check
+    extract_jar_files    #Copy jar files into ~/robotics/repo/robot/lib
+```
+The **genjava_message_artifacts** command only needs to list changed packages or dependencies. When the **robot** branch is committed and merged on the build system, these jar files will be available for transfer into the SBAssistant Android project app/libs directory.
+
 ###### Transfer to the Robot
 Once the package has been defined and tested on the development system, it needs to be packaged and transferred to the
 robot. This is accomplished by simply checking the changes into *git* (pushing them, of course) and checking them out on the robot. Once checked out on the RaspberryPi, the new code must be built and executed.
@@ -239,8 +242,9 @@ links within **catkin_ws** in order to merge our repository with the standard RO
 ROS package downloads.
 ```
   cd
-  git clone http://github.com/chuckcoughlin/sarah-bella robotics
+  git clone http://github.com/chuckcoughlin/sarah-bella robot
   git checkout --track origin/robot      # Always use the 'robot' branch
+  git branch -d master
   mkdir catkin_ws
   cd catkin_ws
   ln -s ~/robotics/repo/robot/config config

@@ -76,8 +76,12 @@ public class WifiChecker {
         Log.d("NetworkChecker", "WiFi Info: " + wifiInfo.toString() + " IP " + wifiInfo.getIpAddress());
       if (wifiInfo.getSSID() != null && wifiInfo.getIpAddress() != 0
              && wifiInfo.getSupplicantState() == SupplicantState.COMPLETED) {
-           if (wifiInfo.getSSID().equals(robotId.getWifi())) {
+
+           if( wifiInfo.getSSID().replace("\"","").equals(robotId.getWifi())) {
              return true;
+           }
+           else {
+             Log.w("NetworkChecker", "WiFi Info: SSID:" + wifiInfo.getSSID() + "does not match Robot " + robotId.getWifi());
            }
          }
        }

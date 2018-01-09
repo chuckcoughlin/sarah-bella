@@ -170,6 +170,8 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
     @Override
     public void handleConnectionError(String reason) {
         Log.w(CLSS, "handleConnectionError: " + reason);
+        SBWarningDialog warning = SBWarningDialog.newInstance( "Connection Error", reason);
+        warning.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
 
     }
 

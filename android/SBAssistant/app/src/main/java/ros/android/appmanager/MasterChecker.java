@@ -154,7 +154,7 @@ public class MasterChecker {
              catch ( java.lang.RuntimeException e) {
                  // thrown if master could not be found in the getParam call (from java.net.ConnectException)
                  Log.w(CLSS, "could not find the master [" + masterUri + "][" + e.toString() + "]");
-                 handler.handleConnectionError(e.toString());
+                 handler.handleConnectionError(e.getLocalizedMessage());
              }
              catch (ServiceNotFoundException e) {
                  // thrown by client.waitForResponse() if it times out
@@ -164,7 +164,7 @@ public class MasterChecker {
              catch (Throwable e) {
                  Log.w(CLSS, "exception while creating node in masterchecker for master URI "
                          + masterUri, e);
-                 handler.handleConnectionError(e.toString());
+                 handler.handleConnectionError(e.getLocalizedMessage());
              }
          }
   }

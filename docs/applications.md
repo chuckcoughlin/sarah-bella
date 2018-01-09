@@ -9,7 +9,14 @@ on the development virtual machine for subsequent transfer and compilation on th
 The android assistant contains command and monitoring code for all applications installed on the robot.
 
 ******************************************************
-### 01 - SystemCheck
+### 00 - Discovery
+The process of discovery determines what applications a connected robot supports. We wanted to use an existing app_manager, but were unable to assemble all the pieces for our kinetic version of ROS. Consequently we created a low-budget version based on statically configured database tables.
+ * robot publishes a list of supported apps as AppList in the ParameterTree
+ * Android reads the AppList and does a database lookup to determine the correct compliment of Publishers and Subscribers for that application
+ * The android user enables the desired application from the displayed list.
+
+******************************************************
+### 01 - System
 This activity is designed to read system parameters and exercise all devices on the robot.
 
 **topic:**
