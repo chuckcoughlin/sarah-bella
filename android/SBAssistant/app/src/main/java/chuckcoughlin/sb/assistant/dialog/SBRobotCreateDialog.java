@@ -16,13 +16,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import chuckcoughlin.sb.assistant.R;
 import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.ros.SBRosManager;
-import ros.android.util.InvalidRobotDescriptionException;
 import ros.android.util.RobotDescription;
 import ros.android.util.RobotId;
 

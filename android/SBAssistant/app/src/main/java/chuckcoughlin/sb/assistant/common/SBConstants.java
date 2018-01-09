@@ -29,4 +29,7 @@ public class SBConstants {
     // Dialog results buttons
     public static final String DIALOG_BUTTON_ADD = "add";
     public static final String DIALOG_BUTTTON_CANCEL = "cancel";
+    // Legal datatypes for messages
+    public static final String DATATYPE_TEXT       = "text";
+    public static final String DATATYPE_TEXT_ARRAY = "text_array";
 }

@@ -34,12 +34,12 @@ import ros.android.util.RobotId;
  * allocations. This class makes the list of applications for the current robot available
  * to be started and stopped.
  *
- * The Apps list is in the database. We keep the current application and its status locally.
+ * The Apps list is in the database and is hard-coded. It represents the capabilities
+ * of the robot we connect to. We keep the current application and its status locally.
  */
 public class SBRosApplicationManager {
     private final static String CLSS = "SBRosManager";
     // Keys for columns in result map. Somewhere there's a 6 char limit.
-    public static final String URI_VALUE = "URI";
     public static final String NAME_VALUE = "NAME";
     public static final String DISPLAY_VALUE = "DISPLY";
     public static final String STATUS_VALUE = "STATUS";
@@ -87,41 +87,6 @@ public class SBRosApplicationManager {
      */
     public static synchronized SBRosApplicationManager getInstance() {
         return instance;
-    }
-
-    /**
-     * Insert a new row into the application table. An attempt to add a duplicate
-     * application is ignored.
-     * NOTE: Only the status is updatable.
-     * @param app application
-     */
-    public void addApplication(App app) {
-        RobotDescription robot = rosManager.getRobot();
-        if (robot == null) return;
-        RobotId id = robot.getRobotId();
-
-        StringBuilder sql = new StringBuilder("INSERT INTO RobotApplications(masterUri,appName,displayName");
-        sql.append(" VALUES(?,?,?)");
-        SQLiteDatabase db = dbManager.getWritableDatabase();
-        SQLiteStatement stmt = db.compileStatement(sql.toString());
-        stmt.bindString(1, id.getMasterUri());
-        stmt.bindString(2, app.getName());
-        stmt.bindString(3, app.getDisplayName());
-        try {
-            stmt.executeInsert();
-        } catch (SQLException sqle) {
-            Log.w(CLSS, String.format("Attempt to add application %s:%s failed (%s)", id.getMasterUri(), app.getName(), sqle.getLocalizedMessage()));
-        } finally {
-            stmt.close();
-        }
-    }
-
-    public void clearApplications() {
-        RobotDescription robot = rosManager.getRobot();
-        if (robot == null) return;
-        String uri = robot.getRobotId().getMasterUri();
-        String sql = String.format("DELETE FROM RobotApplications WHERE masterUri = '%s'", uri);
-        dbManager.execSQL(sql);
     }
 
     public List<App> getApplications() {

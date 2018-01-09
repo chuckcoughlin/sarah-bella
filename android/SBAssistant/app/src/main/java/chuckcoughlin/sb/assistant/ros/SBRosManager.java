@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import chuckcoughlin.sb.assistant.db.SBDbManager;
-import ros.android.util.InvalidRobotDescriptionException;
 import ros.android.util.RobotDescription;
 import ros.android.util.RobotId;
 

@@ -33,19 +33,18 @@
 
 package ros.android.util;
 
-import android.util.Log;
-
-import org.ros.exception.RosException;
-import org.ros.namespace.GraphName;
-
-import java.net.URI;
 import java.util.Date;
 
 import app_manager.Icon;
 import ros.android.msgs.PlatformInfo;
 
-public class RobotDescription implements java.io.Serializable {
-	private static final String CLSS = "RobotDescription";
+/**
+ * This class describes an application on the robot. An application consists
+ * of a set of published and subscribed message topics. This is the Java
+ * equivalent of a database entry.
+ */
+public class RobotApplication implements java.io.Serializable {
+	private static final String CLSS = "RobotApplication";
 	// Connection Status
 	public static final String CONNECTION_STATUS_UNCONNECTED="UNCONNECTED";
 	public static final String CONNECTION_STATUS_CONNECTING = "CONNECTING ...";
@@ -70,10 +69,10 @@ public class RobotDescription implements java.io.Serializable {
 	private String connectionStatus;
 	private Date timeLastSeen;
 
-	public RobotDescription() {
+	public RobotApplication() {
 	}
 
-	public RobotDescription(RobotId robotId, String robotName, String robotType, Icon robotIcon, String gatewayName, Date timeLastSeen) {
+	public RobotApplication(RobotId robotId, String robotName, String robotType, Icon robotIcon, String gatewayName, Date timeLastSeen) {
 		this(robotId,robotName,robotType,timeLastSeen);
 		this.robotType = robotType;
 		this.robotIcon = robotIcon;
@@ -81,7 +80,7 @@ public class RobotDescription implements java.io.Serializable {
 		this.timeLastSeen = timeLastSeen;
 	}
 
-	public RobotDescription(RobotId robotId, String robotName, String robotType, Date timeLastSeen)  {
+	public RobotApplication(RobotId robotId, String robotName, String robotType, Date timeLastSeen)  {
 		setRobotName(robotName);
 		setRobotId(robotId);
 		this.robotType = robotType;
@@ -92,8 +91,8 @@ public class RobotDescription implements java.io.Serializable {
 		this.timeLastSeen = timeLastSeen;
 	}
 
-	public RobotDescription clone() {
-		RobotDescription newRobot = new RobotDescription(this.robotId, this.robotName, this.robotType, new Date());
+	public RobotApplication clone() {
+		RobotApplication newRobot = new RobotApplication(this.robotId, this.robotName, this.robotType, new Date());
 		return newRobot;
 	}
 
@@ -144,8 +143,8 @@ public class RobotDescription implements java.io.Serializable {
 		return this.robotName.equals(NAME_UNKNOWN);
 	}
 
-	public static RobotDescription createUnknown(RobotId robotId) throws InvalidRobotDescriptionException {
-		return new RobotDescription(robotId, NAME_UNKNOWN, TYPE_UNKNOWN, new Date());
+	public static RobotApplication createUnknown(RobotId robotId) throws InvalidRobotDescriptionException {
+		return new RobotApplication(robotId, NAME_UNKNOWN, TYPE_UNKNOWN, new Date());
 	}
 
 	@Override
@@ -159,14 +158,14 @@ public class RobotDescription implements java.io.Serializable {
 		// Return false if the other object has the wrong type.
 		// This type may be an interface depending on the interface's
 		// specification.
-		if(!(o instanceof RobotDescription)) {
+		if(!(o instanceof RobotApplication)) {
 			return false;
 		}
 
 		// Cast to the appropriate type.
 		// This will succeed because of the instanceof, and lets us access
 		// private fields.
-		RobotDescription lhs = (RobotDescription) o;
+		RobotApplication lhs = (RobotApplication) o;
 
 		// Check each field. Primitive fields, reference fields, and nullable
 		// reference

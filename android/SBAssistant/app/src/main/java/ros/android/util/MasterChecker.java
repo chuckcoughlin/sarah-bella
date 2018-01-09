@@ -36,6 +36,7 @@ package ros.android.util;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
+import java.util.List;
 
 import org.ros.internal.node.client.ParameterClient;
 import org.ros.internal.node.server.NodeIdentifier;
@@ -118,13 +119,16 @@ public class MasterChecker {
 				ParameterClient paramClient = new ParameterClient(new NodeIdentifier(GraphName.of("/master_checker"), masterUri), masterUri);
 				boolean hasName = ((Boolean) paramClient.hasParam(GraphName.of("robot/name")).getResult()).booleanValue();
 				boolean hasType = ((Boolean) paramClient.hasParam(GraphName.of("robot/type")).getResult()).booleanValue();
+				boolean hasApps = ((Boolean) paramClient.hasParam(GraphName.of("robot/applications")).getResult()).booleanValue();
 				if(hasName && hasType) {
 					String robotName = (String) paramClient.getParam(GraphName.of("robot/name")).getResult();
 					String robotType = (String) paramClient.getParam(GraphName.of("robot/type")).getResult();
+					List<String> applications = (String) paramClient.getParam(GraphName.of("robot/applications")).getResult();
 					Date timeLastSeen = new Date(); // current time.
 					RobotDescription robotDescription = new RobotDescription(robotId, robotName, robotType, timeLastSeen);
 					handler.receiveConnection(robotDescription);
-				} else {
+				}
+				else {
 					Log.e("RosAndroid", "No parameters");
 					handler.handleConnectionError("The parameters on the server are not set. Please set robot/name and robot/type.");
 				}

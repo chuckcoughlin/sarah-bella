@@ -68,8 +68,7 @@ public class SdCardSetup {
       externalStorageWriteable = false;
     } else {
       // Something else is wrong. It may be one of many other states, but all we
-      // need
-      // to know is we can neither read nor write
+      // need to know is we can neither read nor write
       externalStorageAvailable = externalStorageWriteable = false;
     }
     return externalStorageAvailable && externalStorageWriteable;
