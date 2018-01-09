@@ -23,7 +23,6 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-import app_manager.App;
 import chuckcoughlin.sb.assistant.R;
 import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.dialog.SBBasicDialogFragment;
@@ -34,7 +33,8 @@ import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
 import chuckcoughlin.sb.assistant.ros.SBRosManager;
 import ros.android.appmanager.SBRobotConnectionHandler;
 import ros.android.appmanager.WifiChecker;
-import ros.android.util.MasterChecker;
+import ros.android.appmanager.MasterChecker;
+import ros.android.util.RobotApplication;
 import ros.android.util.RobotDescription;
 
 import static android.content.Context.WIFI_SERVICE;
@@ -116,7 +116,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
 
         RobotDescription robot = rosManager.getRobot();
         if (robot != null) {
-            List<App> applicationList = SBRosApplicationManager.getInstance().getApplications();
+            List<RobotApplication> applicationList = SBRosApplicationManager.getInstance().getApplications();
             Log.i(CLSS, String.format("onActivityCreated: will display %d applications for %s", applicationList.size(), rosManager.getRobot().getRobotName()));
             adapter.clear();
             adapter.addAll(applicationList);
@@ -215,7 +215,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
             appManager = null;
         }
         if(appManager != null && startApplication) {
-            appManager.addTerminationCallback(robotAppName, new AppManager.TerminationCallback() {
+            appManager.addTerminationCallback(robotAppName, new ApplicationManager.TerminationCallback() {
                 @Override
                 public void onAppTermination() {
                     RosAppActivity.this.onAppTerminate();
@@ -281,18 +281,17 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
                     final Toast toast = Toast.makeText(getActivity(), msg, Toast.LENGTH_LONG);
                     toast.show();
                 } else if (robot != null) {
-                    if (rosManager.getRobot() == null) {
-                        rosManager.createRobot(robot);
-                    } else {
+                    if (rosManager.getRobot() == null) rosManager.createRobot(robot);
+                    else {
                         rosManager.updateRobot(robot);
                     }
 
-                    List<App> apps = applicationManager.getApplications();
+                    List<RobotApplication> apps = applicationManager.getApplications();
                     RobotApplicationsAdapter adapter = (RobotApplicationsAdapter) getListAdapter();
                     adapter.clear();
-                    for (App app : apps) {
+                    for (RobotApplication app : apps) {
                         adapter.add(app);
-                        Log.i(CLSS, String.format("handleDialogResults added %s - now have %d", app.getName(), applicationManager.getApplicationCount()));
+                        Log.i(CLSS, String.format("handleDialogResults added %s - now have %d", app.getApplicationName(), applicationManager.getApplicationCount()));
                     }
                     adapter.notifyDataSetInvalidated();
 
@@ -304,9 +303,9 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
 
 
 //======================================== Array Adapter ======================================
-public class RobotApplicationsAdapter extends ArrayAdapter<App> implements ListAdapter {
+public class RobotApplicationsAdapter extends ArrayAdapter<RobotApplication> implements ListAdapter {
 
-    public RobotApplicationsAdapter(Context context, List<App> values) {
+    public RobotApplicationsAdapter(Context context, List<RobotApplication> values) {
         super(context, R.layout.ros_application_item, values);
     }
 
@@ -319,7 +318,7 @@ public class RobotApplicationsAdapter extends ArrayAdapter<App> implements ListA
     public View getView(int position, View convertView, ViewGroup parent) {
         Log.i(CLSS, String.format("RobotApplicationsAdapter.getView position =  %d", position));
         // Get the data item for this position
-        App app = getItem(position);
+        RobotApplication app = getItem(position);
         // Check if an existing view is being reused, otherwise inflate the view
         if (convertView == null) {
             Log.i(CLSS, String.format("RobotApplicationsAdapter.getView convertView was null"));
@@ -332,7 +331,7 @@ public class RobotApplicationsAdapter extends ArrayAdapter<App> implements ListA
         TextView statusView = (TextView) convertView.findViewById(R.id.status);
 
         // Populate the data into the template view using the data object
-        nameView.setText(app.getName());
+        nameView.setText(app.getApplicationName());
         //uriView.setText(description.getRobotId().getMasterUri());
         //statusView.setText(description.getConnectionStatus());
             /*
@@ -418,7 +417,7 @@ public class RobotApplicationsAdapter extends ArrayAdapter<App> implements ListA
         tview = (TextView) contentView.findViewById(R.id.status);
         if (robot == null) tview.setVisibility(View.INVISIBLE);
         else {
-            tview.setText(applicationManager.getApplicationStatusAsString());
+            tview.setText(applicationManager.getApplicationStatus());
             tview.setVisibility(View.VISIBLE);
         }
     }

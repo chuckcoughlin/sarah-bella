@@ -41,8 +41,7 @@ import org.ros.namespace.GraphName;
 import java.net.URI;
 import java.util.Date;
 
-import app_manager.Icon;
-import ros.android.msgs.PlatformInfo;
+import chuckcoughlin.sb.assistant.common.SBConstants;
 
 public class RobotDescription implements java.io.Serializable {
 	private static final String CLSS = "RobotDescription";
@@ -64,7 +63,6 @@ public class RobotDescription implements java.io.Serializable {
 	private RobotId robotId;
 	private String robotName;
 	private String robotType;
-	private Icon robotIcon;
 	private String platformType;
 	private String gatewayName;
 	private String connectionStatus;
@@ -73,10 +71,9 @@ public class RobotDescription implements java.io.Serializable {
 	public RobotDescription() {
 	}
 
-	public RobotDescription(RobotId robotId, String robotName, String robotType, Icon robotIcon, String gatewayName, Date timeLastSeen) {
+	public RobotDescription(RobotId robotId, String robotName, String robotType, String gatewayName, Date timeLastSeen) {
 		this(robotId,robotName,robotType,timeLastSeen);
 		this.robotType = robotType;
-		this.robotIcon = robotIcon;
 		this.gatewayName = gatewayName;
 		this.timeLastSeen = timeLastSeen;
 	}
@@ -85,9 +82,8 @@ public class RobotDescription implements java.io.Serializable {
 		setRobotName(robotName);
 		setRobotId(robotId);
 		this.robotType = robotType;
-		this.robotIcon = null;
 		this.gatewayName = "192.168.0.1";
-		this.platformType= PlatformInfo.PLATFORM_LINUX;
+		this.platformType= SBConstants.PLATFORM_LINUX;
 		this.connectionStatus = CONNECTION_STATUS_UNCONNECTED;
 		this.timeLastSeen = timeLastSeen;
 	}
@@ -123,8 +119,6 @@ public class RobotDescription implements java.io.Serializable {
 	public void setGatewayName(String name) { this.gatewayName = name; }
 	public String getPlatformType() { return this.platformType; }
 	public void setPlatformType(String type) { this.platformType = type; }
-	public Icon getRobotIcon() { return this.robotIcon; }
-	public void setRobotIcon(Icon icon) { this.robotIcon=icon; }
 
 	public String getConnectionStatus() {
 		return connectionStatus;
@@ -144,7 +138,7 @@ public class RobotDescription implements java.io.Serializable {
 		return this.robotName.equals(NAME_UNKNOWN);
 	}
 
-	public static RobotDescription createUnknown(RobotId robotId) throws InvalidRobotDescriptionException {
+	public static RobotDescription createUnknown(RobotId robotId)  {
 		return new RobotDescription(robotId, NAME_UNKNOWN, TYPE_UNKNOWN, new Date());
 	}
 

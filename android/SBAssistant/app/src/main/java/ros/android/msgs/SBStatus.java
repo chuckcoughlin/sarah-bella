@@ -7,27 +7,25 @@ import org.ros.internal.message.context.MessageContext;
 import java.util.ArrayList;
 import java.util.List;
 
-import app_manager.App;
-import app_manager.Icon;
+import chuckcoughlin.sb.assistant.common.SBConstants;
 
 /**
- * Ignore icon - associated with the robot, not the application
- * and pairing client - our robots are not paired.
+ * A concrete reprepresentation of the sb_status topic.
  */
 
-public class SBApp extends BasicMessage implements App {
+public class SBStatus extends BasicMessage {
     private String name;
     private String displayName;
     private String description;
     private String platform;
     private String status;
 
-    public SBApp(MessageContext context) {
+    public SBStatus(MessageContext context) {
         super(context);
         this.name = "";
         this.displayName = "";
         this.description = "";
-        this.platform = PlatformInfo.PLATFORM_LINUX;
+        this.platform = SBConstants.PLATFORM_LINUX;
         this.status = "";
     }
 
@@ -46,7 +44,5 @@ public class SBApp extends BasicMessage implements App {
     public String getStatus() { return this.status; }
     public void setStatus(String paramString) { this.status = paramString; }
 
-    public Icon getIcon() { return null; }
-    public void setIcon(Icon paramIcon) {}
 }
 

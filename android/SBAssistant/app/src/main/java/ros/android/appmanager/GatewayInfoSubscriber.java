@@ -1,5 +1,6 @@
 package ros.android.appmanager;
 /*
+ * An example of a message subscriber - See MasterChecker
  * See: http://docs.ros.org/hydro/api/android_apps/html/GatewayInfoSubscriber_8java_source.html
  */
 

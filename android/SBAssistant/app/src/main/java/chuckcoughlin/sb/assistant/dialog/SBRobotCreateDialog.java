@@ -163,14 +163,8 @@ public class SBRobotCreateDialog extends SBBasicDialogFragment {
         if (robotId != null && robotId.getMasterUri() != null) {
             if( robot==null  ) {
                 // Create a new robot
-                try {
-                    newRobot = RobotDescription.createUnknown(robotId);
-                    newRobot.setRobotName(name);
-                }
-                catch (InvalidRobotDescriptionException irde) {
-                    Log.w(CLSS, String.format("Invalid robot description: %s",irde.getLocalizedMessage()));
-                    setErrorMessage("Invalid robot description: " + irde.getLocalizedMessage());
-                }
+                newRobot = RobotDescription.createUnknown(robotId);
+                newRobot.setRobotName(name);
             }
             else {
                 // Update the current robot

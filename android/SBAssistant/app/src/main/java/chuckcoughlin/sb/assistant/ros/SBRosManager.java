@@ -173,14 +173,9 @@ public class SBRosManager {
             map.put(PLATFORM_VALUE,cursor.getString(7));
             map.put(GATEWAY_VALUE,cursor.getString(8));
             RobotId id = new RobotId(map);
-            try {
-                r = new RobotDescription(id, cursor.getString(1), cursor.getString(2), new Date());
-                connectionStatus = RobotDescription.CONNECTION_STATUS_UNCONNECTED;
-                r.setConnectionStatus(connectionStatus);
-            }
-            catch(InvalidRobotDescriptionException irde) {
-                Log.i(CLSS, String.format("getRobots %s caught InvalidRobotDescriptionException: %s ",cursor.getString(2),irde.getMessage()));
-            }
+            r = new RobotDescription(id, cursor.getString(1), cursor.getString(2), new Date());
+            connectionStatus = RobotDescription.CONNECTION_STATUS_UNCONNECTED;
+            r.setConnectionStatus(connectionStatus);
             cursor.moveToNext();
         }
         cursor.close();

@@ -50,5 +50,4 @@ dependencies {
     implementation files('libs/message_generation-0.3.0.jar')
     implementation files('libs/gateway_msgs-0.9.0.jar')
     implementation files('libs/netty-3.2.9.jar')
-    implementation files('libs/app_manager-1.0.2.jar')
 }

@@ -15,18 +15,14 @@ import org.ros.message.Duration;
 import org.ros.message.MessageIdentifier;
 import org.ros.message.Time;
 
-import app_manager.ClientApp;
-
 
 class BasicMessage implements RawMessage, GetInstance {
     private final MessageContext messageContext;
     private final MessageFields messageFields;
-    private List<ClientApp> clientApps;
 
     public BasicMessage(MessageContext messageContext) {
         this.messageContext = messageContext;
         this.messageFields = new MessageFields(messageContext);
-        this.clientApps = new ArrayList<>();
     }
 
     public MessageContext getMessageContext() {
@@ -76,7 +72,6 @@ class BasicMessage implements RawMessage, GetInstance {
     public Duration getDuration(String name) {
         return (Duration) this.messageFields.getFieldValue(name);
     }
-
 
     public List<Duration> getDurationList(String name) {
         return (List) this.messageFields.getFieldValue(name);
@@ -355,8 +350,6 @@ class BasicMessage implements RawMessage, GetInstance {
     public void setChannelBuffer(String name, ChannelBuffer value) {
         this.messageFields.setFieldValue(name, value);
     }
-    public List<ClientApp> getClientApps() { return this.clientApps; }
-    public void setClientApps(List<ClientApp> paramList) {this.clientApps = paramList;}
 
     public Object getInstance() {
         return this;
@@ -398,7 +391,4 @@ class BasicMessage implements RawMessage, GetInstance {
         return true;
     }
 }
-
-
-// Location:              /Users/chuckc/robotics/library/message_generation-0.3.0.jar!/org/ros/internal/message/BasicMessage.class
 

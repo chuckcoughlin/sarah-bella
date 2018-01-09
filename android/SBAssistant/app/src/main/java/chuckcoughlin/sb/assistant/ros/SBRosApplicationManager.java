@@ -21,9 +21,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import app_manager.App;
-import app_manager.StatusCodes;
+
 import chuckcoughlin.sb.assistant.db.SBDbManager;
+import ros.android.util.RobotApplication;
 import ros.android.util.RobotDescription;
 import ros.android.util.RobotId;
 
@@ -40,8 +40,8 @@ import ros.android.util.RobotId;
 public class SBRosApplicationManager {
     private final static String CLSS = "SBRosManager";
     // Keys for columns in result map. Somewhere there's a 6 char limit.
-    public static final String NAME_VALUE = "NAME";
-    public static final String DISPLAY_VALUE = "DISPLY";
+    public static final String NAME = "NAME";
+    public static final String APPLICATION = "APP";
     public static final String STATUS_VALUE = "STATUS";
 
     private static SBRosApplicationManager instance = null;
@@ -51,7 +51,7 @@ public class SBRosApplicationManager {
     private Thread nodeThread;
     private Handler uiThreadHandler = new Handler();
     private String currentApplication;
-    private int applicationStatus;     // Status of current application
+    private String applicationStatus;     // Status of current application
 
 
     /**
@@ -63,7 +63,7 @@ public class SBRosApplicationManager {
         this.dbManager = SBDbManager.getInstance();
         this.rosManager = SBRosManager.getInstance();
         this.currentApplication = null;     // Name
-        this.applicationStatus = StatusCodes.NOT_RUNNING;
+        this.applicationStatus = RobotApplication.APP_STATUS_NOT_RUNNING;
     }
 
     /**
@@ -89,65 +89,39 @@ public class SBRosApplicationManager {
         return instance;
     }
 
-    public List<App> getApplications() {
-        List<App> apps = new ArrayList<>();
+    public List<RobotApplication> getApplications() {
+        List<RobotApplication> apps = new ArrayList<>();
         RobotDescription robot = rosManager.getRobot();
         if (robot == null) return apps;
 
-        String uri = robot.getRobotId().getMasterUri();
         SQLiteDatabase db = dbManager.getReadableDatabase();
 
         StringBuilder sql = new StringBuilder(
-                "SELECT masterUri,appName,displayName");
+                "SELECT appName,description");
         sql.append(" FROM RobotApplications");
-        sql.append(" WHERE masterUri = ?");
         sql.append(" ORDER BY appName");
-        String[] args = new String[]{uri};
+        String[] args = new String[]{};
 
         Cursor cursor = db.rawQuery(sql.toString(), args);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             Map<String, Object> map = new HashMap<>();
-            map.put(URI_VALUE, cursor.getString(1));
-            map.put(NAME_VALUE, cursor.getString(2));
-            map.put(DISPLAY_VALUE, cursor.getString(3));
 
-            RobotId id = new RobotId(map);
-            // "nodeless" message creation
-            NodeConfiguration nodeConfiguration = NodeConfiguration.newPrivate();
-            MessageFactory messageFactory = nodeConfiguration.getTopicMessageFactory();
-            App app = messageFactory.newFromType(App._TYPE);
-            app.setName(cursor.getString(2));
-            app.setDisplayName(cursor.getString(3));
+            String name = cursor.getString(1);
+            RobotApplication app = new RobotApplication(cursor.getString(1),cursor.getString(2));
             apps.add(app);
             cursor.moveToNext();
         }
         cursor.close();
+        //TODO: Add publishers and subscribers
+
         return apps;
     }
 
     public String getCurrentApplication() { return this.currentApplication; }
     public void setCurrentApplication(String name) { this.currentApplication=name; }
-    public int getApplicationStatusStatus() { return this.applicationStatus; }
-    public String getApplicationStatusAsString() {
-        switch (this.applicationStatus) {
-            case StatusCodes.NOT_RUNNING:
-                return "Not running";
-            default:
-                return String.format("Unknown status(%d)",this.applicationStatus);
-        }
-    }
-    public void setCurrentStatus(int s) { this.applicationStatus=s; }
-    /***
-     * Replace the list of apps with the list specified.
-     * @param apps a list of applications defined on the current robot
-     */
-    public void setApplications(List<App> apps) {
-        clearApplications(); // Start clean.
-        for (App app : apps) {
-            addApplication(app);
-        }
-    }
+    public String getApplicationStatus() { return this.applicationStatus; }
+    public void setCurrentStatus(String s) { this.applicationStatus=s; }
 
     /**
      * @return the number of applications defined for the current robot.
@@ -168,31 +142,5 @@ public class SBRosApplicationManager {
         int count = cursor.getCount();
         cursor.close();
         return count;
-    }
-
-    /**
-     * Set the current status for an application. Initial status is NOT_RUNNING.
-     * @param appName application name
-     * @param status new status
-     */
-    public void setStatus(String appName, int status) {
-        RobotDescription robot = rosManager.getRobot();
-        if (robot == null) return;
-        RobotId id = robot.getRobotId();
-        String uri = robot.getRobotId().getMasterUri();
-        StringBuilder sql = new StringBuilder("UPDATE RobotApplications SET status = ?");
-        sql.append(" WHERE masterUri = ?");
-        sql.append("   AND appName=?");
-        String[] args = {String.valueOf(status), uri, appName};
-        SQLiteDatabase db = dbManager.getWritableDatabase();
-        SQLiteStatement stmt = db.compileStatement(sql.toString());
-        stmt.bindAllArgsAsStrings(args);
-        try {
-            stmt.executeUpdateDelete();
-        } catch (SQLException sqle) {
-            Log.w(CLSS, String.format("Attempt to update application status %s:%s failed (%s)", uri, appName, sqle.getLocalizedMessage()));
-        } finally {
-            stmt.close();
-        }
     }
 }

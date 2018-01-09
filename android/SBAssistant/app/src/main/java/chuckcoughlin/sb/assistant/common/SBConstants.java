@@ -24,12 +24,14 @@ public class SBConstants {
     public static final String DEFAULT_ROS_MASTER_URI="http://xxx.xxx.xxx:11311";
     public static final String DEFAULT_ROS_HOSTNAME="xxx.xxx.xxx";
 
+    // Platform Types
+    public static final String PLATFORM_LINUX="Linux";
+    public static final String PLATFORM_RASPBERRYPI="RaspberryPy";
+
     // Dialog transaction key
     public static final String DIALOG_TRANSACTION_KEY = "dialog";
+
     // Dialog results buttons
     public static final String DIALOG_BUTTON_ADD = "add";
     public static final String DIALOG_BUTTTON_CANCEL = "cancel";
-    // Legal datatypes for messages
-    public static final String DATATYPE_TEXT       = "text";
-    public static final String DATATYPE_TEXT_ARRAY = "text_array";
 }
