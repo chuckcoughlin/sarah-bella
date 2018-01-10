@@ -1,4 +1,7 @@
 <launch>
+  <param name="robot/name" value="SBAssistant" type="str"/>
+  <param name="robot/type" value="turtlebot3" type="str"/>
+  <param name="robot/application" value="..." type="str"/>
   <!-- Launch file for package -->
   <node pkg="" type=".py" name="" output="screen">
   </node>
