@@ -97,7 +97,6 @@ public class SBRosManager {
         return instance;
     }
 
-
     /*
      * Create a new current robot
      */
@@ -118,7 +117,7 @@ public class SBRosManager {
         stmt.bindString(2,robot.getRobotName());
         stmt.bindString(3,robot.getRobotType());
         stmt.bindString(4,id.getControlUri());
-        stmt.bindString(5,id.getWifi());
+        stmt.bindString(5,id.getSSID());
         stmt.bindString(6,id.getWifiEncryption());
         stmt.bindString(7,id.getWifiPassword());
         stmt.bindString(8,robot.getPlatformType());
@@ -182,6 +181,13 @@ public class SBRosManager {
         return r;
     }
 
+    // Set the SSID of the current robot and update database.
+    public void setSSID(String ssid) {
+        if( this.robot!=null ) {
+            this.robot.getRobotId().setSSID(ssid);
+            updateRobot(this.robot);
+        }
+    }
 
 
     public NodeConfiguration getNodeConfiguration() { return this.configuration; }

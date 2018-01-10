@@ -18,7 +18,7 @@
     <string name="discoveryButtonEdit">Edit</string>
     <string name="discoveryButtonStart">Start</string>
     <string name="discoveryButtonStop">Stop</string>
-    <string name="discoveryButtonDisconnect">Disonnect</string>
+    <string name="discoveryButtonDisconnect">Disconnect</string>
     <string name="discoveryPopupDefineTitle">Define Robot</string>
     <!-- Strings that are generically useful -->
     <string name="defaultMasterURI">http://192.168.1.113:11311</string>

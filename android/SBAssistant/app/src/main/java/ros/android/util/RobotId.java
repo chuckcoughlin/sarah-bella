@@ -38,7 +38,7 @@ import java.util.Map;
 public class RobotId implements java.io.Serializable {
   private String masterUri;
   private String controlUri;
-  private String wifi;
+  private String ssid;
   private String wifiEncryption;
   private String wifiPassword;
   
@@ -52,8 +52,8 @@ public class RobotId implements java.io.Serializable {
     if (map.containsKey("CURL")) {
       this.controlUri = map.get("CURL").toString();
     }
-    if (map.containsKey("WIFI")) {
-      this.wifi = map.get("WIFI").toString();
+    if (map.containsKey("SSID")) {
+      this.ssid = map.get("SSID").toString();
     }
     if (map.containsKey("WIFIENC")) {
       this.wifiEncryption = map.get("WIFIENC").toString();
@@ -73,8 +73,8 @@ public class RobotId implements java.io.Serializable {
   public String getControlUri() {
     return controlUri;
   }
-  public String getWifi() {
-    return wifi;
+  public String getSSID() {
+    return ssid;
   }
   public String getWifiEncryption() {
     return wifiEncryption;
@@ -83,11 +83,13 @@ public class RobotId implements java.io.Serializable {
     return wifiPassword;
   }
 
+  public String setSSID(String wifi) { this.ssid = wifi; }
+
   @Override
   public String toString() {
     String str = getMasterUri() == null ? "" : getMasterUri();
-    if (getWifi() != null) {
-      str = str + " On: " + getWifi();
+    if (getSSID() != null) {
+      str = str + " On: " + getSSID();
     }
     if (getControlUri() != null) {
       str = str + " Control: " + getControlUri();
@@ -128,7 +130,7 @@ public class RobotId implements java.io.Serializable {
 
     return nullSafeEquals(this.masterUri, lhs.masterUri) 
                              && nullSafeEquals(this.controlUri, lhs.controlUri) 
-                             && nullSafeEquals(this.wifi, lhs.wifi)
+                             && nullSafeEquals(this.ssid, lhs.ssid)
                              && nullSafeEquals(this.wifiEncryption, lhs.wifiEncryption)
                              && nullSafeEquals(this.wifiPassword, lhs.wifiPassword);
   }
@@ -141,7 +143,7 @@ public class RobotId implements java.io.Serializable {
     // Include a hash for each field checked by equals().
     result = 31 * result + (masterUri == null ? 0 : masterUri.hashCode());
     result = 31 * result + (controlUri == null ? 0 : controlUri.hashCode());
-    result = 31 * result + (wifi == null ? 0 : wifi.hashCode());
+    result = 31 * result + (ssid == null ? 0 : ssid.hashCode());
     result = 31 * result + (wifiEncryption == null ? 0 : wifiEncryption.hashCode());
     result = 31 * result + (wifiPassword == null ? 0 : wifiPassword.hashCode());
 

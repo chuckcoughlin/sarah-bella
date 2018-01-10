@@ -90,7 +90,7 @@ public class SBRobotCreateDialog extends SBBasicDialogFragment {
             EditText controlUriField = (EditText) view.findViewById(R.id.control_uri_editor);
             controlUriField.setText(robot.getRobotId().getControlUri());
             EditText wifiNameField = (EditText) view.findViewById(R.id.wifi_name_editor);
-            wifiNameField.setText(robot.getRobotId().getWifi());
+            wifiNameField.setText(robot.getRobotId().getSSID());
             EditText wifiPasswordField = (EditText) view.findViewById(R.id.wifi_password_editor);
             wifiPasswordField.setText(robot.getRobotId().getWifiPassword());
         }
@@ -128,10 +128,10 @@ public class SBRobotCreateDialog extends SBBasicDialogFragment {
                 data.put("CURL", "");
             }
             if (newWifiName != null && newWifiName.length() > 0) {
-                data.put("WIFI", newWifiName);
+                data.put("SSID", newWifiName);
             }
             else {
-                data.put("WIFI", "");
+                data.put("SSID", "");
             }
             if (newWifiPassword != null && newWifiPassword.length() > 0) {
                 data.put("WIFIPW", newWifiPassword);

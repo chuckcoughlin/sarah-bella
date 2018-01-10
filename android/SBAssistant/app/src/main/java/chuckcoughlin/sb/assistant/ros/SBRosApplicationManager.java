@@ -107,8 +107,7 @@ public class SBRosApplicationManager {
         while (!cursor.isAfterLast()) {
             Map<String, Object> map = new HashMap<>();
 
-            String name = cursor.getString(1);
-            RobotApplication app = new RobotApplication(cursor.getString(1),cursor.getString(2));
+            RobotApplication app = new RobotApplication(cursor.getString(0),cursor.getString(1));
             apps.add(app);
             cursor.moveToNext();
         }
@@ -136,8 +135,7 @@ public class SBRosApplicationManager {
         StringBuilder sql = new StringBuilder(
                 "SELECT count(*)");
         sql.append(" FROM RobotApplications");
-        sql.append(" WHERE masterUri = ?");
-        String[] args = new String[]{uri};
+        String[] args = new String[]{};
         Cursor cursor = db.rawQuery(sql.toString(), args);
         int count = cursor.getCount();
         cursor.close();

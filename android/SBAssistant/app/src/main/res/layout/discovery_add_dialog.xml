@@ -48,7 +48,7 @@
         android:layout_height="wrap_content"
         android:inputType="textUri"
         android:hint="@string/defaultMasterURI"/>
-    <TextView android:text="Enter wifi network name:"
+    <TextView android:text="Enter wifi network name (SSID):"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"/>
     <EditText android:id="@+id/wifi_name_editor"
