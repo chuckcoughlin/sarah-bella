@@ -3,6 +3,6 @@
   <param name="robot/type" value="turtlebot3" type="str"/>
   <param name="robot/application" value="system" type="str"/>
   <!-- Launch file for system_check -->
-  <node pkg="system_check" type="publish_system_parameters.py" name="sb_system_parameters" output="screen">
+  <node pkg="system_check" type="publish_system.py" name="sb_system" output="screen">
   </node>
 </launch>

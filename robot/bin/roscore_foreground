@@ -8,19 +8,15 @@
 . /opt/ros/kinetic/setup.sh
 export HOME=/home/chuckc
 export ROS_ROOT=/opt/ros/kinetic/share/ros
-export ROS_MASTER_URI="http://${IP}:11311"
 export ROS_ETC_DIR=/opt/ros/kinetic/etc/ros
-# Configure directories for either virtual machine or Raspberry Pi
-if -d $HOME/catkin_ws
-then
- export CATKIN=$HOME/catkin_ws
-else
- export CATKIN=$HOME/robotics/catkin_ws
-fi
+export CATKIN_WS=$HOME/catkin_ws
 set -x
-export ROS_PACKAGE_PATH=${CATKIN}/src:/opt/ros/kinetic/share
-export PYTHONPATH=${CATKIN}/devel/lib/python2.7/dist-packages:/opt/ros/kinetic/lib/python2.7/dist-packages
+IP=`hostname -I`
+IP=`echo ${IP}|sed -e 's/^[ \t]*//'`
+export ROS_MASTER_URI="http://${IP}:11311"
+export ROS_PACKAGE_PATH=${CATKIN_WS}/src:/opt/ros/kinetic/share
+export PYTHONPATH=${CATKIN_WS}/devel/lib/python2.7/dist-packages:/opt/ros/kinetic/lib/python2.7/dist-packages
 
-. $CATKIN/config/launch.conf
+. ${CATKIN_WS}/config/launch.conf
 
 roslaunch ${LAUNCH_PKG} ${LAUNCH_FILE}

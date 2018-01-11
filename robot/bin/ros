@@ -24,10 +24,9 @@ test -x $DAEMON || exit 0
 # NOTE: HOME is the sudoer home directory
 export HOME=/home/chuckc
 export ROS_ROOT=/opt/ros/kinetic/share/ros
-export ROS_PACKAGE_PATH=${HOME}/robotics/catkin_ws/src:/opt/ros/kineetic/share
-export ROS_MASTER_URI="http://${IP}:11311"
+export ROS_PACKAGE_PATH=${HOME}/catkin_ws/src:/opt/ros/kinetic/share
 export ROS_ETC_DIR=/opt/ros/kinetic/etc/ros
-export PYTHONPATH=${HOME}/robotics/catkin_ws/devel/lib/python2.7/dist-packages:/opt/ros/kinetic/lib/python2.7/dist-packages
+export PYTHONPATH=${HOME}/catkin_ws/devel/lib/python2.7/dist-packages:/opt/ros/kinetic/lib/python2.7/dist-packages
 
 case "$1" in
   start)
@@ -41,15 +40,15 @@ case "$1" in
 	# is actually configured. Otherwise, you will get an error and launch
 	# will fail. Loop until the IP comes up. 
  	while true; do
-          IP="`ifconfig | grep 'inet addr:192.168.'| cut -d: -f2 | awk '{ print $1}'`"
-          IP="`ifconfig | grep 'inet addr:10.0.'| cut -d: -f2 | awk '{ print $1}'`"
-
-        if [ "$IP" ] ; then
-                echo "Found: IP = ${IP}"
-                break
-        fi
-	sleep 1
+          IP="`hostname -I`"
+          if [ "$IP" ] ; then
+             echo "Found: IP = ${IP}"
+             break
+          fi
+	  sleep 1
   	done
+	IP=`echo ${IP}|sed -e 's/^[ \t]*//'`
+	export ROS_MASTER_URI="http://${IP}:11311"
 
 	echo "=============================== /etc/init.d/ros start ===========================" >> ${ROSLOG}
 	roslaunch ${LAUNCH_PKG} ${LAUNCH_FILE} >>${ROSLOG} 2>&1

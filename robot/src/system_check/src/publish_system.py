@@ -6,17 +6,20 @@
 #
 from subprocess import call
 import rospy
+import socket
 from system_check.msg import sb_system
+from std_msgs.msg import String
 
-rospy.init_node('sb_publish_system',sb_system,queue_size = 1)
-pub = rospy.Publisher('/sb_system',
-rate= rospy.Rate(2) # 2 second publish rate
-data= sb_system()
+pub = rospy.Publisher('/sb_system',String,queue_size=1)
+rospy.init_node('sb_publish_system')
+rate= rospy.Rate(5) #  5 second publish rate
+topic= sb_system('','')
 
 while not rospy.is_shutdown():
-	data.hostname = call('hostname')
-	data.ip_address = call('hostname -I')
-	pub.publist(data)
+	topic.hostname = socket.gethostname()
+	topic.ip_address = socket.gethostbyname(topic.hostname)
+	# All args and in-order
+	pub.publish([topic.hostname,topic.ip_address])
 	rate.sleep()
 
 print "system_check.publish_system: complete"
