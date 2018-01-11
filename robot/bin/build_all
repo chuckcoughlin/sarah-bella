@@ -1,0 +1,4 @@
+#!/bin/sh
+# Build the ros packages
+cd ~/robotics/catkin_ws
+catkin_make

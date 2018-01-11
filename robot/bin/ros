@@ -25,14 +25,16 @@ test -x $DAEMON || exit 0
 export HOME=/home/chuckc
 export ROS_ROOT=/opt/ros/kinetic/share/ros
 export ROS_PACKAGE_PATH=${HOME}/robotics/catkin_ws/src:/opt/ros/kineetic/share
-export ROS_MASTER_URI=http://${IP}:11311
+export ROS_MASTER_URI="http://${IP}:11311"
 export ROS_ETC_DIR=/opt/ros/kinetic/etc/ros
 export PYTHONPATH=${HOME}/robotics/catkin_ws/devel/lib/python2.7/dist-packages:/opt/ros/kinetic/lib/python2.7/dist-packages
 
 case "$1" in
   start)
+#       Uncomment for debugging, execute as: sudo bin/ros start
+#        set -x
 	. /opt/ros/kinetic/setup.sh
-	. ${HOME}/robotics/repo/robot/config/launch.conf
+	. ${HOME}/robotics/robot/config/launch.conf
 	env
 	> $ROSLOG
 	# This is important. You must wait until the IP address of the machine
