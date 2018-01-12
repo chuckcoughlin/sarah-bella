@@ -9,7 +9,15 @@ We use the kinetic version of ROS. This is the current version used by ROBOTIS f
 
 ![sarah-bella - Turtlebot3](/images/sarah-bella-large.png)
 ````                        sara-bella - Turtlebot3 ````
-
+***************************************************************
+## Table of Contents <a id="table-of-contents"></a>
+  * [Android Control Application](#android-header)
+    * [External Libraries](#external-libraries)
+    * [SB Assistant](#sb-assistant)
+    * [Emulator](#emulator)
+    * [Persistent Storage](#persistent-storage)
+  * [Linux Build System](#linux-header)
+  * [Raspberry Pi Robot](#raspberrypi-header)
 Here is a diagram that shows the relationships between the various development components.
 ![System Architecture for Development](/images/development-layout.png)
 ````                        Development - System Architecture ````
@@ -19,19 +27,16 @@ On the host system:
  * The Linux VM is a Virtual Box virtual machine with the Robot Operating System (ROS) libraries. It is used to create and test-compile the robot code. When done, the code is checked into ''git'' and subsequently checked out and built on the robot.
 
 This drawing and others is constructed using **InkScape** from https://inkscape.org/en/release/0.92.2.
-## Table of Contents
-  * [Android Control Application](#android-header)
-  * [Linux Build System](#linux-header)
-  * [Raspberry Pi Robot](#raspberrypi-header)
 *********************************************************
 ### Android Control Application <a id="android-header"></a>
+[toc][table-of-contents]
 The control application is a standard Android application built using Android Studio 3.0. The studio may be downloaded from http://developer.android.com. It runs on the OSX build system, creating a run image
 for the android tablet.
 
 Configure the host build system, making the Android home environment variable available by adding
 ```ANDROID_HOME=~/Library/Androd/sdk``` to ~/.bashrc.
 
-#### External Libraries
+##### External Libraries <a id="external-libraries"></a>
 These next steps make ROS libraries available to the Android build environment. Note that the following are necessary only if creating a project from scratch. For an existing project, the modules are already part of the SBAssistant repository.
 
 The android core package may be found at (you may have to download the entire Maven repository to get at the individual files):  https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_core/rosjava/0.3.5. Download rosjava-0.3.5.jar (org.ros) to ~/robotics/sara-bella/SBAssistant/app/libs. Then from inside Android Studio:
@@ -47,14 +52,14 @@ Create libraries in a similar way from the following:<br/>
 * http://repo1.maven.org/maven2/org/jboss/netty/netty/3.2.9.Final netty.3.2.9.Final.jar (org.jboss.netty)
 
 
-#### SB-Assistant
+##### SB-Assistant <a id="sb-assistant"></a>
 This notepad application is designed to command the robot, perform compute-intensive analyses and display results. The SBAssistant project is contained in the overall project
 repository (```git clone http://github.com/chuckcoughlin/sarah-bella``` Load android/SBAssistant into Android Studio). Internet access is required to build.
 
-#### Emulator
+##### Emulator <a id="emulator"></a>
 In order to test the application in the emulator, after configuring a suitable target device with the AVD manager, select the studio menu Tools->Android->Enable ADB Integration and Run->Edit Configuration. Thereafter use the green "run" arrow in the toolbar to launch the application in the emulator. Output is viewable directly in the studio's ''logcat'' tab.
 
-#### Persistent Storage
+##### Persistent Storage <a id="persistent-storage"></a>
 Configuration parameters, maps and other data that are meant to remain in place even through application changes, are stored in a SQLite database accessible through the tablet application. The database can also be read externally.
 
 On the tablet:
