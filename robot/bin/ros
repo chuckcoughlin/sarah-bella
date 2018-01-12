@@ -15,7 +15,6 @@ set -e
 
 PATH=/opt/ros/kinetic/bin:/bin:/usr/bin:/sbin:/usr/sbin
 DAEMON=/opt/ros/kinetic/bin/roscore
-IP=`hostname -I`
 export ROSLOG=/var/log/ros.log
 
 test -x $DAEMON || exit 0
@@ -24,7 +23,6 @@ test -x $DAEMON || exit 0
 # NOTE: HOME is the sudoer home directory
 export HOME=/home/chuckc
 export ROS_ROOT=/opt/ros/kinetic/share/ros
-export ROS_PACKAGE_PATH=${HOME}/catkin_ws/src:/opt/ros/kinetic/share
 export ROS_ETC_DIR=/opt/ros/kinetic/etc/ros
 export PYTHONPATH=${HOME}/catkin_ws/devel/lib/python2.7/dist-packages:/opt/ros/kinetic/lib/python2.7/dist-packages
 
@@ -34,22 +32,21 @@ case "$1" in
 #        set -x
 	. /opt/ros/kinetic/setup.sh
 	. ${HOME}/robotics/robot/config/launch.conf
-	env
-	> $ROSLOG
 	# This is important. You must wait until the IP address of the machine
 	# is actually configured. Otherwise, you will get an error and launch
 	# will fail. Loop until the IP comes up. 
  	while true; do
           IP="`hostname -I`"
           if [ "$IP" ] ; then
-             echo "Found: IP = ${IP}"
+             echo "IP = ${IP}" >> ${ROSLOG}
              break
           fi
 	  sleep 1
   	done
 	IP=`echo ${IP}|sed -e 's/^[ \t]*//'`
 	export ROS_MASTER_URI="http://${IP}:11311"
-
+	export ROS_PACKAGE_PATH=${HOME}/catkin_ws/src:/opt/ros/kinetic/share
+	> $ROSLOG
 	echo "=============================== /etc/init.d/ros start ===========================" >> ${ROSLOG}
 	roslaunch ${LAUNCH_PKG} ${LAUNCH_FILE} >>${ROSLOG} 2>&1
 	echo "=============================== /etc/init.d/ros exited ===========================" >> ${ROSLOG}
@@ -76,5 +73,3 @@ case "$1" in
     exit 1
     ;;
 esac
-
-

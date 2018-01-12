@@ -7,6 +7,7 @@
 # run as super-user
 . /opt/ros/kinetic/setup.sh
 export HOME=/home/chuckc
+export ROSLOG=/var/log/ros.log
 export ROS_ROOT=/opt/ros/kinetic/share/ros
 export ROS_ETC_DIR=/opt/ros/kinetic/etc/ros
 export CATKIN_WS=$HOME/catkin_ws
@@ -18,5 +19,4 @@ export ROS_PACKAGE_PATH=${CATKIN_WS}/src:/opt/ros/kinetic/share
 export PYTHONPATH=${CATKIN_WS}/devel/lib/python2.7/dist-packages:/opt/ros/kinetic/lib/python2.7/dist-packages
 
 . ${CATKIN_WS}/config/launch.conf
-
 roslaunch ${LAUNCH_PKG} ${LAUNCH_FILE}
