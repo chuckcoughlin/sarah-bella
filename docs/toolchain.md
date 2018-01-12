@@ -16,8 +16,25 @@ We use the kinetic version of ROS. This is the current version used by ROBOTIS f
     * [SB Assistant](#sb-assistant)
     * [Emulator](#emulator)
     * [Persistent Storage](#persistent-storage)
+    * [Transfer to Tablet](#transfer-to-tablet)
   * [Linux Build System](#linux-header)
+    * [Virtualbox Setup](#virtualbox-setup)
+    * [ROS Development Setup](#ros-development-setup)
+    * [Source Repository](#source-repository)
+    * [Turtlebot3 Support](#turtlebot3-support)
+    * [Package Creation](#package-creation)
+    * [RosJava Support](#rosjava-support)
+    * [Transfer to the Robot](#transfer-to-robot)
+    * [System Configuration](#system-configuration)
   * [Raspberry Pi Robot](#raspberrypi-header)
+    * [Initial Image](#initial-image)
+    * [Network Configuration](#network-configuration)
+    * [ROS Development Setup](#ros-development-setup-pi)
+    * [Code Updates](#code-updates)
+    * [GPIO](#gpio)
+    * [FTP](#ftp)
+    * [Backups](#backups)
+
 Here is a diagram that shows the relationships between the various development components.
 ![System Architecture for Development](/images/development-layout.png)
 ````                        Development - System Architecture ````
@@ -28,11 +45,10 @@ On the host system:
 
 This drawing and others is constructed using **InkScape** from https://inkscape.org/en/release/0.92.2.
 *********************************************************
-### Android Control Application <a id="android-header"></a>  [toc](#table-of-contents)
+### Android Control Application <a id="android-header"></a>
 [toc](#table-of-contents)
-The control application is a standard Android application built using Android Studio 3.0. The studio may be downloaded from http://developer.android.com. It runs on the OSX build system, creating a run image
-for the android tablet.
 
+The control application is a standard Android application built using Android Studio 3.0. The studio may be downloaded from http://developer.android.com. It runs on the OSX build system and creates a run image for the android tablet.
 Configure the host build system, making the Android home environment variable available by adding
 ```ANDROID_HOME=~/Library/Androd/sdk``` to ~/.bashrc.
 
@@ -80,7 +96,7 @@ For the emulator (running the debug version):
    exit
 ```
 
-#### Transfer to Tablet
+##### Transfer to Tablet <a id="transfer-to-tablet"></a>
 The tablet must be set in "developer" mode. This is accomplished under Settings->About Tablet. Tap on "Build number" 7 times. (Yes, really). Under Settings->Developer options, enable USB debugging. Connect the tablet and host using the same USB cable that is used to charge the device. Once the cable is connected a dialog should popup asking you to allow file transfer. (If this does not appear, you may have to fiddle with Developer options->USB Configuration).
 
 On the build system, configure Android Studio (Tools->Run>Edit Configurations) to target the build output directly to a USB device. After a successful build, merely select the "run" button to transfer the **apk** executable to the tablet.
@@ -90,11 +106,13 @@ To transfer non-apk files download and install Android File Transfer from http:/
 ***************************************************************
 
 ### Linux Build System <a id="linux-header"></a>
+[toc](#table-of-contents)
+
 The robot's ROS control code is developed on a Linux machine. We implement this as a virtual machine on the OSX host build system.
 This machine contains a development area which is linked to the robot's Raspberry Pi via a shared *git* source code repository.
 Python (mostly) and C++ code for the entire repertoire of applications and support packages is edited and compiled here. Actual tryout and testing must take place on the robot.
 
-##### VirtualBox Setup
+##### VirtualBox Setup <a id="virtualbox-setup"></a>
 We use VirtualBox on an iMac host to implement our Linux virtual machines. The application may be downloaded from http://www.oracle.com/technetwork/server-storage/virtualbox/downloads/index.html.
 
 The VirtualBox installation requires an additional package in order to support a file system shared with the host. From https://www.virtualbox.org/wiki/Downloads download, then from the VirtualBox "devices" menu,
@@ -122,7 +140,7 @@ on startup. In this case 'sudo umount share' and mount manually. The equivalent 
 ```
 The VirtualBox additions also provide for a shared clipboard.
 
-##### ROSDev Setup
+##### ROS Development Setup <a id="ros-development-setup"></a>
 On the host OSX system, create a virtual machine "ROSDev" to house ROS development activities. These activities include package development as well as construction of the entire suite of
 applications that will eventually run on the robot.
 Use an Unbuntu 16.04 boot image downloaded from https://www.ubuntu.com/download/desktop/contribute?version=16.04.3&architecture=amd64r.
@@ -139,7 +157,7 @@ Now install dependent packages for Turtlebot3 control and Java message generatio
 		ros-kinetic-rqt-image-view ros-kinetic-gmapping ros-kinetic-navigation
 ```
 
-##### Source Repository
+##### Source Repository <a id="source-repository"></a>
 Make *robotics* the root of our *git* repository. We use *git* as the integrating mechanism with both our development machine and the robot itself.
 ```
   cd
@@ -147,21 +165,28 @@ Make *robotics* the root of our *git* repository. We use *git* as the integratin
   cd robotics
   git checkout --track origin/robot      # Always use the 'robot' branch
   git branch -d master
+  mkdir ~/catkin_ws
+  cd ~/catkin_ws
+  ln -s ~/robotics/robot/config config
+  ln -s ~/robotics/robot/bin bin
+  ln -s ~/robotics/robot/src src
 ```
-##### Turtlebot3 Support
+NOTE: It is important to create the symbolic links before cloning the turtlebot message repositories in the following step.
+
+##### Turtlebot3 Support <a id="turtlebot3-support"></a>
 This step describes the initial installation of source code for turtlebot ROS support packages. These standard packages are required for a
 successful build, but have not been checked into the *sara-bella* repository. <a id="message-packages"></a>
 
 ```
 		cd ~/catkin_ws/src
-		git clone https://github.com/ROBOTIS-GIT/turtlebot3_msgs.git
-		git clone https://github.com/ROBOTIS-GIT/turtlebot3.git
+    git clone https://github.com/ROBOTIS-GIT/turtlebot3_msgs.git
+    git clone https://github.com/ROBOTIS-GIT/turtlebot3.git
     git clone https://github.com/ROBOTIS-GIT/hls_lfcd_lds_driver.git
-		cd .. && catkin_make
+    cd .. && catkin_make
 ```
 Note: If building after a repository checkout, the ```catkin_make``` command may have to be executed twice to resolve build dependencies.
 
-##### Package Creation
+##### Package Creation <a id="package-creation"></a>
 A package encapsulates a related set of robot functionality. Ultimately we need to transfer the package definition onto the
 robot, but first we checkout and build on the virtual machine.
 
@@ -196,7 +221,7 @@ Once the package has been created and compiles with its dependencies, proceed to
 http:://wiki.ros.org/rospy_tutorials for guidance. The custom code consists of execution nodes, messages,
 services and topic files, as appropriate.
 
-##### RosJava Support
+##### RosJava Support <a id="rosjava-support"></a>
 The virtual machine is the master location for ROS topic/message development. Once created here, we build .jar files suitable for use in the Android build environment. These files are Java equivalents of the ROS message files. The following directions are based on: http://wiki.ros.org/rosjava/Tutorials/indigo/RosJava%20Message%20Artifacts.
 
 ```
@@ -212,20 +237,22 @@ Whenever custom messages change or additional packages are used execute:
 ```
 The *genjava_message_artifacts* command only needs to list changed packages or dependencies. When the **robot** branch is committed and merged on the build system, these jar files will be available for transfer into the SBAssistant Android project app/libs directory.
 
-###### Transfer to the Robot
+###### Transfer to the Robot <a id="transfer-to-robot"></a>
 Once the package has been defined and tested on the development system, it needs to be packaged and transferred to the
 robot. This is accomplished by simply checking the changes into *git* (pushing them, of course) and checking them out on the robot. Once checked out on the RaspberryPi, the new code must be built and executed.
 
-###### System Configuration
+###### System Configuration <a id="system-configuration"></a>
 We keep system-specific configurations in ~/robotics/conf. These files are referenced as necessary when the ROS packages are built on the robot.
 
 **********************************************************
 ### Raspberry Pi Robot <a id="raspberrypi-header"></a>
+[toc](#table-of-contents)
+
 "ROSPi" (our name) is the RaspberryPi that is the robot's single board computer (SBC). After an initial flash and configuration
 this device must be separately configured for each application. A wi-fi connection is used for file transfer with commands
 entered via external keyboard, mouse and monitor.
 
-##### Initial Image
+##### Initial Image <a id="initial-image"></a>
 On the host machine, download and install "Etcher" from https://etcher.io. We will use this to transfer images to the SD card.
 Download Ubuntu Mate for RaspberryPi 3 from https://ubuntu-mate.org/download. This is the initial boot image.
 For the actual download, you will need a torrent translator like qBittorent at https://www.qbittorrent.org/download.php.
@@ -240,14 +267,14 @@ Use "unxz" to de-compress the image.
 
 Using Etcher, flash the decompressed image onto the SD card. On my system, this is /dev/disk7. Flash time is approximately 5 minutes.
 
-##### Network Configuration
+##### Network Configuration <a id="network-configuration"></a>
 We would like to have *ROSPi* connect automatically to the wireless network on startup so as to not require any user intervention for normal operations.
 We have found that the selection of wi-fi networks is easiest during the initial system configuration. Select the desired network and mark it to
 automatically connect if found. It may not be available during the first login, but will connect on subsequent system restarts.
 
 To test and to determine the IP address, restart ROSPi and execute "ifconfig".
 
-##### ROS Development Setup
+##### ROS Development Setup <a id="ros-development-setup-pi"></a>
 
 Make **~/robotic** the root of our *git* repository. We will use *git* as the integrating mechanism with our development machine and for this we replicate the same directory
 structure as the Linux virtual machine. Establish
@@ -262,6 +289,7 @@ ROS package downloads.
   mkdir ~/catkin_ws
   cd ~/catkin_ws
   ln -s ~/robotics/robot/config config
+  ln -s ~/robotics/robot/bin bin
   ln -s ~/robotics/robot/src src
 ```
 
@@ -298,7 +326,7 @@ We want *roscore* to start automatically when the RaspberryPi is booted. Install
    sudo update-rc.d ros defaults
 ```
 
-##### Code Updates
+##### Code Updates <a id="code-updates"></a>
 Follow the steps below to install updates from the *git* repository:
 ```
     cd ~/robotics
@@ -320,7 +348,7 @@ Here are some commands to verify a successful start:
 ```
 
 
-##### GPIO
+##### GPIO <a id="gpio"></a>
 The GPIO pin layout is shown below:
 
 ![GPIO](/images/RaspberryPi-GPIO.png)
@@ -337,10 +365,10 @@ Download the **wiringPi** GPIO library and build the 'gpio' tool. Copy into our 
   cp gpio/gpio ~/robotics/repo/robot/bin
 ```
 
-##### FTP
+##### FTP <a id="ftp"></a>
 We use ftp to transfer miscellaneous files from the host to the Raspberry Pi. To do this install
 the vsftpd package.
 
-##### Backup
+##### Backups <a id="backups"></a>
 To backup an SD card, mount it on the host system. Then use the Disk Utility application to save the SD card contents
 to an image file on disk. Be sure to select the entire device, not just the named partition. Save as "compressed".

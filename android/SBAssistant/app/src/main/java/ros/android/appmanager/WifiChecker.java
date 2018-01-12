@@ -73,7 +73,7 @@ public class WifiChecker {
         }
         else {
             result = true;
-            Log.d(CLSS, String.format("%s:WiFi OK IP %x, SSID: %s %s(hidden)",wifiInfo.getIpAddress(),wifiInfo.getSSID(),wifiInfo.getHiddenSSID()));
+            Log.d(CLSS, String.format("WiFi OK IP %x, SSID: %s %s(hidden)",wifiInfo.getIpAddress(),wifiInfo.getSSID(),wifiInfo.getHiddenSSID()));
         }
         return result;
     }

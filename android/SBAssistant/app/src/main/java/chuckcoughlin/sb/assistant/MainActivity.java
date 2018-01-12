@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
 
         // If I absolutely have to start over again with the database
-        this.deleteDatabase(SBConstants.DB_NAME);
+        //this.deleteDatabase(SBConstants.DB_NAME);
 
     }
 }
