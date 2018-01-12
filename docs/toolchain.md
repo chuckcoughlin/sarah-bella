@@ -28,7 +28,7 @@ On the host system:
 
 This drawing and others is constructed using **InkScape** from https://inkscape.org/en/release/0.92.2.
 *********************************************************
-### Android Control Application <a id="android-header"></a>
+### Android Control Application <a id="android-header"></a>  [toc](#table-of-contents)
 [toc](#table-of-contents)
 The control application is a standard Android application built using Android Studio 3.0. The studio may be downloaded from http://developer.android.com. It runs on the OSX build system, creating a run image
 for the android tablet.
