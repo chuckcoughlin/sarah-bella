@@ -14,10 +14,7 @@
 set -e
 
 PATH=/opt/ros/kinetic/bin:/bin:/usr/bin:/sbin:/usr/sbin
-DAEMON=/opt/ros/kinetic/bin/roscore
 export ROSLOG=/var/log/ros.log
-
-test -x $DAEMON || exit 0
 
 . /lib/lsb/init-functions
 # NOTE: HOME is the sudoer home directory
@@ -48,8 +45,7 @@ case "$1" in
 	export ROS_PACKAGE_PATH=${HOME}/catkin_ws/src:/opt/ros/kinetic/share
 	> $ROSLOG
 	echo "=============================== /etc/init.d/ros start ===========================" >> ${ROSLOG}
-	roslaunch ${LAUNCH_PKG} ${LAUNCH_FILE} >>${ROSLOG} 2>&1
-	echo "=============================== /etc/init.d/ros exited ===========================" >> ${ROSLOG}
+	roslaunch ${LAUNCH_PKG} ${LAUNCH_FILE} >>${ROSLOG} 2>&1 &
   ;;
 
   restart)
@@ -62,7 +58,9 @@ case "$1" in
 	for i in $(rosnode list) ; do
 		rosnode kill $i
 	done
+  	killall roslaunch
   	killall roscore
+	echo "=============================== /etc/init.d/ros stopped ===========================" >> ${ROSLOG}
   ;;
   force-reload)
     /etc/init.d/ros restart
