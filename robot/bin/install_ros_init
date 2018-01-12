@@ -1,0 +1,10 @@
+#!/bin/sh
+# Update the system init script from the ros currently checked in.
+# run as super-user
+export HOME=/home/chuckc
+/etc/init.d/ros stop
+cd ${HOME}/robotics/robot/bin
+cp ros /etc/init.d
+chmod 755 /etc/init.d/ros
+update-rc.d ros defaults
+/etc/init.d/ros start
