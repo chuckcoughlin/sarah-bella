@@ -19,8 +19,12 @@ On the host system:
  * The Linux VM is a Virtual Box virtual machine with the Robot Operating System (ROS) libraries. It is used to create and test-compile the robot code. When done, the code is checked into ''git'' and subsequently checked out and built on the robot.
 
 This drawing and others is constructed using **InkScape** from https://inkscape.org/en/release/0.92.2.
+## Table of Contents
+  * [Android Control Application](#android-header)
+  * [Linux Build System](#linux-header)
+  * [Raspberry Pi Robot](#raspberrypi-header)
 *********************************************************
-### Android
+### Android Control Application <a id="android-header"></a>
 The control application is a standard Android application built using Android Studio 3.0. The studio may be downloaded from http://developer.android.com. It runs on the OSX build system, creating a run image
 for the android tablet.
 
@@ -80,7 +84,7 @@ To transfer non-apk files download and install Android File Transfer from http:/
 
 ***************************************************************
 
-### Linux
+### Linux Build System <a id="linux-header"></a>
 The robot's ROS control code is developed on a Linux machine. We implement this as a virtual machine on the OSX host build system.
 This machine contains a development area which is linked to the robot's Raspberry Pi via a shared *git* source code repository.
 Python (mostly) and C++ code for the entire repertoire of applications and support packages is edited and compiled here. Actual tryout and testing must take place on the robot.
@@ -131,24 +135,27 @@ Now install dependent packages for Turtlebot3 control and Java message generatio
 ```
 
 ##### Source Repository
-Make **robotics/repo** the root of our **git** repository. We will use **git** as the integrating mechanism with both our development machine and the robot itself. Establish
+Make *robotics* the root of our *git* repository. We use *git* as the integrating mechanism with both our development machine and the robot itself.
 ```
-  mkdir -p ~/robotics/repo
-  cd ~/robotics/repo
-  git clone http://github.com/chuckcoughlin/sarah-bella robot
+  cd
+  git clone http://github.com/chuckcoughlin/sarah-bella robotics
+  cd robotics
   git checkout --track origin/robot      # Always use the 'robot' branch
   git branch -d master
 ```
 ##### Turtlebot3 Support
-Install the source code for turtlebot ROS support packages.
+This step describes the initial installation of source code for turtlebot ROS support packages. These standard packages are required for a
+successful build, but have not been checked into the *sara-bella* repository. <a id="message-packages"></a>
 
 ```
-		mkdir -p ~/robotics/catkin_ws/src
-		cd ~/robotics/catkin_ws/src
+		cd ~/catkin_ws/src
 		git clone https://github.com/ROBOTIS-GIT/turtlebot3_msgs.git
 		git clone https://github.com/ROBOTIS-GIT/turtlebot3.git
+    git clone https://github.com/ROBOTIS-GIT/hls_lfcd_lds_driver.git
 		cd .. && catkin_make
 ```
+Note: If building after a repository checkout, the ```catkin_make``` command may have to be executed twice to resolve build dependencies.
+
 ##### Package Creation
 A package encapsulates a related set of robot functionality. Ultimately we need to transfer the package definition onto the
 robot, but first we checkout and build on the virtual machine.
@@ -162,21 +169,21 @@ The narrative below describes the general steps involved in creating a package. 
 http://wiki.ros.org/catkin/Tutorials. Make sure that the following lines have been added to ~/.bashrc:
 ```
   source /opt/ros/kinetic/setup.bash
-	source ~/robotics/catkin_ws/devel/setup.bash
+  source ~/robotics/catkin_ws/devel/setup.bash
 ```
 Note that the standard ROS packages are installed in /opt/ros/kinetic/share. These can be browsed to determine
 message contents and other details.
 
 A typical sequence for creating a new package will look like:
 ```
-    cd ~/robotics/catkin_ws/src
+    cd ~/catkin_ws/src
     catkin_create_pkg <package name> rospy turtlebot3_msgs turtlebot3_navigation
 ```
 Note that the metapackage turtlebot3 should not be listed as a dependency. Use its sub-packages instead.
 
 Edit the resulting package.xml file appropriately. Then:
 ```
-		cd ~/robotics/robot/catkin_ws
+		cd ~/catkin_ws
 		catkin_make
 ```
 
@@ -194,11 +201,11 @@ The virtual machine is the master location for ROS topic/message development. On
 Whenever custom messages change or additional packages are used execute:
 
 ```
-    cd ~/robotics/catkin_ws
+    cd ~/catkin_ws
     genjava_message_artifacts --verbose -p turtlebot3_msgs system_check
     extract_jar_files    #Copy jar files into ~/robotics/repo/robot/lib
 ```
-The **genjava_message_artifacts** command only needs to list changed packages or dependencies. When the **robot** branch is committed and merged on the build system, these jar files will be available for transfer into the SBAssistant Android project app/libs directory.
+The *genjava_message_artifacts* command only needs to list changed packages or dependencies. When the **robot** branch is committed and merged on the build system, these jar files will be available for transfer into the SBAssistant Android project app/libs directory.
 
 ###### Transfer to the Robot
 Once the package has been defined and tested on the development system, it needs to be packaged and transferred to the
@@ -208,7 +215,7 @@ robot. This is accomplished by simply checking the changes into *git* (pushing t
 We keep system-specific configurations in ~/robotics/conf. These files are referenced as necessary when the ROS packages are built on the robot.
 
 **********************************************************
-### Raspberry Pi
+### Raspberry Pi Robot <a id="raspberrypi-header"></a>
 "ROSPi" (our name) is the RaspberryPi that is the robot's single board computer (SBC). After an initial flash and configuration
 this device must be separately configured for each application. A wi-fi connection is used for file transfer with commands
 entered via external keyboard, mouse and monitor.
@@ -228,8 +235,8 @@ Use "unxz" to de-compress the image.
 
 Using Etcher, flash the decompressed image onto the SD card. On my system, this is /dev/disk7. Flash time is approximately 5 minutes.
 
-##### ROSPi Network Configuration
-We woud like to have ROSPi connect automtically to the wireless network on startup so as to not require any user intervention for normal operations.
+##### Network Configuration
+We would like to have *ROSPi* connect automatically to the wireless network on startup so as to not require any user intervention for normal operations.
 We have found that the selection of wi-fi networks is easiest during the initial system configuration. Select the desired network and mark it to
 automatically connect if found. It may not be available during the first login, but will connect on subsequent system restarts.
 
@@ -237,23 +244,25 @@ To test and to determine the IP address, restart ROSPi and execute "ifconfig".
 
 ##### ROS Development Setup
 
-Make **robotics** the root of our **git** repository. We will use **git** as the integrating mechanism with our development machine. Establish
+Make **~/robotic** the root of our *git* repository. We will use *git* as the integrating mechanism with our development machine and for this we replicate the same directory
+structure as the Linux virtual machine. Establish
 links within **catkin_ws** in order to merge our repository with the standard ROS packages. Make sure that the link is created before the
 ROS package downloads.
 ```
   cd
-  git clone http://github.com/chuckcoughlin/sarah-bella robot
+  git clone http://github.com/chuckcoughlin/sarah-bella robotics
+  cd robotics
   git checkout --track origin/robot      # Always use the 'robot' branch
   git branch -d master
-  mkdir catkin_ws
-  cd catkin_ws
-  ln -s ~/robotics/repo/robot/config config
-  ln -s ~/robotics/repo/robot/src src
+  mkdir ~/catkin_ws
+  cd ~/catkin_ws
+  ln -s ~/robotics/robot/config config
+  ln -s ~/robotics/robot/src src
 ```
 
 Like the main development system, the Raspberry Pi requires the ROS development libraries. Follow the instructions at:
 http://turtlebot3.readthedocs.io/en/latest/sbc_software.html, sections 6.3.1, 6.3.3 and 6.3.4. These steps can be expected to
-take an hour or more. Make sure the robot's battery is charged.
+take an hour or more. Make sure the robot's battery is charged. Additionally the packages listed [here](#message-packages) must also be installed.
 
 After I executed the "sudo apt upgrade", I discovered that my Firefox now crashed on start. To revert to a prior version:
 ```
@@ -268,7 +277,7 @@ When complete, execute:
 ```
 Replace similar lines in ~/.bashrc:
 ```
-   IP_ADDRESS=`hostname-I`
+   IP_ADDRESS=`hostname -I`
    export ROS_MASTER_URI="http://${IP_ADDRESS}:11311"
    export ROS_HOSTNAME=${IP_ADDRESS}
 ```
@@ -276,14 +285,35 @@ Replace similar lines in ~/.bashrc:
 The ROS installation places the ROS workspace at /home/<username>/catkin_ws. Unfortunately it updates firefox, so it is necessary
 to revert the version again.
 
-We want **roscore** to start automatically when the RaspberryPi is booted. Install the init file from the git repository as follows:
+We want *roscore* to start automatically when the RaspberryPi is booted. Install the init file from the git repository as follows:
 ```
-   cd ~/robotics/repo/robot/src/bin
+   cd ~/robotics/robot/src/bin
    sudo cp ros /etc/init.d
    sudo chmod 755 /etc/init.d/ros
    sudo update-rc.d ros defaults
 ```
-The package to be started is set by editing ```catkin_ws/config/launch.conf```, setting the desired package and launch file.
+
+##### Code Updates
+Follow the steps below to install updates from the *git* repository:
+```
+    cd ~/robotics
+    git pull
+    cd ~/catkin_ws
+    catkin_make
+```
+The package to be started is set by editing ```catkin_ws/config/launch.conf```, setting the desired package and launch file. Then restart the robot:
+```
+  sudo /etc/init.d/ros stop
+  sudo /etc/init.d/ros start &
+```
+
+Here are some commands to verify a successful start:
+```
+   rostopic list
+   rosparam list
+   rosservice list
+```
+
 
 ##### GPIO
 The GPIO pin layout is shown below:

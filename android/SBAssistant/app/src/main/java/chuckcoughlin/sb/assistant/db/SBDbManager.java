@@ -132,7 +132,7 @@ public class SBDbManager extends SQLiteOpenHelper {
         statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('Status','Monitor robot system status')";
         execLenient(sqLiteDatabase,statement);
         statement = "INSERT INTO ApplicationSubscriptions(AppName,SubscriptionTopic,DataType) "+
-                     " VALUES('Status',/sb_system'"+ MsgConstants.DATATYPE_TEXT+"')";
+                     " VALUES('Status',/sb_system'"+ MsgConstants.DATATYPE_STRING+"')";
         execLenient(sqLiteDatabase,statement);
     }
 

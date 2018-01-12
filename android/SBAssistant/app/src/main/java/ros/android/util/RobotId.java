@@ -83,7 +83,7 @@ public class RobotId implements java.io.Serializable {
     return wifiPassword;
   }
 
-  public String setSSID(String wifi) { this.ssid = wifi; }
+  public void setSSID(String wifi) { this.ssid = wifi; }
 
   @Override
   public String toString() {
