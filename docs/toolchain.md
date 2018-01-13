@@ -13,6 +13,7 @@ We use the kinetic version of ROS. This is the current version used by ROBOTIS f
 ## Table of Contents <a id="table-of-contents"></a>
   * [Android Control Application](#android-header)
     * [External Libraries](#external-libraries)
+    * [Jar Conversions](#jar-conversions)
     * [SB Assistant](#sb-assistant)
     * [Emulator](#emulator)
     * [Persistent Storage](#persistent-storage)
@@ -62,10 +63,26 @@ The android core package may be found at (you may have to download the entire Ma
 ```
 
 Create libraries in a similar way from the following:<br/>
+* https://archive.apache.org/dist/ws/xmlrpc/binaries/apache-xmlrpc-3.1.3-bin.zip commons-logging-1.1.jar ws-commons-util-1.0.2.jar xmlrpc-client-3.1.3.jar xmlrpc-common-3.1.3.jar xmlrpc-server-3.1.3.jar
+* http://archive.apache.org/dist/httpcomponents/commons-httpclient/binary/commons-httpclient-3.1.zip commons-httpclient-3.1.jar
+* https://commons.apache.org/proper/commons-codec/download_codec.cgi commons-codec-1.11.jar
 * https://hc.apache.org/downloads.cgi httpclient-4.5.4.jar, httpcore-4.4.7.jar (download httpcomponents-4.5.4, then untar to extract)
 * https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_messages/app_manager/1.0.2 app_manager-1.0.2.jar (app_manager)
 * https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_bootstrap/message_generation/0.3.0 message_generation-0.3.0.jar (org.ros.internal.message)
+* https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_messages/rosgraph_msgs/1.11.2/rosgraph_msgs-1.11.2.jar rosgraph_msgs-1.11.2.jar
 * http://repo1.maven.org/maven2/org/jboss/netty/netty/3.2.9.Final netty.3.2.9.Final.jar (org.jboss.netty)
+
+
+##### Jar Conversions <a id="jar-conversions"></a>
+As explained in the following blog post, http://blog.osom.info/2015/04/commons-codec-on-android.html, the android core includes some obsolete libraries that will overwrite newer files that the application may require. In particular, the *commons-codec* is a problem. The solution involves modifying the jar file and those that reference it to change class names to avoid conflict. Download *jarjar-1.4.jar* from https://code.google.com/archive/p/jarjar/downloads. Then
+```
+    java -jar jarjar-1.4.jar process <rulesFile> <inJar> <outJar>
+```
+Where the rules file contains:
+```
+   rule org.apache.commons.codec.** org.apache.commons.a.codec.@1
+```
+Process *commons-codec-1.11.jar* as *commons-codec-1.11a.jar* and *rosjava-0.3.5.jar* as *rosjava-0.3.5a.jar*.
 
 
 ##### SB-Assistant <a id="sb-assistant"></a>
@@ -233,7 +250,7 @@ Whenever custom messages change or additional packages are used execute:
 ```
     cd ~/catkin_ws
     genjava_message_artifacts --verbose -p turtlebot3_msgs system_check
-    extract_jar_files    #Copy jar files into ~/robotics/repo/robot/lib
+    extract_jar_files    # Copy jar files into ~/robotics/repo/robot/lib
 ```
 The *genjava_message_artifacts* command only needs to list changed packages or dependencies. When the **robot** branch is committed and merged on the build system, these jar files will be available for transfer into the SBAssistant Android project app/libs directory.
 
