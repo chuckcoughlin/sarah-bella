@@ -65,6 +65,7 @@ The android core package may be found at (you may have to download the entire Ma
 Create libraries in a similar way from the following:<br/>
 * https://archive.apache.org/dist/ws/xmlrpc/binaries/apache-xmlrpc-3.1.3-bin.zip commons-logging-1.1.jar ws-commons-util-1.0.2.jar xmlrpc-client-3.1.3.jar xmlrpc-common-3.1.3.jar xmlrpc-server-3.1.3.jar
 * http://archive.apache.org/dist/httpcomponents/commons-httpclient/binary/commons-httpclient-3.1.zip commons-httpclient-3.1.jar
+* http://commons.apache.org/proper/commons-pool/download_pool.cgi commons-pool2-2.5.0.jar
 * https://commons.apache.org/proper/commons-codec/download_codec.cgi commons-codec-1.11.jar
 * https://hc.apache.org/downloads.cgi httpclient-4.5.4.jar, httpcore-4.4.7.jar (download httpcomponents-4.5.4, then untar to extract)
 * https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_messages/app_manager/1.0.2 app_manager-1.0.2.jar (app_manager)
@@ -82,8 +83,13 @@ Where the rules file contains:
 ```
    rule org.apache.commons.codec.** org.apache.commons.a.codec.@1
 ```
-Process *commons-codec-1.11.jar* as *commons-codec-1.11a.jar* and *rosjava-0.3.5.jar* as *rosjava-0.3.5a.jar*.
+Process:
+* *commons-codec-1.11.jar* as *commons-codec-1.11a.jar
+* *rosjava-0.3.5.jar* as *rosjava-0.3.5a.jar*
+* *rosjava-0.3.5.jar* as *rosjava-0.3.5a.jar*
+* *message_generation-0.3.0.jar* as *message_generation-0.3.0a.jar*
 
+Insert these replacements into the *libs* directory of the project.
 
 ##### SB-Assistant <a id="sb-assistant"></a>
 This notepad application is designed to command the robot, perform compute-intensive analyses and display results. The SBAssistant project is contained in the overall project

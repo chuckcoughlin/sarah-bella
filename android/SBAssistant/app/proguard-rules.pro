@@ -25,5 +25,5 @@
 #-renamesourcefileattribute SourceFile
 
 # These lines are necessary when using some older .jar files in the library
--keepattributes InnerClasses
+-keepattributes InnerClasses, EnclosingMethod
 -dontoptimize

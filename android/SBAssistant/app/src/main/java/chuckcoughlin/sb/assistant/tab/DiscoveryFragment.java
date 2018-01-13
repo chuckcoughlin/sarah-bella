@@ -170,17 +170,17 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
     @Override
     public void handleConnectionError(String reason) {
         Log.w(CLSS, "handleConnectionError: " + reason);
-        SBWarningDialog warning = SBWarningDialog.newInstance( "Connection Error", reason);
+        rosManager.setConnectionStatus(RobotDescription.CONNECTION_STATUS_UNCONNECTED);
+        SBWarningDialog warning = SBWarningDialog.newInstance("Connection Error", reason);
         warning.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
-
     }
 
     @Override
     public void handleNetworkError(String reason) {
         Log.w(CLSS, "handleNetworkError: " + reason);
-
-       SBWarningDialog warning = SBWarningDialog.newInstance( "Network Error", reason);
-       warning.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
+        rosManager.setConnectionStatus(RobotDescription.CONNECTION_STATUS_UNAVAILABLE);
+        SBWarningDialog warning = SBWarningDialog.newInstance("Network Error", reason);
+        warning.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
     }
 
     @Override
@@ -188,10 +188,18 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
         return true;
     }
 
+    // The application name is a global parameter of the robot.
+    @Override
+    public void receiveApplication(String appName) {
+        Log.w(CLSS, "receiveApplication: " + appName);
+    }
+
     // Once the robot is connected, interrogate it for applications
     @Override
     public void receiveConnection(RobotDescription robot) {
         Log.w(CLSS, "receiveConnection: SUCCESS!");
+        rosManager.updateRobot(robot);
+        rosManager.setConnectionStatus(RobotDescription.CONNECTION_STATUS_CONNECTED);
     }
 
     // Once the wifi is connected, check the robot, itself
@@ -302,38 +310,38 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBD
     }
 
 
-//======================================== Array Adapter ======================================
-public class RobotApplicationsAdapter extends ArrayAdapter<RobotApplication> implements ListAdapter {
+    //======================================== Array Adapter ======================================
+    public class RobotApplicationsAdapter extends ArrayAdapter<RobotApplication> implements ListAdapter {
 
-    public RobotApplicationsAdapter(Context context, List<RobotApplication> values) {
-        super(context, R.layout.ros_application_item, values);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return getItem(position).hashCode();
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        Log.i(CLSS, String.format("RobotApplicationsAdapter.getView position =  %d", position));
-        // Get the data item for this position
-        RobotApplication app = getItem(position);
-        // Check if an existing view is being reused, otherwise inflate the view
-        if (convertView == null) {
-            Log.i(CLSS, String.format("RobotApplicationsAdapter.getView convertView was null"));
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.ros_application_item, parent, false);
+        public RobotApplicationsAdapter(Context context, List<RobotApplication> values) {
+            super(context, R.layout.ros_application_item, values);
         }
 
-        // Lookup view for data population
-        TextView nameView = (TextView) convertView.findViewById(R.id.name);
-        TextView uriView = (TextView) convertView.findViewById(R.id.uri);
-        TextView statusView = (TextView) convertView.findViewById(R.id.status);
+        @Override
+        public long getItemId(int position) {
+            return getItem(position).hashCode();
+        }
 
-        // Populate the data into the template view using the data object
-        nameView.setText(app.getApplicationName());
-        //uriView.setText(description.getRobotId().getMasterUri());
-        //statusView.setText(description.getConnectionStatus());
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            Log.i(CLSS, String.format("RobotApplicationsAdapter.getView position =  %d", position));
+            // Get the data item for this position
+            RobotApplication app = getItem(position);
+            // Check if an existing view is being reused, otherwise inflate the view
+            if (convertView == null) {
+                Log.i(CLSS, String.format("RobotApplicationsAdapter.getView convertView was null"));
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.ros_application_item, parent, false);
+            }
+
+            // Lookup view for data population
+            TextView nameView = (TextView) convertView.findViewById(R.id.name);
+            TextView uriView = (TextView) convertView.findViewById(R.id.uri);
+            TextView statusView = (TextView) convertView.findViewById(R.id.status);
+
+            // Populate the data into the template view using the data object
+            nameView.setText(app.getApplicationName());
+            //uriView.setText(description.getRobotId().getMasterUri());
+            //statusView.setText(description.getConnectionStatus());
             /*
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
@@ -355,15 +363,15 @@ public class RobotApplicationsAdapter extends ArrayAdapter<RobotApplication> imp
                 index++;
             }
             */
-        // Return the completed view to render on screen
-        return convertView;
-    }
+            // Return the completed view to render on screen
+            return convertView;
+        }
 
-    private void choose(int position) {
-        //SBRosApplicationManager.getInstance().setCurrentApplication(position);
-    }
+        private void choose(int position) {
+            //SBRosApplicationManager.getInstance().setCurrentApplication(position);
+        }
 
-}
+    }
     //======================================== Update the UI ======================================
 
     /**

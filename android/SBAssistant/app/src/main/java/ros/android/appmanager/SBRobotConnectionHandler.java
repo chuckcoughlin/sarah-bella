@@ -28,6 +28,11 @@ public interface SBRobotConnectionHandler {
     public boolean handleWifiReconnection(String SSID,String wifi);
     /**
      * The connection request succeeded. We found the robot.
+     * @param appName the application currently running on the robot
+     */
+    public void receiveApplication(String appName);
+    /**
+     * The connection request succeeded. We found the robot.
      * @param robot the current robot
      */
     public void receiveConnection(RobotDescription robot);

@@ -33,22 +33,21 @@
 
 package ros.android.appmanager;
 
+import android.util.Log;
+
+import org.ros.address.InetAddressFactory;
+import org.ros.android.NodeMainExecutorService;
+import org.ros.internal.node.client.ParameterClient;
+import org.ros.internal.node.response.Response;
+import org.ros.internal.node.server.NodeIdentifier;
+import org.ros.namespace.GraphName;
+import org.ros.node.NodeConfiguration;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.List;
 
-import org.ros.address.InetAddressFactory;
-import org.ros.android.NodeMainExecutorService;
-import org.ros.internal.node.client.ParameterClient;
-import org.ros.internal.node.server.NodeIdentifier;
-import org.ros.namespace.GraphName;
-import org.ros.node.NodeConfiguration;
-
-import android.util.Log;
-
-import ros.android.appmanager.GatewayInfoSubscriber;
-import ros.android.appmanager.SBRobotConnectionHandler;
 import ros.android.util.RobotDescription;
 import ros.android.util.RobotId;
 
@@ -60,7 +59,7 @@ import ros.android.util.RobotId;
  * @author hersh@willowgarage.com
  */
 public class MasterChecker {
-
+    private final static String CLSS = "MasterChecker";
 	private CheckerThread checkerThread;
 	private final SBRobotConnectionHandler handler;
 
@@ -125,37 +124,35 @@ public class MasterChecker {
 				ParameterClient paramClient = new ParameterClient(new NodeIdentifier(GraphName.of("/master_checker"), masterUri), masterUri);
 				boolean hasName = ((Boolean) paramClient.hasParam(GraphName.of("robot/name")).getResult()).booleanValue();
 				boolean hasType = ((Boolean) paramClient.hasParam(GraphName.of("robot/type")).getResult()).booleanValue();
-				boolean hasApps = ((Boolean) paramClient.hasParam(GraphName.of("robot/applications")).getResult()).booleanValue();
+				boolean hasApp  = ((Boolean) paramClient.hasParam(GraphName.of("robot/application")).getResult()).booleanValue();
+				// Log the names
+                Log.i(CLSS, "Parameters ......");
+				List<GraphName> names = paramClient.getParamNames().getResult();
+				for(GraphName name:names ) {
+                    Log.i(CLSS, String.format("   %s",name.toString()));
+                }
+
 				if(hasName && hasType) {
 					String robotName = (String) paramClient.getParam(GraphName.of("robot/name")).getResult();
 					String robotType = (String) paramClient.getParam(GraphName.of("robot/type")).getResult();
-					// List<String> applications = (String) paramClient.getParam(GraphName.of("robot/applications")).getResult();
-
-					// Check for the platform information - be sure to check that master exists first otherwise you'll
-					// start a thread which perpetually crashes and triest to re-register in .execute()
-					NodeMainExecutorService nodeMainExecutorService = new NodeMainExecutorService();
-					NodeConfiguration nodeConfiguration = NodeConfiguration.newPublic(
-							InetAddressFactory.newNonLoopback().getHostAddress(),
-							masterUri);
-					GatewayInfoSubscriber gatewayInfoClient = new GatewayInfoSubscriber();
-					nodeMainExecutorService.execute(gatewayInfoClient, nodeConfiguration.setNodeName("gateway_info_client_node"));
-					gatewayInfoClient.waitForResponse();
-					String gatewayName = gatewayInfoClient.getGatewayName();
-					nodeMainExecutorService.shutdownNodeMain(gatewayInfoClient);
 
 					Date timeLastSeen = new Date(); // current time.
 					RobotDescription robotDescription = new RobotDescription(robotId, robotName, robotType, timeLastSeen);
 					handler.receiveConnection(robotDescription);
+
+					if( hasApp ) {
+                        handler.receiveApplication((String) paramClient.getParam(GraphName.of("robot/application")).getResult());
+                    }
 				}
 				else {
-					Log.e("RosAndroid", "No parameters");
+					Log.e(CLSS, "No parameters");
 					handler.handleConnectionError("The parameters on the server are not set. Please set robot/name and robot/type.");
 				}
 				return;
 			}
 			catch(Throwable ex) {
-				Log.e("RosAndroid", "Exception while creating node in MasterChecker for master URI " + masterUri, ex);
-				handler.handleConnectionError(ex.toString());
+				Log.e(CLSS, "Exception while creating node in MasterChecker for master URI " + masterUri, ex);
+				handler.handleConnectionError(ex.getLocalizedMessage());
 			}
 		}
 	}

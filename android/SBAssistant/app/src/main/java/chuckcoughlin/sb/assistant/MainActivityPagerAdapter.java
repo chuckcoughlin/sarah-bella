@@ -37,9 +37,9 @@ public class MainActivityPagerAdapter extends FragmentStatePagerAdapter {
         super(fm);
 
         tabTitles = new String[] {
-                ctx.getString(R.string.cover_title), ctx.getString(R.string.settings_title),ctx.getString(R.string.system_title), ctx.getString(R.string.headlamp_title),
+                ctx.getString(R.string.cover_title), ctx.getString(R.string.discovery_title), ctx.getString(R.string.settings_title),ctx.getString(R.string.system_title), ctx.getString(R.string.headlamp_title),
                 ctx.getString(R.string.SLAM_title),ctx.getString(R.string.audio_title),
-                ctx.getString(R.string.camera_title),ctx.getString(R.string.discovery_title),ctx.getString(R.string.log_title)};
+                ctx.getString(R.string.camera_title),ctx.getString(R.string.log_title)};
         Log.i(CLSS,"Constructor ...");
     }
 
@@ -57,25 +57,25 @@ public class MainActivityPagerAdapter extends FragmentStatePagerAdapter {
                 frag = new CoverFragment();
                 break;
             case 1:
-                frag =  new SettingsFragment();
+                frag = new DiscoveryFragment();
                 break;
             case 2:
-                frag =  new SystemFragment();
+                frag =  new SettingsFragment();
                 break;
             case 3:
-                frag = new HeadlampFragment();
+                frag =  new SystemFragment();
                 break;
             case 4:
-                frag = new SLAMFragment();
+                frag = new HeadlampFragment();
                 break;
             case 5:
-                frag = new AudioFragment();
+                frag = new SLAMFragment();
                 break;
             case 6:
-                frag = new CameraFragment();
+                frag = new AudioFragment();
                 break;
             case 7:
-                frag = new DiscoveryFragment();
+                frag = new CameraFragment();
                 break;
             case 8:
                 frag = new LogsFragment();
