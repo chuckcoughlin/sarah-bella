@@ -2,6 +2,7 @@
   <param name="robot/name" value="SBAssistant" type="str"/>
   <param name="robot/type" value="turtlebot3" type="str"/>
   <param name="robot/application" value="system" type="str"/>
+  <param name="robot/platform" value="RaspberryPi" type="str"/>
   <!-- Launch file for system_check -->
   <node pkg="system_check" type="publish_system.py" name="sb_system" output="screen">
   </node>
