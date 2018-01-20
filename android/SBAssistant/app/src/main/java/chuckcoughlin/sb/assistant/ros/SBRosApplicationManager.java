@@ -31,18 +31,15 @@ import ros.android.util.RobotId;
 
 /**
  * Since we access from multiple fragments, make this a singleton class to avoid repeated
- * allocations. This class makes the list of applications for the current robot available
- * to be started and stopped.
+ * allocations. This class handles the publications and subscriptions corresponding to the
+ * application on the current robot. Fragments subscribe here and messages received from the
+ * robot are parcelled out to the various listeners.
  *
  * The Apps list is in the database and is hard-coded. It represents the capabilities
  * of the robot we connect to. We keep the current application and its status locally.
  */
 public class SBRosApplicationManager {
     private final static String CLSS = "SBRosManager";
-    // Keys for columns in result map. Somewhere there's a 6 char limit.
-    public static final String NAME = "NAME";
-    public static final String APPLICATION = "APP";
-    public static final String STATUS_VALUE = "STATUS";
 
     private static SBRosApplicationManager instance = null;
     private final SBDbManager dbManager;
@@ -50,8 +47,7 @@ public class SBRosApplicationManager {
     private final Context context;
     private Thread nodeThread;
     private Handler uiThreadHandler = new Handler();
-    private String currentApplication;
-    private String applicationStatus;     // Status of current application
+    private RobotApplication application;
 
 
     /**
@@ -62,8 +58,7 @@ public class SBRosApplicationManager {
         this.context = context.getApplicationContext();
         this.dbManager = SBDbManager.getInstance();
         this.rosManager = SBRosManager.getInstance();
-        this.currentApplication = null;     // Name
-        this.applicationStatus = RobotApplication.APP_STATUS_NOT_RUNNING;
+        this.application = null;
     }
 
     /**
@@ -89,56 +84,37 @@ public class SBRosApplicationManager {
         return instance;
     }
 
-    public List<RobotApplication> getApplications() {
-        List<RobotApplication> apps = new ArrayList<>();
-        RobotDescription robot = rosManager.getRobot();
-        if (robot == null) return apps;
+    public RobotApplication getApplication() { return this.application; }
 
-        SQLiteDatabase db = dbManager.getReadableDatabase();
-
-        StringBuilder sql = new StringBuilder(
-                "SELECT appName,description");
-        sql.append(" FROM RobotApplications");
-        sql.append(" ORDER BY appName");
-        String[] args = new String[]{};
-
-        Cursor cursor = db.rawQuery(sql.toString(), args);
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            Map<String, Object> map = new HashMap<>();
-
-            RobotApplication app = new RobotApplication(cursor.getString(0),cursor.getString(1));
-            apps.add(app);
-            cursor.moveToNext();
-        }
-        cursor.close();
-        //TODO: Add publishers and subscribers
-
-        return apps;
-    }
-
-    public String getCurrentApplication() { return this.currentApplication; }
-    public void setCurrentApplication(String name) { this.currentApplication=name; }
-    public String getApplicationStatus() { return this.applicationStatus; }
-    public void setCurrentStatus(String s) { this.applicationStatus=s; }
 
     /**
-     * @return the number of applications defined for the current robot.
+     * Specify the name of a the current application. From this we query the
+     * database to get the full list of publishers and subscribers.
+     * @param name name of the application
      */
-    public int getApplicationCount() {
+    public void setApplicationFromName(String name) {
+        this.application = null;
         RobotDescription robot = rosManager.getRobot();
-        if (robot == null) return 0;
+        if (robot != null) {
+            SQLiteDatabase db = dbManager.getReadableDatabase();
 
-        SQLiteDatabase db = dbManager.getReadableDatabase();
+            StringBuilder sql = new StringBuilder(
+                    "SELECT appName,description");
+            sql.append(" FROM RobotApplications");
+            sql.append(" ORDER BY appName");
+            String[] args = new String[]{};
 
-        String uri = robot.getRobotId().getMasterUri();
-        StringBuilder sql = new StringBuilder(
-                "SELECT count(*)");
-        sql.append(" FROM RobotApplications");
-        String[] args = new String[]{};
-        Cursor cursor = db.rawQuery(sql.toString(), args);
-        int count = cursor.getCount();
-        cursor.close();
-        return count;
+            Cursor cursor = db.rawQuery(sql.toString(), args);
+            cursor.moveToFirst();
+            if (!cursor.isAfterLast()) {
+                Map<String, Object> map = new HashMap<>();
+
+                application = new RobotApplication(cursor.getString(0),cursor.getString(1));
+            }
+            cursor.close();
+            //TODO: Add publishers and subscribers
+
+        };
     }
+
 }

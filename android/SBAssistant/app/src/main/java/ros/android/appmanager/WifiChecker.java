@@ -55,7 +55,7 @@ public class WifiChecker {
     }
 
     // An empty string returned implies success, else an error message
-    public static boolean wifiValid(RobotId robotId, WifiManager wifiManager) {
+    public static boolean wifiValid(WifiManager wifiManager) {
         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
         boolean result = false;
         if(!wifiManager.isWifiEnabled()) {
@@ -80,11 +80,6 @@ public class WifiChecker {
 
     public void beginChecking(RobotId robotId, WifiManager manager) {
         stopChecking();
-        //If there's no wifi tag in the robot id, skip this step
-        if (robotId.getSSID() == null) {
-            handler.receiveWifiConnection();
-            return;
-        }
         checkerThread = new CheckerThread(robotId, manager);
         checkerThread.start();
     }
@@ -112,9 +107,8 @@ public class WifiChecker {
             });
         }
 
-        // If valid set the SSID, else set the error message
         private boolean wifiValid() {
-            return  WifiChecker.wifiValid(robotId, wifiManager);
+            return  WifiChecker.wifiValid(wifiManager);
         }
 
         @Override

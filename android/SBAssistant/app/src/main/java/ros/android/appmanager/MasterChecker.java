@@ -34,6 +34,8 @@
 package ros.android.appmanager;
 
 import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
 
 import org.ros.address.InetAddressFactory;
 import org.ros.android.NodeMainExecutorService;
@@ -46,8 +48,11 @@ import org.ros.node.NodeConfiguration;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import chuckcoughlin.sb.assistant.R;
 import ros.android.util.RobotDescription;
 import ros.android.util.RobotId;
 
@@ -72,21 +77,22 @@ public class MasterChecker {
 	 * Start the checker thread with the given robotId. If the thread is already
 	 * running, kill it first and then start anew. Returns immediately.
 	 */
-	public void beginChecking(RobotId robotId) {
+	public void beginChecking(RobotDescription robot) {
 		stopChecking();
-		if(robotId.getMasterUri() == null) {
+		if(robot.getRobotId().getMasterUri() == null) {
 			handler.handleConnectionError("empty master URI");
 			return;
 		}
 		URI uri;
 		try {
-			uri = new URI(robotId.getMasterUri());
-		} catch(URISyntaxException e) {
+			uri = new URI(robot.getRobotId().getMasterUri());
+		}
+		catch(URISyntaxException e) {
 			handler.handleConnectionError("invalid master URI");
 			return;
 		}
 
-		checkerThread = new CheckerThread(robotId, uri);
+		checkerThread = new CheckerThread(robot, uri);
 		checkerThread.start();
 	}
 
@@ -99,61 +105,59 @@ public class MasterChecker {
 
 	private class CheckerThread extends Thread {
 
-		private URI masterUri;
-		private RobotId robotId;
+        private URI masterUri;
+        private RobotDescription robot;
 
-		public CheckerThread(RobotId robotId, URI masterUri) {
-			this.masterUri = masterUri;
-			this.robotId = robotId;
+        public CheckerThread(RobotDescription robotDescription, URI masterUri) {
+            this.masterUri = masterUri;
+            this.robot = robotDescription;
 
-			setDaemon(true);
+            setDaemon(true);
 
-			// don't require callers to explicitly kill all the old checker
-			// threads.
-			setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-				@Override
-				public void uncaughtException(Thread thread, Throwable ex) {
-					handler.handleConnectionError("exception: " + ex.getMessage());
-				}
-			});
-		}
+            // don't require callers to explicitly kill all the old checker
+            // threads.
+            setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                @Override
+                public void uncaughtException(Thread thread, Throwable ex) {
+                    handler.handleConnectionError("exception: " + ex.getMessage());
+                }
+            });
+        }
 
-		@Override
-		public void run() {
-			try {
-				ParameterClient paramClient = new ParameterClient(new NodeIdentifier(GraphName.of("/master_checker"), masterUri), masterUri);
-				boolean hasName = ((Boolean) paramClient.hasParam(GraphName.of("robot/name")).getResult()).booleanValue();
-				boolean hasType = ((Boolean) paramClient.hasParam(GraphName.of("robot/type")).getResult()).booleanValue();
-				boolean hasApp  = ((Boolean) paramClient.hasParam(GraphName.of("robot/application")).getResult()).booleanValue();
-				// Log the names
+        @Override
+        public void run() {
+            try {
+                ParameterClient paramClient = new ParameterClient(new NodeIdentifier(GraphName.of("/master_checker"), masterUri), masterUri);
+                boolean hasName = ((Boolean) paramClient.hasParam(GraphName.of("robot/name")).getResult()).booleanValue();
+                boolean hasType = ((Boolean) paramClient.hasParam(GraphName.of("robot/type")).getResult()).booleanValue();
+                boolean hasApp = ((Boolean) paramClient.hasParam(GraphName.of("robot/application")).getResult()).booleanValue();
+                // Log the names
                 Log.i(CLSS, "Parameters ......");
-				List<GraphName> names = paramClient.getParamNames().getResult();
-				for(GraphName name:names ) {
-                    Log.i(CLSS, String.format("   %s",name.toString()));
+                List<GraphName> names = paramClient.getParamNames().getResult();
+                for (GraphName name : names) {
+                    Log.i(CLSS, String.format("   %s", name.toString()));
                 }
 
-				if(hasName && hasType) {
-					String robotName = (String) paramClient.getParam(GraphName.of("robot/name")).getResult();
-					String robotType = (String) paramClient.getParam(GraphName.of("robot/type")).getResult();
+                if (hasName && hasType) {
+                    robot.setRobotName(paramClient.getParam(GraphName.of("robot/name")).getResult().toString());
+                    robot.setRobotType(paramClient.getParam(GraphName.of("robot/type")).getResult().toString());
+                    robot.setPlatform((String) paramClient.getParam(GraphName.of("robot/type")).getResult());
+                    robot.setTimeLastSeen(new Date());
+                    handler.receiveConnection(robot);
 
-					Date timeLastSeen = new Date(); // current time.
-					RobotDescription robotDescription = new RobotDescription(robotId, robotName, robotType, timeLastSeen);
-					handler.receiveConnection(robotDescription);
-
-					if( hasApp ) {
+                    if (hasApp) {
                         handler.receiveApplication((String) paramClient.getParam(GraphName.of("robot/application")).getResult());
                     }
-				}
-				else {
-					Log.e(CLSS, "No parameters");
-					handler.handleConnectionError("The parameters on the server are not set. Please set robot/name and robot/type.");
-				}
-				return;
-			}
-			catch(Throwable ex) {
-				Log.e(CLSS, "Exception while creating node in MasterChecker for master URI " + masterUri, ex);
-				handler.handleConnectionError(ex.getLocalizedMessage());
-			}
-		}
-	}
+                } else {
+                    Log.e(CLSS, "No parameters");
+                    handler.handleConnectionError("The parameters on the server are not set. Please set robot/name and robot/type.");
+                }
+                return;
+            } catch (Throwable ex) {
+                Log.e(CLSS, "Exception while creating node in MasterChecker for master URI " + masterUri, ex);
+                handler.handleConnectionError(ex.getLocalizedMessage());
+            }
+        }
+    }
+
 }

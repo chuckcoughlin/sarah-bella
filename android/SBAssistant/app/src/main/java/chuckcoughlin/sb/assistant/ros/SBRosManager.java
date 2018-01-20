@@ -42,18 +42,6 @@ import ros.android.util.RobotId;
 public class SBRosManager {
     private final static String CLSS = "SBRosManager";
 
-    // Keys for columns in result map. Somewhere there's a 6 char limit.
-    public static final String URI_VALUE        = "URI";
-    public static final String CURL_VALUE       ="CURL";
-    public static final String WIFI_VALUE       = "WIFI";
-    public static final String ENCRYPTION_VALUE = "WIFIENC";
-    public static final String PASSWORD_VALUE   = "WIFIPW";
-    public static final String GATEWAY_VALUE    = "GATEWY";
-    public static final String PLATFORM_VALUE   = "PLTFRM";
-    public static final String ICON_PATH_VALUE  = "ICON";
-
-
-
     private static SBRosManager instance = null;
     private final SBDbManager dbManager;
     private final Context context;
@@ -61,7 +49,6 @@ public class SBRosManager {
     private Handler uiThreadHandler = new Handler();
     private RobotDescription robot = null;
     private NodeConfiguration configuration = null;
-    private String connectionStatus = RobotDescription.CONNECTION_STATUS_UNCONNECTED;
 
 
     /**
@@ -106,22 +93,18 @@ public class SBRosManager {
         if(robot.getConnectionStatus()==null) {
             robot.setConnectionStatus(RobotDescription.CONNECTION_STATUS_UNCONNECTED);
         }
-        this.connectionStatus = robot.getConnectionStatus();
 
         StringBuilder sql = new StringBuilder("INSERT INTO Robots(masterUri,robotName,robotType,");
-        sql.append("controlUri,wifi,wifiEncryption,wifiPassword,platform,gateway) ");
-        sql.append("VALUES(?,?,?,?,?,?,?,?,?)");
+        sql.append("ssid,application,platform) ");
+        sql.append("VALUES(?,?,?,?,?,?)");
         SQLiteDatabase db = dbManager.getWritableDatabase();
         SQLiteStatement stmt = db.compileStatement(sql.toString());
         stmt.bindString(1,id.getMasterUri());
         stmt.bindString(2,robot.getRobotName());
         stmt.bindString(3,robot.getRobotType());
-        stmt.bindString(4,id.getControlUri());
-        stmt.bindString(5,id.getSSID());
-        stmt.bindString(6,id.getWifiEncryption());
-        stmt.bindString(7,id.getWifiPassword());
-        stmt.bindString(8,robot.getPlatformType());
-        stmt.bindString(9,robot.getGatewayName());
+        stmt.bindString(4,id.getSSID());
+        stmt.bindString(5,robot.getApplicationName());
+        stmt.bindString(5,robot.getPlatform());
         stmt.executeInsert();
         stmt.close();
     }
@@ -143,9 +126,11 @@ public class SBRosManager {
     }
 
     public RobotDescription getRobot() { return this.robot; }
-    public String getConnectionStatus() { return this.connectionStatus; }
+    public String getConnectionStatus() {
+        if( robot!=null ) return robot.getConnectionStatus();
+        return RobotDescription.CONNECTION_STATUS_UNCONNECTED;
+    }
     public void setConnectionStatus(String status) {
-        this.connectionStatus = status;
         if( robot!=null ) robot.setConnectionStatus(status);
     }
 
@@ -157,24 +142,16 @@ public class SBRosManager {
         RobotDescription r = null;
         SQLiteDatabase db = dbManager.getReadableDatabase();
         StringBuilder sql = new StringBuilder(
-                   "SELECT masterUri,robotName,robotType,controlUri,wifi,wifiEncryption,wifiPassword,platform,gateway");
+                   "SELECT masterUri,robotName,robotType,ssid,application,platform");
         sql.append(" FROM Robots ");
         sql.append(" ORDER BY robotName");
         Cursor cursor = db.rawQuery(sql.toString(),null);
         cursor.moveToFirst();
         while(!cursor.isAfterLast()) {
-            Map<String,Object> map = new HashMap<>();
-            map.put(URI_VALUE,cursor.getString(0));
-            map.put(CURL_VALUE,cursor.getString(3));
-            map.put(WIFI_VALUE,cursor.getString(4));
-            map.put(ENCRYPTION_VALUE,cursor.getString(5));
-            map.put(PASSWORD_VALUE,cursor.getString(6));
-            map.put(PLATFORM_VALUE,cursor.getString(7));
-            map.put(GATEWAY_VALUE,cursor.getString(8));
-            RobotId id = new RobotId(map);
+            RobotId id = new RobotId(cursor.getString(0));
+            id.setSSID(cursor.getString(3));
             r = new RobotDescription(id, cursor.getString(1), cursor.getString(2), new Date());
-            connectionStatus = RobotDescription.CONNECTION_STATUS_UNCONNECTED;
-            r.setConnectionStatus(connectionStatus);
+            r.setConnectionStatus(RobotDescription.CONNECTION_STATUS_UNCONNECTED);
             cursor.moveToNext();
         }
         cursor.close();

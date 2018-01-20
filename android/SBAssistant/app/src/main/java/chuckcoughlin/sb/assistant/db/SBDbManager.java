@@ -84,11 +84,8 @@ public class SBDbManager extends SQLiteOpenHelper {
         SQL.append("  masterUri TEXT PRIMARY KEY,");
         SQL.append("  robotName TEXT DEFAULT '',");
         SQL.append("  robotType TEXT DEFAULT '',");
-        SQL.append("  controlUri TEXT DEFAULT '',");
-        SQL.append("  wifi TEXT DEFAULT '',");
-        SQL.append("  wifiEncryption TEXT DEFAULT '',");
-        SQL.append("  wifiPassword TEXT DEFAULT '',");
-        SQL.append("  gateway TEXT DEFAULT '',");
+        SQL.append("  ssid TEXT DEFAULT '',");
+        SQL.append("  application TEXT DEFAULT '',");
         SQL.append("  platform TEXT DEFAULT ''");
         SQL.append(")");
         sqLiteDatabase.execSQL(SQL.toString());
@@ -122,10 +119,13 @@ public class SBDbManager extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(SQL.toString());
 
         // Add initial rows - fail silently if they exist
-        String statement = "INSERT INTO Settings(Name,Value) VALUES('"+SBConstants.ROS_HOSTNAME+"','"+SBConstants.DEFAULT_ROS_HOSTNAME+"')";
+        String statement = "INSERT INTO Settings(Name,Value) VALUES('"+SBConstants.ROS_GATEWAY+"','"+SBConstants.DEFAULT_ROS_GATEWAY+"')";
         execLenient(sqLiteDatabase,statement);
         statement = "INSERT INTO Settings(Name,Value) VALUES('"+SBConstants.ROS_MASTER_URI+"','"+SBConstants.DEFAULT_ROS_MASTER_URI+"')";
         execLenient(sqLiteDatabase,statement);
+        statement = "INSERT INTO Settings(Name,Value) VALUES('"+SBConstants.ROS_WIFIPWD+"','"+SBConstants.DEFAULT_ROS_WIFIPWD+"')";
+        execLenient(sqLiteDatabase,statement);
+
         Log.i(CLSS,String.format("onCreate: Created %s at %s",SBConstants.DB_NAME,context.getDatabasePath(SBConstants.DB_NAME)));
 
         // Define the various applications. This is a fixed list.
@@ -186,6 +186,26 @@ public class SBDbManager extends SQLiteOpenHelper {
      * For access to the robot table, see SBRosManager.
      */
     // ================================================ Settings =============================
+    /**
+     * Read name/value pairs from the database.
+     */
+    public String getSetting(String name) {
+        String result = null;
+        SQLiteDatabase database = this.getReadableDatabase();
+        String[] args = new String[1];   // Use for PreparedStatement
+        args[0] = name;
+        String SQL = "SELECT value FROM Settings WHERE Name=?";
+        Cursor cursor = database.rawQuery(SQL,args);
+        cursor.moveToFirst();
+
+        if( !cursor.isAfterLast() ) {
+            result = cursor.getString(0);
+            Log.i(CLSS,String.format("getSetting: %s = %s",name,result));
+        }
+        cursor.close();
+        database.close();
+        return result;
+    }
     /**
      * Read name/value pairs from the database.
      */

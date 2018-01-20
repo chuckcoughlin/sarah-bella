@@ -14,18 +14,18 @@
     <string name="name_label">Name:</string>
     <!-- Strings within fragments -->
     <string name="discoveryButtonConnect">Connect</string>
-    <string name="discoveryButtonDefine">Define</string>
-    <string name="discoveryButtonEdit">Edit</string>
+    <string name="discoveryButtonDisconnect">Disconnect</string>
     <string name="discoveryButtonStart">Start</string>
     <string name="discoveryButtonStop">Stop</string>
-    <string name="discoveryButtonDisconnect">Disconnect</string>
-    <string name="discoveryPopupDefineTitle">Define Robot</string>
+    <string name="discoveryButtonView">View</string>
+    <string name="discoveryViewPopupTitle">Robot Attributes</string>
     <!-- Strings that are generically useful -->
     <string name="defaultMasterURI">http://192.168.1.113:11311</string>
     <string name="defaultSSID">g6-coughlin</string>
     <string name="genericAddButton">Add</string>
     <string name="genericCancelButton">Cancel</string>
     <string name="genericDismissButton">Dismiss</string>
+    <string name="robotApplication">Application</string>
     <!-- Labels as they appear in the central tab bar -->
     <string name="cover_title">Cover</string>
     <string name="discovery_title">Discovery</string>

@@ -59,7 +59,7 @@ public class RobotApplication implements java.io.Serializable {
 	private String description;
 	private List<Topic> publishers;
 	private List<Topic> subscribers;
-	private String connectionStatus;
+	private String executionStatus;
 
 
 	public RobotApplication(String appName, String desc) {
@@ -79,11 +79,11 @@ public class RobotApplication implements java.io.Serializable {
 	public List<Topic> getPublishers() { return this.publishers; }
 	public List<Topic> getSubscribers() { return this.subscribers; }
 
-	public String getConnectionStatus() {
-		return connectionStatus;
+	public String getExecutionStatus() {
+		return executionStatus;
 	}
-	public void setConnectionStatus(String connectionStatus) {
-		this.connectionStatus = connectionStatus;
+	public void setExecutionStatus(String status) {
+		this.executionStatus = status;
 	}
 
 

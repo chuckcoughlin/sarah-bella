@@ -37,53 +37,29 @@ import java.util.Map;
 
 public class RobotId implements java.io.Serializable {
   private String masterUri;
-  private String controlUri;
   private String ssid;
-  private String wifiEncryption;
   private String wifiPassword;
   
   public RobotId() {
   }
   
-  public RobotId(Map<String, Object> map) {
-    if (map.containsKey("URI")) {
-      this.masterUri = map.get("URI").toString();
-    }
-    if (map.containsKey("CURL")) {
-      this.controlUri = map.get("CURL").toString();
-    }
-    if (map.containsKey("SSID")) {
-      this.ssid = map.get("SSID").toString();
-    }
-    if (map.containsKey("WIFIENC")) {
-      this.wifiEncryption = map.get("WIFIENC").toString();
-    }
-    if (map.containsKey("WIFIPW")) {
-      this.wifiPassword = map.get("WIFIPW").toString();
-    }
+  public RobotId(String master) {
+    this.masterUri = master;
+    this.ssid = null;
+    this.wifiPassword = null;
   }
 
-  public RobotId(String masterUri) {
-    this.masterUri = masterUri;
-  }
 
   public String getMasterUri() {
     return masterUri;
   }
-  public String getControlUri() {
-    return controlUri;
-  }
   public String getSSID() {
     return ssid;
   }
-  public String getWifiEncryption() {
-    return wifiEncryption;
-  }
-  public String getWifiPassword() {
-    return wifiPassword;
-  }
+  public String getWifiPassword() { return wifiPassword; }
 
   public void setSSID(String wifi) { this.ssid = wifi; }
+  public void setWifiPassword(String passwd) { this.wifiPassword = passwd; }
 
   @Override
   public String toString() {
@@ -91,9 +67,7 @@ public class RobotId implements java.io.Serializable {
     if (getSSID() != null) {
       str = str + " On: " + getSSID();
     }
-    if (getControlUri() != null) {
-      str = str + " Control: " + getControlUri();
-    }
+
     return str;
   }
 
@@ -109,30 +83,18 @@ public class RobotId implements java.io.Serializable {
     return a.equals(b);
   }
 
+  // Two instances are equal if their MasterURI's are equal.
   @Override
   public boolean equals(Object o) {
-    
-    // Return true if the objects are identical.
-    // (This is just an optimization, not required for correctness.)
     if (this == o) {
       return true;
     }
-
-    // Return false if the other object has the wrong type.
-    // This type may be an interface depending on the interface's specification.
     if (!(o instanceof RobotId)) {
       return false;
     }
-
-    // Cast to the appropriate type.
-    // This will succeed because of the instanceof, and lets us access private fields.
     RobotId lhs = (RobotId) o;
 
-    return nullSafeEquals(this.masterUri, lhs.masterUri) 
-                             && nullSafeEquals(this.controlUri, lhs.controlUri) 
-                             && nullSafeEquals(this.ssid, lhs.ssid)
-                             && nullSafeEquals(this.wifiEncryption, lhs.wifiEncryption)
-                             && nullSafeEquals(this.wifiPassword, lhs.wifiPassword);
+    return nullSafeEquals(this.masterUri, lhs.masterUri);
   }
 
   @Override
@@ -142,11 +104,7 @@ public class RobotId implements java.io.Serializable {
 
     // Include a hash for each field checked by equals().
     result = 31 * result + (masterUri == null ? 0 : masterUri.hashCode());
-    result = 31 * result + (controlUri == null ? 0 : controlUri.hashCode());
     result = 31 * result + (ssid == null ? 0 : ssid.hashCode());
-    result = 31 * result + (wifiEncryption == null ? 0 : wifiEncryption.hashCode());
-    result = 31 * result + (wifiPassword == null ? 0 : wifiPassword.hashCode());
-
     return result;
   }
 }

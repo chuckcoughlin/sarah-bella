@@ -18,11 +18,13 @@ public class SBConstants {
 
     // These are the parameter names in the Settings table
     public static final String ROS_MASTER_URI="ROS Master URI";
-    public static final String ROS_HOSTNAME="ROS Hostname";
+    public static final String ROS_GATEWAY="Gateway";
+    public static final String ROS_WIFIPWD="Wifi Password";
 
     // These are the default values for the settings
     public static final String DEFAULT_ROS_MASTER_URI="http://xxx.xxx.xxx:11311";
-    public static final String DEFAULT_ROS_HOSTNAME="xxx.xxx.xxx";
+    public static final String DEFAULT_ROS_GATEWAY="192.168.0.1";
+    public static final String DEFAULT_ROS_WIFIPWD="";
 
     // Platform Types
     public static final String PLATFORM_LINUX="Linux";

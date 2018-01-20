@@ -63,33 +63,27 @@ public class RobotDescription implements java.io.Serializable {
 	private RobotId robotId;
 	private String robotName;
 	private String robotType;
-	private String platformType;
-	private String gatewayName;
+	private String applicationName;
+	private String platform;
 	private String connectionStatus;
 	private Date timeLastSeen;
 
 	public RobotDescription() {
 	}
 
-	public RobotDescription(RobotId robotId, String robotName, String robotType, String gatewayName, Date timeLastSeen) {
-		this(robotId,robotName,robotType,timeLastSeen);
-		this.robotType = robotType;
-		this.gatewayName = gatewayName;
-		this.timeLastSeen = timeLastSeen;
-	}
-
 	public RobotDescription(RobotId robotId, String robotName, String robotType, Date timeLastSeen)  {
 		setRobotName(robotName);
 		setRobotId(robotId);
 		this.robotType = robotType;
-		this.gatewayName = "192.168.0.1";
-		this.platformType= SBConstants.PLATFORM_LINUX;
+		this.platform= SBConstants.PLATFORM_LINUX;
 		this.connectionStatus = CONNECTION_STATUS_UNCONNECTED;
 		this.timeLastSeen = timeLastSeen;
 	}
 
 	public RobotDescription clone() {
 		RobotDescription newRobot = new RobotDescription(this.robotId, this.robotName, this.robotType, new Date());
+		newRobot.setPlatform(this.platform);
+		newRobot.setApplicationName(this.applicationName);
 		return newRobot;
 	}
 
@@ -115,10 +109,12 @@ public class RobotDescription implements java.io.Serializable {
 	public void setRobotType(String robotType) {
 		this.robotType = robotType;
 	}
-	public String getGatewayName() { return this.gatewayName; }
-	public void setGatewayName(String name) { this.gatewayName = name; }
-	public String getPlatformType() { return this.platformType; }
-	public void setPlatformType(String type) { this.platformType = type; }
+	public String getApplicationName() {return applicationName;}
+	public void setApplicationName(String name) {
+		this.applicationName = name;
+	}
+	public String getPlatform() { return this.platform; }
+	public void setPlatform(String plat) { this.platform = plat; }
 
 	public String getConnectionStatus() {
 		return connectionStatus;
@@ -144,27 +140,13 @@ public class RobotDescription implements java.io.Serializable {
 
 	@Override
 	public boolean equals(Object o) {
-		// Return true if the objects are identical.
-		// (This is just an optimization, not required for correctness.)
 		if(this == o) {
 			return true;
 		}
-
-		// Return false if the other object has the wrong type.
-		// This type may be an interface depending on the interface's
-		// specification.
 		if(!(o instanceof RobotDescription)) {
 			return false;
 		}
-
-		// Cast to the appropriate type.
-		// This will succeed because of the instanceof, and lets us access
-		// private fields.
 		RobotDescription lhs = (RobotDescription) o;
-
-		// Check each field. Primitive fields, reference fields, and nullable
-		// reference
-		// fields are all treated differently.
 		return (robotId == null ? lhs.robotId == null : robotId.equals(lhs.robotId));
 	}
 
