@@ -14,22 +14,23 @@ from std_msgs.msg import String
 pub = rospy.Publisher('/sb_system',String,queue_size=1)
 rospy.init_node('sb_publish_system')
 rate= rospy.Rate(10) #  10 second publish rate
-msg= System('','')
+msg= System('hostname', 'ip_address', 'cpu_percent', 'memory_percent_used', 'free_memory_bytes', 'swap_memory_percent_used', \
+            'disk_percent_used', 'packets_sent', 'packets_received', 'in_packets_dropped', 'out_packets_dropped')
 
 while not rospy.is_shutdown():
 	msg.hostname = socket.gethostname()
-	msg.ip_address = socket.gethostbyname(topic.hostname)
+	msg.ip_address = socket.gethostbyname(msg.hostname)
 	msg.cpu_percent = psutil.cpu_percent(interval=1)
 	mem = psutil.virtual_memory()
-	msg.memory_percent_used = mem["percent"]
-	msg.free_memory_bytes   = mem["free"]
-	msg.swap_memory_percent_used = psutil.swap_memory().get("percent")
-	msg.disk_percent_used = psutil.disk_usage("/").get("percent")
-	net = psutil.net_io_counters(nowrap=True)
-	msg.packets_sent = net["packets_sent"]
-	msg.packets_received = net["packets_received"]
-	msg.in_packets_dropped = net["dropin"]
-	msg.out_packets_dropped = net["dropout"]
+	msg.memory_percent_used = mem[2]
+	msg.free_memory_bytes   = mem[4]
+	msg.swap_memory_percent_used = psutil.swap_memory()[3]
+	msg.disk_percent_used = psutil.disk_usage("/")[3]
+	net = psutil.net_io_counters()
+	msg.packets_sent = net[2]
+	msg.packets_received = net[3]
+	msg.in_packets_dropped = net[6]
+	msg.out_packets_dropped = net[7]
 	# All args and in-order
 	lst = []
 	lst.append(msg.hostname)
