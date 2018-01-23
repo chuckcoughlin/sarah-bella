@@ -90,31 +90,11 @@ public class SBDbManager extends SQLiteOpenHelper {
         SQL.append(")");
         sqLiteDatabase.execSQL(SQL.toString());
 
-        // The next 4 tables are related and form a description
-        // of the applications available to the robots we access.
-        // appName is the primary key
+        // This is simply a list of applications that we know about. Display the description.
         SQL = new StringBuilder();
         SQL.append("CREATE TABLE IF NOT EXISTS RobotApplications (");
         SQL.append("  appName TEXT PRIMARY KEY,");
         SQL.append("  description TEXT NOT NULL");
-        SQL.append(")");
-        sqLiteDatabase.execSQL(SQL.toString());
-
-        SQL = new StringBuilder();
-        SQL.append("CREATE TABLE IF NOT EXISTS ApplicationPublications (");
-        SQL.append("  appName TEXT NOT NULL,");
-        SQL.append("  publicationTopic TEXT NOT NULL,");
-        SQL.append("  dataType TEXT NOT NULL,");
-        SQL.append("  PRIMARY KEY (appName,publicationTopic)");
-        SQL.append(")");
-        sqLiteDatabase.execSQL(SQL.toString());
-
-        SQL = new StringBuilder();
-        SQL.append("CREATE TABLE IF NOT EXISTS ApplicationSubscriptions (");
-        SQL.append("  appName TEXT NOT NULL,");
-        SQL.append("  subscriptionTopic TEXT NOT NULL,");
-        SQL.append("  dataType TEXT NOT NULL,");
-        SQL.append("  PRIMARY KEY (appName,subscriptionTopic)");
         SQL.append(")");
         sqLiteDatabase.execSQL(SQL.toString());
 
@@ -123,16 +103,15 @@ public class SBDbManager extends SQLiteOpenHelper {
         execLenient(sqLiteDatabase,statement);
         statement = "INSERT INTO Settings(Name,Value) VALUES('"+SBConstants.ROS_MASTER_URI+"','"+SBConstants.DEFAULT_ROS_MASTER_URI+"')";
         execLenient(sqLiteDatabase,statement);
+        statement = "INSERT INTO Settings(Name,Value) VALUES('"+SBConstants.ROS_SSID+"','"+SBConstants.DEFAULT_ROS_SSID+"')";
+        execLenient(sqLiteDatabase,statement);
         statement = "INSERT INTO Settings(Name,Value) VALUES('"+SBConstants.ROS_WIFIPWD+"','"+SBConstants.DEFAULT_ROS_WIFIPWD+"')";
         execLenient(sqLiteDatabase,statement);
 
         Log.i(CLSS,String.format("onCreate: Created %s at %s",SBConstants.DB_NAME,context.getDatabasePath(SBConstants.DB_NAME)));
 
         // Define the various applications. This is a fixed list.
-        statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('Status','Monitor robot system status')";
-        execLenient(sqLiteDatabase,statement);
-        statement = "INSERT INTO ApplicationSubscriptions(AppName,SubscriptionTopic,DataType) "+
-                     " VALUES('Status',/sb_system'"+ MsgConstants.DATATYPE_STRING+"')";
+        statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('system','Monitor robot system status')";
         execLenient(sqLiteDatabase,statement);
     }
 

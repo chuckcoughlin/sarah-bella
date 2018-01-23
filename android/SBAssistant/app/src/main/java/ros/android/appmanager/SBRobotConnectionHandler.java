@@ -1,6 +1,5 @@
 package ros.android.appmanager;
 
-import chuckcoughlin.sb.assistant.dialog.SBBasicDialogFragment;
 import ros.android.util.RobotDescription;
 
 /**
@@ -8,12 +7,7 @@ import ros.android.util.RobotDescription;
  * MasterChecker activities.
  */
 
-public interface SBRobotConnectionHandler {
-    /**
-     * There was an error in the connection attempt.
-     * @param reason error description
-     */
-    public void handleConnectionError(String reason);
+public interface SBRobotConnectionHandler extends SBRobotConnectionErrorListener {
     /**
      * There was an error in the connection attempt.
      * @param reason error description

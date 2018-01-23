@@ -5,36 +5,30 @@
 
 package chuckcoughlin.sb.assistant.tab;
 
-import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import chuckcoughlin.sb.assistant.R;
 import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.db.SBDbManager;
-import chuckcoughlin.sb.assistant.dialog.SBBasicDialogFragment;
-import chuckcoughlin.sb.assistant.dialog.SBDialogCallbackHandler;
 import chuckcoughlin.sb.assistant.dialog.SBRobotViewDialog;
 import chuckcoughlin.sb.assistant.dialog.SBWarningDialog;
 import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
 import chuckcoughlin.sb.assistant.ros.SBRosManager;
+import ros.android.appmanager.MasterChecker;
+import ros.android.appmanager.SBRobotConnectionErrorListener;
 import ros.android.appmanager.SBRobotConnectionHandler;
 import ros.android.appmanager.WifiChecker;
-import ros.android.appmanager.MasterChecker;
 import ros.android.util.RobotApplication;
 import ros.android.util.RobotDescription;
 import ros.android.util.RobotId;
@@ -47,7 +41,7 @@ import static chuckcoughlin.sb.assistant.common.SBConstants.DIALOG_TRANSACTION_K
  * its editing if it does. We can connect, if needed and then start or stop applications.
  * Lifecycle methods are presented here in chronological order.
  */
-public class DiscoveryFragment extends BasicAssistantListFragment implements SBRobotConnectionHandler {
+public class DiscoveryFragment extends BasicAssistantFragment implements SBRobotConnectionHandler {
     private final static String CLSS = "DiscoveryFragment";
     private SBDbManager dbManager;
     private SBRosManager rosManager;
@@ -187,6 +181,14 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     @Override
     public void receiveApplication(String appName) {
         Log.w(CLSS, "receiveApplication: " + appName);
+        applicationManager.addListener((SBRobotConnectionErrorListener)this);
+        applicationManager.createApplicationFromName(appName);
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                updateUI();
+            }
+        });
     }
 
     // Update robot connection status
@@ -201,10 +203,10 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     // The "checker" wil fill in parameter values.
     @Override
     public void receiveWifiConnection() {
+        Log.w(CLSS, "receiveWifiConnection: SUCCESS!");
         MasterChecker checker = new MasterChecker(this);
-        RobotDescription robot = rosManager.getRobot();
-        if (robot == null) return;
-        checker.beginChecking(robot);
+        String master = dbManager.getSetting(SBConstants.ROS_MASTER_URI);
+        checker.beginChecking(master);
     }
 
 
@@ -215,15 +217,20 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
      */
     private void updateUI() {
         RobotDescription robot = rosManager.getRobot();
-        Button button = (Button) contentView.findViewById(R.id.viewButton);
-        button.setEnabled(robot != null);
 
-
-        button = (Button) contentView.findViewById(R.id.connectButton);
-        button.setEnabled(robot != null);
-        if (robot == null || !robot.getConnectionStatus().equalsIgnoreCase(RobotDescription.CONNECTION_STATUS_CONNECTED))
+        Button button = (Button) contentView.findViewById(R.id.connectButton);
+        button.setEnabled(true);
+        if (robot == null || !robot.getConnectionStatus().equalsIgnoreCase(RobotDescription.CONNECTION_STATUS_CONNECTED)) {
             button.setText(R.string.discoveryButtonConnect);
-        else button.setText((R.string.discoveryButtonDisconnect));
+            rosManager.clearRobot();
+            robot = rosManager.getRobot();
+        }
+        else {
+            button.setText((R.string.discoveryButtonDisconnect));
+        }
+
+        button = (Button) contentView.findViewById(R.id.viewButton);
+        button.setEnabled(robot != null);
 
         button = (Button) contentView.findViewById(R.id.startButton);
         button.setEnabled(robot != null);
@@ -261,11 +268,18 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
             tview.setVisibility(View.VISIBLE);
         }
 
-        tview = (TextView) contentView.findViewById(R.id.status);
-        if (robot == null) tview.setVisibility(View.INVISIBLE);
+        LinearLayout layout = (LinearLayout) contentView.findViewById(R.id.application_row);
+        if (robot == null || applicationManager.getApplication()==null) {
+            layout.setVisibility(View.INVISIBLE);
+        }
         else {
+            layout.setVisibility(View.VISIBLE);
+            tview = (TextView) layout.findViewById(R.id.application_name);
+            tview.setText("\""+applicationManager.getApplication().getApplicationName()+"\"");   // quoted
+            tview = (TextView) layout.findViewById(R.id.application_description);
+            tview.setText(applicationManager.getApplication().getDescription());
+            tview = (TextView) layout.findViewById(R.id.application_status);
             tview.setText(applicationManager.getApplication().getExecutionStatus());
-            tview.setVisibility(View.VISIBLE);
         }
     }
 
@@ -284,15 +298,19 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         // If the robot is currently connected, we really mean "Disconnect"
         if( rosManager.getConnectionStatus().equals(RobotDescription.CONNECTION_STATUS_CONNECTED) ) {
             mgr.disconnect();
-            rosManager.setConnectionStatus(RobotDescription.CONNECTION_STATUS_CONNECTED);
-            this.updateUI();
+            rosManager.setConnectionStatus(RobotDescription.CONNECTION_STATUS_UNCONNECTED);
+            rosManager.clearRobot();
+            applicationManager.shutdown();
         }
         else {
             WifiChecker checker = new WifiChecker(this);
             String master = dbManager.getSetting(SBConstants.ROS_MASTER_URI);
+            if( master.contains("xxx")) master = null;  // Our "hint" is not the real URI
 
             if (master != null) {
                 RobotId id = new RobotId(master);
+                // Supply SSID in case robot is not the connected WiFi.
+                id.setSSID(dbManager.getSetting(SBConstants.ROS_SSID));
                 id.setWifiPassword(dbManager.getSetting(SBConstants.ROS_WIFIPWD));
                 checker.beginChecking(id,mgr);
             }
@@ -305,6 +323,14 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     // On start, create all the publish/subscribe settings for the application.
     public void startApplicationClicked() {
         Log.i(CLSS, "Start/stop application clicked");
+        if( applicationManager.getApplication()!=null ) {
+            if( applicationManager.getApplication().getExecutionStatus().equals(RobotApplication.APP_STATUS_RUNNING) ) {
+                applicationManager.stopApplication();
+            }
+            else {
+                applicationManager.startApplication();
+            }
+        }
     }
 
 

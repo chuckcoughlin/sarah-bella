@@ -40,9 +40,8 @@ import java.util.List;
 import ros.android.msgs.Topic;
 
 /**
- * This class describes an application on the robot. An application consists
- * of a set of published and subscribed message topics. This is the Java
- * equivalent of a database entry.
+ * This class describes an application on the robot. Individual panels are expected to publish
+ * and subscribe to appropriate topics when they are informed of the application state.
  */
 public class RobotApplication implements java.io.Serializable {
 	private static final String CLSS = "RobotApplication";
@@ -57,16 +56,12 @@ public class RobotApplication implements java.io.Serializable {
 
 	private String applicationName;
 	private String description;
-	private List<Topic> publishers;
-	private List<Topic> subscribers;
 	private String executionStatus;
 
 
 	public RobotApplication(String appName, String desc) {
 		this.applicationName = appName;
 		this.description     = desc;
-		this.publishers = new ArrayList<>();
-		this.subscribers= new ArrayList<>();
 	}
 
 
@@ -76,8 +71,6 @@ public class RobotApplication implements java.io.Serializable {
 	public String getDescription() {
 		return description;
 	}
-	public List<Topic> getPublishers() { return this.publishers; }
-	public List<Topic> getSubscribers() { return this.subscribers; }
 
 	public String getExecutionStatus() {
 		return executionStatus;
@@ -85,7 +78,6 @@ public class RobotApplication implements java.io.Serializable {
 	public void setExecutionStatus(String status) {
 		this.executionStatus = status;
 	}
-
 
 
 	@Override

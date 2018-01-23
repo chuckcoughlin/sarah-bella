@@ -13,6 +13,7 @@
     <color name="lightGray">#DDDDDD</color>
     <color name="darkDarkGray">#101010</color>
     <color name="white">#FFFFFF</color>
+    <color name="maroon">#9F3F30</color>
 
     <!--Material Greens used to vary backgrounds of log messages-->
     <!--In between colors were created with this tool:-->

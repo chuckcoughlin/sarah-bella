@@ -35,13 +35,14 @@ package ros.android.util;
 
 import java.util.Map;
 
+/**
+ * Connectivity portion of a RobotDescription.
+ * Returned attributes are never null.
+ */
 public class RobotId implements java.io.Serializable {
-  private String masterUri;
+  private final String masterUri;
   private String ssid;
   private String wifiPassword;
-  
-  public RobotId() {
-  }
   
   public RobotId(String master) {
     this.masterUri = master;
@@ -54,9 +55,9 @@ public class RobotId implements java.io.Serializable {
     return masterUri;
   }
   public String getSSID() {
-    return ssid;
+    return (ssid==null?"":ssid);
   }
-  public String getWifiPassword() { return wifiPassword; }
+  public String getWifiPassword() { return (wifiPassword==null?"":wifiPassword); }
 
   public void setSSID(String wifi) { this.ssid = wifi; }
   public void setWifiPassword(String passwd) { this.wifiPassword = passwd; }

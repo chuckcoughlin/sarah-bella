@@ -43,6 +43,10 @@ import java.util.Date;
 
 import chuckcoughlin.sb.assistant.common.SBConstants;
 
+/**
+ * "bean" variable for a robot containing all its properties.
+ * Returned properties are never null.
+ */
 public class RobotDescription implements java.io.Serializable {
 	private static final String CLSS = "RobotDescription";
 	// Connection Status
@@ -96,7 +100,7 @@ public class RobotDescription implements java.io.Serializable {
 	}
 
 	public String getRobotName() {
-		return robotName;
+		return (robotName==null?"":robotName);
 	}
 
 	public void setRobotName(String robotName)  {
@@ -104,16 +108,16 @@ public class RobotDescription implements java.io.Serializable {
 	}
 
 	public String getRobotType() {
-		return robotType;
+		return (robotType==null?"":robotType);
 	}
 	public void setRobotType(String robotType) {
 		this.robotType = robotType;
 	}
-	public String getApplicationName() {return applicationName;}
+	public String getApplicationName() {return (applicationName==null?"":applicationName) ;}
 	public void setApplicationName(String name) {
 		this.applicationName = name;
 	}
-	public String getPlatform() { return this.platform; }
+	public String getPlatform() { return (platform==null?"":platform); }
 	public void setPlatform(String plat) { this.platform = plat; }
 
 	public String getConnectionStatus() {

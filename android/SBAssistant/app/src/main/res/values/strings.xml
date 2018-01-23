@@ -25,7 +25,7 @@
     <string name="genericAddButton">Add</string>
     <string name="genericCancelButton">Cancel</string>
     <string name="genericDismissButton">Dismiss</string>
-    <string name="robotApplication">Application</string>
+    <string name="robotApplicationLabel">Application:  </string>
     <!-- Labels as they appear in the central tab bar -->
     <string name="cover_title">Cover</string>
     <string name="discovery_title">Discovery</string>

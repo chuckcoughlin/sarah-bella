@@ -104,7 +104,7 @@ public class SBRosManager {
         stmt.bindString(3,robot.getRobotType());
         stmt.bindString(4,id.getSSID());
         stmt.bindString(5,robot.getApplicationName());
-        stmt.bindString(5,robot.getPlatform());
+        stmt.bindString(6,robot.getPlatform());
         stmt.executeInsert();
         stmt.close();
     }
@@ -164,86 +164,6 @@ public class SBRosManager {
             this.robot.getRobotId().setSSID(ssid);
             updateRobot(this.robot);
         }
-    }
-
-
-    public NodeConfiguration getNodeConfiguration() { return this.configuration; }
-
-
-    /**
-     * Create and return a new ROS NodeContext object.
-     *
-     * @throws RosException If masterUri is invalid or if we cannot get a hostname for the
-     *                      device we are running on.
-     */
-    public NodeConfiguration createConfiguration() throws RosException {
-        if( robot==null ) {
-            throw new RosException("Robot description is undefined");
-        }
-        RobotId robotId = robot.getRobotId();
-        Log.i(CLSS, "createConfiguration(" + robotId.toString() + ")");
-        if (robotId == null || robotId.getMasterUri() == null) {
-            throw new RosException("ROS Master URI is not set");
-        }
-        String namespace = "/";
-        HashMap<GraphName, GraphName> remappings = new HashMap<GraphName, GraphName>();
-        NameResolver resolver = new NameResolver(GraphName.of(namespace), remappings);
-
-        URI uri;
-        try {
-            uri = new URI(robotId.getMasterUri());
-        }
-        catch (URISyntaxException e) {
-            Log.i(CLSS, "createConfiguration(" + robotId.toString() + ") invalid master uri.");
-            throw new RosException("Invalid master URI");
-        }
-
-        Log.i(CLSS, "createConfiguration() creating configuration.");
-        NodeConfiguration configuration =
-                NodeConfiguration.newPublic(getNonLoopbackHostName());
-        configuration.setParentResolver(resolver);
-        configuration.setRosPackagePath(null);
-        configuration.setMasterUri(uri);
-
-        Log.i(CLSS, "createConfiguration() returning configuration with host = " + getNonLoopbackHostName());
-        return configuration;
-    }
-
-
-
-
-    /**
-     * @return The first valid non-loopback, IPv4 host name (address in text form
-     * like "10.0.129.222" found for this device.
-     */
-    private static String getNonLoopbackHostName() {
-        Log.i(CLSS, "getNonLoopbackHostName() starts");
-        try {
-            String address = null;
-            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en
-                    .hasMoreElements(); ) {
-                NetworkInterface intf = en.nextElement();
-                Log.i(CLSS, "getNonLoopbackHostName() sees interface: " + intf.getName());
-                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr
-                        .hasMoreElements(); ) {
-                    InetAddress inetAddress = enumIpAddr.nextElement();
-                    Log.i(CLSS, "getNonLoopbackHostName() sees address: " + inetAddress.getHostAddress().toString());
-                    // IPv4 only for now
-                    if (!inetAddress.isLoopbackAddress() && inetAddress.getAddress().length == 4) {
-                        if (address == null)
-                            address = inetAddress.getHostAddress().toString();
-                    }
-                }
-            }
-            if (address != null) {
-                Log.i(CLSS, "getNonLoopbackHostName() returning " + address);
-                return address;
-            }
-        } catch (SocketException ex) {
-            Log.i(CLSS, "getNonLoopbackHostName() caught SocketException: " + ex.getMessage());
-        }
-        Log.i(CLSS, "getNonLoopbackHostName() returning null.");
-        return null;
     }
 
 }

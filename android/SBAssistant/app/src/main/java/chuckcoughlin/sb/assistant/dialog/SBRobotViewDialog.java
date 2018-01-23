@@ -12,17 +12,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import chuckcoughlin.sb.assistant.R;
-import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.ros.SBRosManager;
 import ros.android.util.RobotDescription;
-import ros.android.util.RobotId;
 
 public class SBRobotViewDialog extends SBBasicDialogFragment {
     public static final String CLSS = "SBRobotViewDialog";
@@ -43,8 +37,8 @@ public class SBRobotViewDialog extends SBBasicDialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.discovery_add_dialog, container, true);
-        View titleView = view.findViewById(R.id.add_robot_title);
+        View view = inflater.inflate(R.layout.discovery_view_dialog, container, true);
+        View titleView = view.findViewById(R.id.view_robot_title);
         ((TextView)titleView).setText(R.string.discoveryViewPopupTitle);
 
         // No need to inform the caller, just go away
@@ -65,6 +59,8 @@ public class SBRobotViewDialog extends SBBasicDialogFragment {
             uriField.setText(robot.getRobotId().getMasterUri());;
             TextView wifiNameField = (TextView) view.findViewById(R.id.wifi_name_editor);
             wifiNameField.setText(robot.getRobotId().getSSID());
+            TextView applicationField = (TextView) view.findViewById(R.id.robot_application_editor);
+            applicationField.setText(robot.getApplicationName());
         }
         return view;
     }

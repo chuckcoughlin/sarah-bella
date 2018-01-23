@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/rounded_dialog_background"
+    android:minWidth="500dp"
+    android:minHeight="400dp" >
+    <TextView
+        android:id="@+id/view_robot_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:gravity="center"
+        android:textAppearance="@style/TabTitle"
+        android:padding="10dp"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+        <TextView android:id="@+id/robot_name_label"
+            android:text="Name: "
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            style="@style/BlackDialogLabel"
+            />
+        <TextView android:id="@+id/robot_name"
+            android:layout_alignParentLeft="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/robot_name_label"
+            style="@style/BlackDialogEntry"
+            />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+        <TextView android:text="Master URI:"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            style="@style/BlackDialogLabel"
+            />
+        <TextView android:id="@+id/uri_editor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/BlackDialogEntry"
+            />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+        <TextView android:text="Wifi network name (SSID):"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            style="@style/BlackDialogLabel"/>
+        <TextView android:id="@+id/wifi_name_editor"
+                android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/BlackDialogEntry"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+        <TextView android:text="Robot application:"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            style="@style/BlackDialogLabel"/>
+        <TextView android:id="@+id/robot_application_editor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/BlackDialogEntry"/>
+    </LinearLayout>
+    <RelativeLayout
+        android:id="@+id/RelativeLayout01"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp">
+        <Button android:text="@string/genericDismissButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:id="@+id/dismiss_button"/>
+    </RelativeLayout>
+
+</LinearLayout>

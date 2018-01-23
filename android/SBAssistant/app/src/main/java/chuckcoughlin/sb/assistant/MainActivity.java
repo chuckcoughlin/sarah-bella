@@ -39,12 +39,15 @@ public class MainActivity extends AppCompatActivity {
     private SBRosManager rosHelper;
 
     public MainActivity() {
-        Log.i(CLSS,"Constructor ...");
+        Log.d(CLSS,"Constructor ...");
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.i(CLSS,"onCreate ...");
+        // If I absolutely have to start over again with the database ...
+        //this.deleteDatabase(SBConstants.DB_NAME);
 
         // Initialize the ros managers ...
         SBDbManager.initialize(this);
@@ -70,18 +73,5 @@ public class MainActivity extends AppCompatActivity {
                 toast.show();
             }
         });
-    }
-
-    /**
-     * Activity is started or re-started by user action
-     * Initialize global stores.
-     */
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        // If I absolutely have to start over again with the database
-        this.deleteDatabase(SBConstants.DB_NAME);
-
     }
 }

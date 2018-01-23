@@ -102,7 +102,8 @@ public class WifiChecker {
             setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                 @Override
                 public void uncaughtException(Thread thread, Throwable ex) {
-                    handler.handleNetworkError("exception: " + ex.getMessage());
+                    Log.e(CLSS, String.format("Uncaught exception checking WiFi Connection: %s",ex.getLocalizedMessage()),ex);
+                    handler.handleNetworkError("Uncaught exception: " + ex.getLocalizedMessage());
                 }
             });
         }
@@ -155,7 +156,7 @@ public class WifiChecker {
                         wifiManager.updateNetwork(wc);
                     }
 
-                    //Add new network.
+                    // In case of no network, add a new network based on configured settings.
                     if (n == -1) {
                         Log.i(CLSS, "WIFI Unknown");
                         wc = new WifiConfiguration();

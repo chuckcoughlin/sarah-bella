@@ -32,13 +32,31 @@ import java.util.HashMap;
 import java.util.List;
 
 import chuckcoughlin.sb.assistant.R;
+import chuckcoughlin.sb.assistant.db.SBDbManager;
+import chuckcoughlin.sb.assistant.ros.SBApplicationStatusListener;
+import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
+import chuckcoughlin.sb.assistant.ros.SBRosManager;
 import ros.android.views.BatteryLevelView;
 
 /**
  * Display the current values of robot system parameters.
  */
 
-public class SystemFragment extends BasicAssistantFragment {
+public class SystemFragment extends BasicAssistantFragment implements SBApplicationStatusListener {
+    private final static String CLSS = "SystemFragment";
+    private SBDbManager dbManager;
+    private SBRosManager rosManager;
+    private SBRosApplicationManager applicationManager;
+
+    // Called when the fragment's instance initializes
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        Log.i(CLSS, "SystemFragment.onCreate");
+        super.onCreate(savedInstanceState);
+        this.dbManager  = SBDbManager.getInstance();
+        this.rosManager = SBRosManager.getInstance();
+        this.applicationManager = SBRosApplicationManager.getInstance();
+    }
 
     // Inflate the view for the fragment based on layout XML
     @Override
@@ -49,7 +67,13 @@ public class SystemFragment extends BasicAssistantFragment {
         label.setText(R.string.system_title);
         return view;
     }
+    // ========================================= SBApplicationStatusListener ============================
+    public void applicationStarted(String appName) {
 
+    }
+    public void applicationShutdown() {
+
+    }
     /*
     public class TurtlebotDashboard extends android.widget.LinearLayout implements Dashboard.DashboardInterface {
 	private ImageButton modeButton;
