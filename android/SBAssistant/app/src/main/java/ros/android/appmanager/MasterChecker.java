@@ -117,8 +117,7 @@ public class MasterChecker {
 
             setDaemon(true);
 
-            // don't require callers to explicitly kill all the old checker
-            // threads.
+            // don't require callers to explicitly kill all the old checker threads.
             setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                 @Override
                 public void uncaughtException(Thread thread, Throwable ex) {

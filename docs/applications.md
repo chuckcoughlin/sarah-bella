@@ -5,7 +5,7 @@ on a Linux virtual machine running on the development system.  These are subsequ
 
 The sections below contain general descriptions
 of the applications with a brief view of applicable control screens on the Android tablet.
-ROS nodes and messaging details as well as descriptions of hardware modifications are described in  extensions](https://github.com/chuckcoughlin/sarah-bella/tree/master/docs/extensions.md).  
+ROS nodes and messaging details as well as descriptions of hardware modifications are described in  [extensions](https://github.com/chuckcoughlin/sarah-bella/tree/master/docs/extensions.md).  
 
 ![SB Assistant](/images/sb-cover.png)
 ````                        SB Assistant - Cover Page ````
@@ -33,14 +33,10 @@ The **system** panel is designed to read system parameters and exercise all devi
 
 The following nodes are defined (shown with topics):
 
-#### ----------------------- tablet -------------------------
 
-**node:** sb_subscribe_system (sb_system/System)<br/>
-
-#### ---------------------- robot  --------------------------
 
 **node:** sb_publish_system (sb_system/System)<br/>
 
 ******************************************************
-##### 02 - Follow <a id="follow"></a>
-With the *follow* application running, walk in front of the TurtleBot3. Then, slowly walk away from the TurtleBot. The robot should move forward. Moving close to the TurtleBot will cause it to back away. Moving slowly to the left or right will cause the TurtleBot to turn. To stop the robot from following, walk quickly away from the robot. 
+### 02 - Follow <a id="follow"></a>
+With the *follow* application running, walk in front of the TurtleBot3. Then, slowly walk away from the TurtleBot. The robot should move forward. Moving close to the TurtleBot will cause it to back away. Moving slowly to the left or right will cause the TurtleBot to turn. To stop the robot from following, walk quickly away from the robot.

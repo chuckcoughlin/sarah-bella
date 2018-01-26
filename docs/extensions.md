@@ -12,14 +12,14 @@ the collection as needed.
   * [System Check](#systemcheck)
 
 *********************************************************
-##### 00 - Discovery <a id="discovery"></a>
+### 00 - Discovery <a id="discovery"></a>
 Discovery makes use of the following robot parameters. These are
  expected to be defined/published in every robot launch script:
 
-* /robot/name  - the name of the robot
-* /robot/type  - the robot type (e.g. turtlebot3)
-* /robot/platform - the hardware platform (e.g. Linux, RaspberryPi)
-* /robot/application - the name of the application currently running on the robot
+* robot/name  - the name of the robot
+* robot/type  - the robot type (e.g. turtlebot3)
+* robot/platform - the hardware platform (e.g. Linux, RaspberryPi)
+* robot/application - the name of the application currently running on the robot
 
 Application selection and restart of the robot depend on a *ssh* login as super-user and execution of the following commands:
 ```
@@ -28,7 +28,7 @@ Application selection and restart of the robot depend on a *ssh* login as super-
 ```
 
 
-##### 01 - System Check <a id="systemcheck"></a>
+### 01 - System Check <a id="systemcheck"></a>
 *psutil* is used to obtain system performance metrics and support the sb_system/System message. This package is installed by default on the Linux virtual machine, but not on the
 Raspberry Pi. For a complete description see: https://psutil.readthedocs.io/en/latest. To install:
 ```
@@ -61,3 +61,16 @@ System
 ```
     catkin_create_pkg system_check rospy turtlebot3_msgs  turtlebot3_navigation
 ```
+##### ----------------------- tablet -------------------------
+
+**node:** sb_subscribe_system (sb_system/System)<br/>
+
+#### #---------------------- robot  --------------------------
+
+### 02 - Follow <a id="follow"></a>
+ See turtlebot follower at: https://github.com/turtlebot/turtlebot_apps.git. Modifications were made to support turtlebot3_msg dependencies.
+
+ The follow applications will cause the TurtleBot3 to look for objects in a window in front of it. And it will seek to keep the centroid of the observed objects directly in front of it and a fixed distance away. If the centroid of the object is too far away it will drive forward, too close backward, and if offset to the side it will turn toward the centroid.
+
+##### 04 - Park <a id="park"></a>
+See Turtlebot3 Automatic Parking at: https://github.com/ROBOTIS-GIT/turtlebot3_applications
