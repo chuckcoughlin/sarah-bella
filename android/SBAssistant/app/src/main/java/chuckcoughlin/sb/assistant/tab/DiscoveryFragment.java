@@ -99,6 +99,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
                 startApplicationClicked();
             }
         });
+
         return contentView;
     }
 
@@ -115,13 +116,15 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         Log.i(CLSS, "DiscoveryFragment.onAxtivityCreated");
-        RobotApplicationsAdapter adapter = new RobotApplicationsAdapter(getContext(), new ArrayList<>());
-        setListAdapter(adapter);
-        getListView().setItemsCanFocus(true);
 
-        // We populate the list whether or not there is a robot connection. We simply hade it as appropriate.
+        // We populate the list whether or not there is a robot connection. We simply hide it as appropriate.
         List<RobotApplication> applicationList = SBRosApplicationManager.getInstance().getApplications();
         Log.i(CLSS, String.format("onActivityCreated: will display %d applications for all robots", applicationList.size()));
+        RobotApplicationsAdapter adapter = new RobotApplicationsAdapter(getContext(), new ArrayList<>());
+        setListAdapter(adapter);
+        ListView listView = getListView();
+        listView.setItemsCanFocus(true);
+        listView.setVisibility(View.INVISIBLE);
         adapter.clear();
         adapter.addAll(applicationList);
     }
@@ -206,7 +209,17 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
             public void run() {
                 RobotApplicationsAdapter adapter = (RobotApplicationsAdapter)getListAdapter();
                 adapter.clear();
-                adapter.addAll(applicationList);updateUI();
+                adapter.addAll(applicationList);
+                int index = 0;
+                for(RobotApplication app:applicationList) {
+                    if(app.getApplicationName().equalsIgnoreCase(appName)) {
+                        //adapter.choose(index);
+                        getListView().setSelection(index);
+                    }
+                    index=index+1;
+                }
+                updateUI();
+                Log.w(CLSS, String.format("receiveApplication: updated UI for %d applications",applicationList.size()));
             }
         });
     }
@@ -252,7 +265,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         button.setEnabled(robot != null);
 
         button = (Button) contentView.findViewById(R.id.startButton);
-        button.setEnabled(robot != null);
+        button.setEnabled(robot != null && applicationManager.getApplication()!=null);
         if (robot == null || applicationManager.getApplication()==null ||
                 !applicationManager.getApplication().getExecutionStatus().equals(RobotApplication.APP_STATUS_RUNNING))
             button.setText(R.string.discoveryButtonStart);
@@ -288,6 +301,10 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         }
 
         ListView listView = getListView();
+        if( listView.getAdapter()==null) return;  // When called from onActivityCreated
+        Log.i(CLSS, String.format("DiscoveryFragment.updateUI robot:%s app:%s %d entries",(robot==null?"null":robot.getRobotName()),
+                                  (applicationManager.getApplication()==null?"null":applicationManager.getApplication().getApplicationName()),
+                                listView.getAdapter().getCount()));
         if (robot == null || applicationManager.getApplication()==null) {
             listView.setVisibility(View.INVISIBLE);
         }

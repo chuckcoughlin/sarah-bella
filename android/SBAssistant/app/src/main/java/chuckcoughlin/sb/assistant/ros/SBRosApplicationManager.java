@@ -201,11 +201,11 @@ public class SBRosApplicationManager {
         sql.append(" FROM RobotApplications");
         sql.append(" ORDER BY appName");
         String[] args = new String[]{};
-
+        //Log.i(CLSS,String.format("APPLICATIONS: -------------------------"));
         Cursor cursor = db.rawQuery(sql.toString(), args);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
-            Map<String, Object> map = new HashMap<>();
+            //Log.i(CLSS,String.format("Add application %s:%s",cursor.getString(0),cursor.getString(1)));
 
             RobotApplication app = new RobotApplication(cursor.getString(0),cursor.getString(1));
             app.setExecutionStatus(RobotApplication.APP_STATUS_NOT_RUNNING);
