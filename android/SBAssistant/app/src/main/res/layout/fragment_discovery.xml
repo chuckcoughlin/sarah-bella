@@ -71,33 +71,16 @@
             android:textColor="@color/black"
             android:textSize="20sp"  />
     </LinearLayout>
-    <!-- The current application -->
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/application_row"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        >
-        <TextView android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/application_name"
-            android:textSize="24sp"
-            android:textColor="@color/maroon"/>
-        <TextView android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/application_description"
-            android:textSize="24sp"
-            android:paddingLeft="20dp"/>
-        <TextView android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="#A0A0A0"
-            android:textStyle="italic"
-            android:textSize="24sp"
-            android:id="@+id/application_status"
-            android:paddingLeft="20dp"/>
-
-    </LinearLayout>
+    <!-- A selectable list of applications -->
+    <ListView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/android:list"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:choiceMode="singleChoice"
+        android:divider="#000000"
+        android:dividerHeight="5dp"
+        android:padding="10dp" />
 
     <LinearLayout
         android:layout_width="match_parent"

@@ -107,10 +107,18 @@ public class SBDbManager extends SQLiteOpenHelper {
         execLenient(sqLiteDatabase,statement);
         statement = "INSERT INTO Settings(Name,Value) VALUES('"+SBConstants.ROS_WIFIPWD+"','"+SBConstants.DEFAULT_ROS_WIFIPWD+"')";
         execLenient(sqLiteDatabase,statement);
+        statement = "INSERT INTO Settings(Name,Value) VALUES('"+SBConstants.ROS_USER+"','"+SBConstants.DEFAULT_ROS_USER+"')";
+        execLenient(sqLiteDatabase,statement);
+        statement = "INSERT INTO Settings(Name,Value) VALUES('"+SBConstants.ROS_USER_PASSWORD+"','"+SBConstants.DEFAULT_ROS_USER_PASSWORD+"')";
+        execLenient(sqLiteDatabase,statement);
 
         Log.i(CLSS,String.format("onCreate: Created %s at %s",SBConstants.DB_NAME,context.getDatabasePath(SBConstants.DB_NAME)));
 
-        // Define the various applications. This is a fixed list.
+        // Define the various applications. This is a fixed list and must correspondd to robot contents.
+        statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('follow','Robot follows the closes object')";
+        execLenient(sqLiteDatabase,statement);
+        statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('headlamp','Turn the robot headlamp on/off')";
+        execLenient(sqLiteDatabase,statement);
         statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('system','Monitor robot system status')";
         execLenient(sqLiteDatabase,statement);
     }

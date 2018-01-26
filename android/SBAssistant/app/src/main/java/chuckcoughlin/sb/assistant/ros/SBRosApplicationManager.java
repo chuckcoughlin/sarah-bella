@@ -9,22 +9,29 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
+import android.os.StrictMode;
 import android.util.Log;
 
+import org.ros.RosCore;
 import org.ros.concurrent.ListenerGroup;
 import org.ros.concurrent.SignalRunnable;
 import org.ros.exception.RosException;
 import org.ros.namespace.GraphName;
 import org.ros.namespace.NameResolver;
+import org.ros.node.DefaultNodeMainExecutor;
 import org.ros.node.NodeConfiguration;
+import org.ros.node.NodeMain;
+import org.ros.node.NodeMainExecutor;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,6 +51,8 @@ import ros.android.util.RobotDescription;
  *
  * The list of recognized applications is in the database and is hard-coded.  We keep the current
  * application and its running status locally.
+ *
+ * We start RosCore when the application is started and stop it when the application stops.
  */
 public class SBRosApplicationManager {
     private final static String CLSS = "SBRosManager";
@@ -55,6 +64,10 @@ public class SBRosApplicationManager {
     private Thread nodeThread;
     private Handler uiThreadHandler = new Handler();
     private RobotApplication application;
+    private final List<RobotApplication> apps;
+    private RosCore rosCore = null;
+    private NodeConfiguration nodeConfiguration= null;
+    private NodeMainExecutor nodeMainExecutor  = null;
 
     // Listeners for application status
     private final ListenerGroup<SBApplicationStatusListener> applicationListeners;
@@ -70,6 +83,7 @@ public class SBRosApplicationManager {
         this.dbManager = SBDbManager.getInstance();
         this.rosManager = SBRosManager.getInstance();
         this.application = null;
+        this.apps = createApplications();
         this.applicationListeners = new ListenerGroup(Executors.newSingleThreadExecutor());
         this.errorListeners = new ListenerGroup(Executors.newSingleThreadExecutor());
     }
@@ -97,49 +111,69 @@ public class SBRosApplicationManager {
         return instance;
     }
 
+    /**
+     * @return the fixed list of applications. This list is independent of the robot instance.
+     */
     public RobotApplication getApplication() { return this.application; }
-
+    /**
+     * @return the number of applications defined.
+     */
+    public int getApplicationCount() {
+        return this.apps.size();
+    }
 
     /**
-     * Specify the name of a the current application. From this we create a RobotApplication
-     * object encapsulating a connected node. The connected node is a departure point for
-     * making supscriptions and publication requests.
-     * @param appName name of the application
+     * @return the currently selected application (or null)
      */
-    public void createApplicationFromName(String appName) {
-        this.application = null;
-        RobotDescription robot = rosManager.getRobot();
-        if (robot != null) {
-            SQLiteDatabase db = dbManager.getReadableDatabase();
+    public List<RobotApplication> getApplications() { return this.apps; }
 
-            String sql = String.format("SELECT description FROM RobotApplications WHERE appName='%s'",appName);
-            String[] args = new String[]{};
-
-            Cursor cursor = db.rawQuery(sql, args);
-            cursor.moveToFirst();
-            String description = "Unconfigured";
-            if (!cursor.isAfterLast()) {
-                description = cursor.getString(0);
-
+    public void setApplication(String name) {
+        for(RobotApplication app:apps) {
+            if( app.getApplicationName().equalsIgnoreCase(name)) {
+                this.application = app;
+                break;
             }
-            cursor.close();
-
-            //
-            this.application = new RobotApplication(appName,description);
-            application.setExecutionStatus(RobotApplication.APP_STATUS_NOT_RUNNING);
-        };
+        }
     }
 
+    /**
+     * Start RosCore. We need the MasterURI. The application gets the ConnectedNode,
+     * inform any subscribing panels.
+     */
     public void startApplication() {
         if( this.application!=null ) {
-
+            Thread thread = new Thread(new Runnable(){
+                @Override
+                public void run() {
+                    rosCore = RosCore.newPublic(11311);
+                    rosCore.start();
+                    try {
+                        rosCore.awaitStart();
+                        URI masterURI = URI.create(rosManager.getRobot().getRobotId().getMasterUri());
+                        String localhost = "127.0.0.1";
+                        nodeConfiguration = NodeConfiguration.newPublic(localhost, masterURI);
+                        nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
+                        nodeMainExecutor.execute(application,nodeConfiguration);
+                        signalApplicationStart(application.getApplicationName());
+                    }
+                    catch (Exception ex) {
+                        signalError(String.format("%s.startApplication: Unable to start core (%s), continuing",CLSS,ex.getLocalizedMessage()));
+                    }
+                }
+            });
+            thread.start();
         }
-
     }
 
+    /**
+     * Shutdown the application and all its subscribers.
+     * Stop Roscore.
+     */
     public void stopApplication() {
+        if( application==null ) return;
         application.setExecutionStatus(RobotApplication.APP_STATUS_NOT_RUNNING);
         signalApplicationStop();
+        nodeMainExecutor.shutdown();
     }
 
     /**
@@ -148,10 +182,42 @@ public class SBRosApplicationManager {
     public void shutdown() {
         stopApplication();
         application = null;
+        rosCore.shutdown();
     }
 
     /**
-     * Create a new ROS NodeConfiguration object.
+     * Create the initial fixed list of applications
+     * @return application list.
+     */
+    private List<RobotApplication> createApplications() {
+        List<RobotApplication> apps = new ArrayList<>();
+        RobotDescription robot = rosManager.getRobot();
+        if (robot == null) return apps;
+
+        SQLiteDatabase db = dbManager.getReadableDatabase();
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT appName,description");
+        sql.append(" FROM RobotApplications");
+        sql.append(" ORDER BY appName");
+        String[] args = new String[]{};
+
+        Cursor cursor = db.rawQuery(sql.toString(), args);
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            Map<String, Object> map = new HashMap<>();
+
+            RobotApplication app = new RobotApplication(cursor.getString(0),cursor.getString(1));
+            app.setExecutionStatus(RobotApplication.APP_STATUS_NOT_RUNNING);
+            apps.add(app);
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return apps;
+    }
+
+    /**
+     * Create a new ROS NodeConfiguration object.  NOT USED
      * @param masterUri string version of the master URI
      * @return the new configuration
      * @throws RosException If masterUri is invalid or if we cannot get a hostname for the
@@ -211,6 +277,17 @@ public class SBRosApplicationManager {
         this.applicationListeners.signal(new SignalRunnable<SBApplicationStatusListener>() {
             public void run(SBApplicationStatusListener listener) {
                 listener.applicationShutdown();
+            }
+        });
+    }
+
+    /**
+     * Inform all listeners of an error.
+     */
+    private void signalError(String msg) {
+        this.errorListeners.signal(new SignalRunnable<SBRobotConnectionErrorListener>() {
+            public void run(SBRobotConnectionErrorListener listener) {
+                listener.handleConnectionError(msg);
             }
         });
     }

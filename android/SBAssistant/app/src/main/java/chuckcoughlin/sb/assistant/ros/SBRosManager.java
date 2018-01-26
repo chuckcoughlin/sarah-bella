@@ -50,7 +50,6 @@ public class SBRosManager {
     private RobotDescription robot = null;
     private NodeConfiguration configuration = null;
 
-
     /**
      * Constructor is private per Singleton pattern. This forces use of the single instance.
      * @param context
@@ -87,7 +86,7 @@ public class SBRosManager {
     /*
      * Create a new current robot
      */
-    public void createRobot(RobotDescription newRobot) {
+    public synchronized void createRobot(RobotDescription newRobot) {
         this.robot = newRobot;
         RobotId id = robot.getRobotId();
         if(robot.getConnectionStatus()==null) {

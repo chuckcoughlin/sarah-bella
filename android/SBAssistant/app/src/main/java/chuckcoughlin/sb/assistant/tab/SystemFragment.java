@@ -27,11 +27,13 @@ import org.ros.namespace.NameResolver;
 import org.ros.node.ConnectedNode;
 import org.ros.node.service.ServiceClient;
 import org.ros.node.service.ServiceResponseListener;
+import org.ros.node.topic.Subscriber;
 
 import java.util.HashMap;
 import java.util.List;
 
 import chuckcoughlin.sb.assistant.R;
+import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.db.SBDbManager;
 import chuckcoughlin.sb.assistant.ros.SBApplicationStatusListener;
 import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
@@ -42,7 +44,7 @@ import ros.android.views.BatteryLevelView;
  * Display the current values of robot system parameters.
  */
 
-public class SystemFragment extends BasicAssistantFragment implements SBApplicationStatusListener {
+public class SystemFragment extends BasicAssistantFragment implements SBApplicationStatusListener,MessageListener<System> {
     private final static String CLSS = "SystemFragment";
     private SBDbManager dbManager;
     private SBRosManager rosManager;
@@ -56,6 +58,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
         this.dbManager  = SBDbManager.getInstance();
         this.rosManager = SBRosManager.getInstance();
         this.applicationManager = SBRosApplicationManager.getInstance();
+        applicationManager.addListener(this);
     }
 
     // Inflate the view for the fragment based on layout XML
@@ -67,12 +70,22 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
         label.setText(R.string.system_title);
         return view;
     }
+
     // ========================================= SBApplicationStatusListener ============================
     public void applicationStarted(String appName) {
-
+        if(appName.equalsIgnoreCase(SBConstants.APPLICATION_SYSTEM)) {
+            ConnectedNode node = applicationManager.getApplication().getConnectedNode();
+            Subscriber<System> subscriber = node.newSubscriber("/sb_system","System");
+            subscriber.addMessageListener(this);
+        }
     }
     public void applicationShutdown() {
 
+    }
+    // ========================================= MessageListener ============================
+    @Override
+    public void onNewMessage(System system) {
+        Log.i(CLSS,"Got a Message!");
     }
     /*
     public class TurtlebotDashboard extends android.widget.LinearLayout implements Dashboard.DashboardInterface {

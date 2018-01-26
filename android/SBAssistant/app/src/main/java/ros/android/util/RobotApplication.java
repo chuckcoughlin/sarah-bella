@@ -33,6 +33,13 @@
 
 package ros.android.util;
 
+import android.util.Log;
+
+import org.ros.namespace.GraphName;
+import org.ros.node.AbstractNodeMain;
+import org.ros.node.ConnectedNode;
+import org.ros.node.Node;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -40,10 +47,11 @@ import java.util.List;
 import ros.android.msgs.Topic;
 
 /**
- * This class describes an application on the robot. Individual panels are expected to publish
- * and subscribe to appropriate topics when they are informed of the application state.
+ * This class describes an application on the robot. It encapsulates a ConnectedNode. Individual
+ * panels are expected to use this to publish and subscribe to appropriate topics once they are
+ * informed of the application running state.
  */
-public class RobotApplication implements java.io.Serializable {
+public class RobotApplication extends AbstractNodeMain implements java.io.Serializable {
 	private static final String CLSS = "RobotApplication";
 	// Connection Status
 	public static final String APP_STATUS_NOT_RUNNING="Not Running";
@@ -57,6 +65,7 @@ public class RobotApplication implements java.io.Serializable {
 	private String applicationName;
 	private String description;
 	private String executionStatus;
+	private ConnectedNode connectedNode = null;
 
 
 	public RobotApplication(String appName, String desc) {
@@ -68,6 +77,7 @@ public class RobotApplication implements java.io.Serializable {
 	public String getApplicationName()  {
 		return this.applicationName;
 	}
+	public ConnectedNode getConnectedNode() { return this.connectedNode; }
 	public String getDescription() {
 		return description;
 	}
@@ -80,6 +90,21 @@ public class RobotApplication implements java.io.Serializable {
 	}
 
 
+    @Override
+    public GraphName getDefaultNodeName() {
+        return GraphName.of(CLSS);
+    }
+
+    @Override
+    public void onShutdown(final Node node) {
+        Log.i(CLSS,String.format("$s.onShutdown: connectedNode has been shutdown",getApplicationName()));
+        this.connectedNode = null;
+    }
+    @Override
+    public void onStart(final ConnectedNode node) {
+        Log.i(CLSS,String.format("$s.onStart: Received connectedNode!",getApplicationName()));
+        this.connectedNode = node;
+    }
 	@Override
 	public boolean equals(Object o) {
 		// Return true if the objects are identical.

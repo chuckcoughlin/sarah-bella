@@ -72,6 +72,7 @@ Create libraries in a similar way from the following:<br/>
 * https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_bootstrap/message_generation/0.3.0 message_generation-0.3.0.jar (org.ros.internal.message)
 * https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_messages/rosgraph_msgs/1.11.2/rosgraph_msgs-1.11.2.jar rosgraph_msgs-1.11.2.jar
 * http://repo1.maven.org/maven2/org/jboss/netty/netty/3.2.9.Final netty.3.2.9.Final.jar (org.jboss.netty)
+* http://www.jcraft.com/jsch/ jsch-0.1.54.jar
 
 
 ##### Jar Conversions <a id="jar-conversions"></a>

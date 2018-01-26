@@ -7,6 +7,7 @@ package chuckcoughlin.sb.assistant.tab;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -69,26 +70,32 @@ public class SettingsFragment extends BasicAssistantListFragment  {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            // Log.i(CLSS,String.format("SettingsListAdapter.getView position =  %d",position));
             // Get the data item for this position
             NameValue nv = getItem(position);
             // Check if an existing view is being reused, otherwise inflate the view
             if (convertView == null) {
-                // Log.i(CLSS,String.format("SettingsListAdapter.getView convertView was null"));
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.settings_item, parent, false);
             }
             // Lookup view for data population
             TextView nameView = (TextView) convertView.findViewById(R.id.settingsNameView);
             EditText editText = (EditText) convertView.findViewById(R.id.settingsEditView);
             // Populate the data into the template view using the data object
+            Log.i(CLSS,String.format("adapter.getView setting %s = %s",nv.getName(),nv.getValue()));
             nameView.setText(nv.getName());
             editText.setText(nv.getValue());
+            if(nv.getName().toUpperCase().contains("PASSWORD")) {
+                editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                editText.setSelection(editText.getText().length());
+            }
+            else {
+                editText.setInputType(InputType.TYPE_CLASS_TEXT);
+            }
             editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
                 @Override
                 public void onFocusChange(View v, boolean hasFocus) {
                     /*
                      * When focus is lost save the entered value both into the current array
-                     * and the database
+                     * and the databasesetInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
                      */
                     if (!hasFocus) {
                         Log.i(CLSS,String.format("SettingsListAdapter.getView.onFocusChange %d = %s",position,((EditText) v).getText().toString()));

@@ -5,6 +5,7 @@
 
 package chuckcoughlin.sb.assistant.tab;
 
+import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.text.Layout;
@@ -12,11 +13,17 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import chuckcoughlin.sb.assistant.R;
 import chuckcoughlin.sb.assistant.common.SBConstants;
@@ -37,11 +44,11 @@ import static android.content.Context.WIFI_SERVICE;
 import static chuckcoughlin.sb.assistant.common.SBConstants.DIALOG_TRANSACTION_KEY;
 
 /**
- * Display the current robot. Provide for its creation if it doesn't exist and for
- * its editing if it does. We can connect, if needed and then start or stop applications.
+ * Display the current robot. Robot attributes are read from the robot's own configuration parameters.
+ * We can connect, select an application, then start or stop it.
  * Lifecycle methods are presented here in chronological order.
  */
-public class DiscoveryFragment extends BasicAssistantFragment implements SBRobotConnectionHandler {
+public class DiscoveryFragment extends BasicAssistantListFragment implements SBRobotConnectionHandler {
     private final static String CLSS = "DiscoveryFragment";
     private SBDbManager dbManager;
     private SBRosManager rosManager;
@@ -61,7 +68,7 @@ public class DiscoveryFragment extends BasicAssistantFragment implements SBRobot
 
     // Called to have the fragment instantiate its user interface view.
     // Inflate the view for the fragment based on layout XML. Populate
-    // the text fields from the database.
+    // the text fields and application list from the database.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.i(CLSS, "DiscoveryFragment.onCreateView");
@@ -92,7 +99,6 @@ public class DiscoveryFragment extends BasicAssistantFragment implements SBRobot
                 startApplicationClicked();
             }
         });
-        updateUI();
         return contentView;
     }
 
@@ -101,6 +107,7 @@ public class DiscoveryFragment extends BasicAssistantFragment implements SBRobot
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Log.i(CLSS, "DiscoveryFragment.onViewCreated");
+        updateUI();
     }
 
     // The host activity has been created.
@@ -108,6 +115,15 @@ public class DiscoveryFragment extends BasicAssistantFragment implements SBRobot
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         Log.i(CLSS, "DiscoveryFragment.onAxtivityCreated");
+        RobotApplicationsAdapter adapter = new RobotApplicationsAdapter(getContext(), new ArrayList<>());
+        setListAdapter(adapter);
+        getListView().setItemsCanFocus(true);
+
+        // We populate the list whether or not there is a robot connection. We simply hade it as appropriate.
+        List<RobotApplication> applicationList = SBRosApplicationManager.getInstance().getApplications();
+        Log.i(CLSS, String.format("onActivityCreated: will display %d applications for all robots", applicationList.size()));
+        adapter.clear();
+        adapter.addAll(applicationList);
     }
 
     // The fragment is visible
@@ -177,16 +193,20 @@ public class DiscoveryFragment extends BasicAssistantFragment implements SBRobot
 
     // The application name is a global parameter of the robot.
     // Use it to instantiate the application object with its
-    // publish and subscribe definitions.
+    // publish and subscribe definitions. Display the full list of applications
+    // and mark this one as selected.
     @Override
     public void receiveApplication(String appName) {
         Log.w(CLSS, "receiveApplication: " + appName);
+        List<RobotApplication> applicationList = SBRosApplicationManager.getInstance().getApplications();
         applicationManager.addListener((SBRobotConnectionErrorListener)this);
-        applicationManager.createApplicationFromName(appName);
+        applicationManager.setApplication(appName);
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                updateUI();
+                RobotApplicationsAdapter adapter = (RobotApplicationsAdapter)getListAdapter();
+                adapter.clear();
+                adapter.addAll(applicationList);updateUI();
             }
         });
     }
@@ -211,7 +231,6 @@ public class DiscoveryFragment extends BasicAssistantFragment implements SBRobot
 
 
     //======================================== Update the UI ======================================
-
     /**
      * Keep the views in-sync with the model state
      */
@@ -268,18 +287,55 @@ public class DiscoveryFragment extends BasicAssistantFragment implements SBRobot
             tview.setVisibility(View.VISIBLE);
         }
 
-        LinearLayout layout = (LinearLayout) contentView.findViewById(R.id.application_row);
+        ListView listView = getListView();
         if (robot == null || applicationManager.getApplication()==null) {
-            layout.setVisibility(View.INVISIBLE);
+            listView.setVisibility(View.INVISIBLE);
         }
         else {
-            layout.setVisibility(View.VISIBLE);
-            tview = (TextView) layout.findViewById(R.id.application_name);
-            tview.setText("\""+applicationManager.getApplication().getApplicationName()+"\"");   // quoted
-            tview = (TextView) layout.findViewById(R.id.application_description);
-            tview.setText(applicationManager.getApplication().getDescription());
-            tview = (TextView) layout.findViewById(R.id.application_status);
-            tview.setText(applicationManager.getApplication().getExecutionStatus());
+            listView.setVisibility(View.VISIBLE);
+        }
+    }
+    //======================================== Array Adapter ======================================
+    public class RobotApplicationsAdapter extends ArrayAdapter<RobotApplication> implements ListAdapter {
+
+        public RobotApplicationsAdapter(Context context, List<RobotApplication> values) {
+            super(context, R.layout.discovery_application_item, values);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return getItem(position).hashCode();
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            Log.i(CLSS, String.format("RobotApplicationsAdapter.getView position =  %d", position));
+            // Get the data item for this position
+            RobotApplication app = getItem(position);
+
+            // Check if an existing view is being reused, otherwise inflate the view
+            if (convertView == null) {
+                Log.i(CLSS, String.format("RobotApplicationsAdapter.getView convertView was null"));
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.discovery_application_item, parent, false);
+            }
+
+            // Lookup view for data population
+            TextView nameView = (TextView) convertView.findViewById(R.id.application_name);
+            TextView descriptionView = (TextView) convertView.findViewById(R.id.application_description);
+            TextView statusView = (TextView) convertView.findViewById(R.id.application_status);
+
+            // Populate the data into the template view using the data object
+            nameView.setText(app.getApplicationName());
+            descriptionView.setText(app.getDescription());
+            statusView.setText(app.getExecutionStatus());
+
+            // Return the completed view to render on screen
+            return convertView;
+        }
+
+        private void choose(int position) {
+            Log.i(CLSS, String.format("RobotApplicationsAdapter.chose application %d",position));
+            //SBRosApplicationManager.getInstance().setCurrentApplication(position);
         }
     }
 
@@ -332,6 +388,5 @@ public class DiscoveryFragment extends BasicAssistantFragment implements SBRobot
             }
         }
     }
-
 
 }
