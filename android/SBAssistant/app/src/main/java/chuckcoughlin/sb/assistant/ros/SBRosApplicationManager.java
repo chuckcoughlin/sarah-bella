@@ -64,7 +64,7 @@ public class SBRosApplicationManager {
     private Thread nodeThread;
     private Handler uiThreadHandler = new Handler();
     private RobotApplication application;
-    private final List<RobotApplication> apps;
+    private List<RobotApplication> apps;
     private RosCore rosCore = null;
     private NodeConfiguration nodeConfiguration= null;
     private NodeMainExecutor nodeMainExecutor  = null;
@@ -83,8 +83,8 @@ public class SBRosApplicationManager {
         this.dbManager = SBDbManager.getInstance();
         this.rosManager = SBRosManager.getInstance();
         this.application = null;
-        this.apps = createApplications();
         this.applicationListeners = new ListenerGroup(Executors.newSingleThreadExecutor());
+        this.apps = new ArrayList<>();
         this.errorListeners = new ListenerGroup(Executors.newSingleThreadExecutor());
     }
 
@@ -125,7 +125,10 @@ public class SBRosApplicationManager {
     /**
      * @return the currently selected application (or null)
      */
-    public List<RobotApplication> getApplications() { return this.apps; }
+    public List<RobotApplication> getApplications() {
+        if( apps.size()==0 ) apps = createApplications();
+        return this.apps;
+    }
 
     public void setApplication(String name) {
         for(RobotApplication app:apps) {
@@ -173,7 +176,7 @@ public class SBRosApplicationManager {
         if( application==null ) return;
         application.setExecutionStatus(RobotApplication.APP_STATUS_NOT_RUNNING);
         signalApplicationStop();
-        nodeMainExecutor.shutdown();
+        if( nodeMainExecutor!=null ) nodeMainExecutor.shutdown();
     }
 
     /**

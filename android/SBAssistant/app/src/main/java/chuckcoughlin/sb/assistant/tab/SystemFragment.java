@@ -53,7 +53,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     // Called when the fragment's instance initializes
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.i(CLSS, "SystemFragment.onCreate");
+        Log.i(CLSS, "onCreate");
         super.onCreate(savedInstanceState);
         this.dbManager  = SBDbManager.getInstance();
         this.rosManager = SBRosManager.getInstance();
@@ -75,8 +75,13 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     public void applicationStarted(String appName) {
         if(appName.equalsIgnoreCase(SBConstants.APPLICATION_SYSTEM)) {
             ConnectedNode node = applicationManager.getApplication().getConnectedNode();
-            Subscriber<System> subscriber = node.newSubscriber("/sb_system","System");
-            subscriber.addMessageListener(this);
+            if( node!=null ) {
+                Subscriber<System> subscriber = node.newSubscriber("/sb_system", "System");
+                subscriber.addMessageListener(this);
+            }
+            else {
+                Log.i(CLSS, String.format("applicationStarted: %s has no connected node",appName));
+            }
         }
     }
     public void applicationShutdown() {

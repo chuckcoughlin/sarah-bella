@@ -213,13 +213,14 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
                 int index = 0;
                 for(RobotApplication app:applicationList) {
                     if(app.getApplicationName().equalsIgnoreCase(appName)) {
-                        //adapter.choose(index);
                         getListView().setSelection(index);
+                        Log.i(CLSS, String.format("receiveApplication: selected application %s (%d)",appName,index));
+                        break;
                     }
                     index=index+1;
                 }
                 updateUI();
-                Log.w(CLSS, String.format("receiveApplication: updated UI for %d applications",applicationList.size()));
+                Log.i(CLSS, String.format("receiveApplication: updated UI for %d applications",applicationList.size()));
             }
         });
     }
@@ -227,7 +228,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     // Update robot connection status
     @Override
     public void receiveConnection(RobotDescription robot) {
-        Log.w(CLSS, "receiveConnection: SUCCESS!");
+        Log.i(CLSS, "receiveConnection: SUCCESS!");
         rosManager.updateRobot(robot);
         rosManager.setConnectionStatus(RobotDescription.CONNECTION_STATUS_CONNECTED);
     }
@@ -351,6 +352,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         }
 
         private void choose(int position) {
+
             Log.i(CLSS, String.format("RobotApplicationsAdapter.chose application %d",position));
             //SBRosApplicationManager.getInstance().setCurrentApplication(position);
         }
