@@ -151,7 +151,7 @@ public class MasterChecker {
                         robot.setPlatform((String) paramClient.getParam(GraphName.of("robot/platform")).getResult());
                     }
                     robot.setTimeLastSeen(new Date());
-                    handler.receiveConnection(robot);
+                    handler.receiveRobotConnection(robot);
 
                     if (hasApp) {
                         String appName = (String) paramClient.getParam(GraphName.of("robot/application")).getResult();

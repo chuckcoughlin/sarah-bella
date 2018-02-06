@@ -41,6 +41,7 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiInfo;
 
+import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.ros.SBRosManager;
 import ros.android.util.RobotId;
 
@@ -103,7 +104,7 @@ public class WifiChecker {
                 @Override
                 public void uncaughtException(Thread thread, Throwable ex) {
                     Log.e(CLSS, String.format("Uncaught exception checking WiFi Connection: %s",ex.getLocalizedMessage()),ex);
-                    handler.handleNetworkError("Uncaught exception: " + ex.getLocalizedMessage());
+                    handler.handleNetworkError(SBConstants.NETWORK_WIFI,"Uncaught exception: " + ex.getLocalizedMessage());
                 }
             });
         }
@@ -119,19 +120,21 @@ public class WifiChecker {
                     WifiInfo info = wifiManager.getConnectionInfo();
                     String ssid = info.getSSID().replaceAll("\"","");
                     SBRosManager.getInstance().setSSID(ssid);
-                    handler.receiveWifiConnection();
+                    handler.receiveNetworkConnection();;
                 }
-                else if (handler.handleWifiReconnection(wifiManager.getConnectionInfo().getSSID(), robotId.getSSID())) {
-                    Log.i(CLSS, "Wait for networking");
+                // Try to reconnect
+                else {
+                    Log.i(CLSS, "Waiting for networking");
                     wifiManager.setWifiEnabled(true);
                     int i = 0;
                     while (i < 30 && !wifiManager.isWifiEnabled()) {
                         Log.i(CLSS, "Waiting for WiFi enable");
-
+                        Thread.sleep(100);
+                        if (!wifiManager.isWifiEnabled()) break;
                         i++;
                     }
                     if (!wifiManager.isWifiEnabled()) {
-                        handler.handleNetworkError("Un-able to connect to WiFi");
+                        handler.handleNetworkError(SBConstants.NETWORK_WIFI,"Un-able to connect to WiFi");
                         return;
                     }
                     int n = -1;
@@ -187,7 +190,7 @@ public class WifiChecker {
                         n = wifiManager.addNetwork(wc);
                         Log.i(CLSS, "add Network returned " + n);
                         if (n == -1) {
-                            handler.handleNetworkError("Failed to configure WiFi");
+                            handler.handleNetworkError(SBConstants.NETWORK_WIFI,"Failed to configure WiFi");
                         }
                     }
 
@@ -200,25 +203,26 @@ public class WifiChecker {
                         i = 0;
                         while (i < 30 && !wifiValid()) {
                             Log.d(CLSS, "Waiting for network: " + i + " " + wifiManager.getWifiState());
-
+                            Thread.sleep(500);
                             i++;
+                            if (wifiValid()) {
+                                handler.receiveNetworkConnection();
+                                break;
+                            }
                         }
-                        if (wifiValid()) {
-                            handler.receiveWifiConnection();
+                        if (!wifiValid()) {
+                            handler.receiveNetworkConnection();
                         }
                         else {
-                            handler.handleNetworkError("WiFi connection timed out");
+                            handler.handleNetworkError(SBConstants.NETWORK_WIFI,"WiFi connection timed out");
                         }
                     }
-                }
-                else {
-                    handler.handleNetworkError("Wrong WiFi network");
                 }
             }
             catch (Throwable ex) {
                 Log.e("RosAndroid", "Exception while searching for WiFi for "
                         + robotId.getSSID(), ex);
-                handler.handleNetworkError(ex.getLocalizedMessage());
+                handler.handleNetworkError(SBConstants.NETWORK_WIFI,ex.getLocalizedMessage());
             }
         }
     }

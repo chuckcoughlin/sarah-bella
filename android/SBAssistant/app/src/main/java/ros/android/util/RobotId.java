@@ -41,11 +41,13 @@ import java.util.Map;
  */
 public class RobotId implements java.io.Serializable {
   private final String masterUri;
+  private String deviceName;  // Paired device name
   private String ssid;
   private String wifiPassword;
   
   public RobotId(String master) {
     this.masterUri = master;
+    this.deviceName = null;
     this.ssid = null;
     this.wifiPassword = null;
   }
@@ -54,11 +56,15 @@ public class RobotId implements java.io.Serializable {
   public String getMasterUri() {
     return masterUri;
   }
+  public String getDeviceName() {
+        return (deviceName==null?"":deviceName);
+    }
   public String getSSID() {
     return (ssid==null?"":ssid);
   }
   public String getWifiPassword() { return (wifiPassword==null?"":wifiPassword); }
 
+  public void setDeviceName(String name) { this.deviceName = name; }
   public void setSSID(String wifi) { this.ssid = wifi; }
   public void setWifiPassword(String passwd) { this.wifiPassword = passwd; }
 

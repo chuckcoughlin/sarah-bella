@@ -1,3 +1,7 @@
+/**
+ * Copyright 2017 Charles Coughlin. All rights reserved.
+ * (MIT License)
+ */
 package ros.android.appmanager;
 
 import ros.android.util.RobotDescription;

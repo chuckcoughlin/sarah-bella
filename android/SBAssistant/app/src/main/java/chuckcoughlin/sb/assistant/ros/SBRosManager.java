@@ -93,17 +93,18 @@ public class SBRosManager {
             robot.setConnectionStatus(RobotDescription.CONNECTION_STATUS_UNCONNECTED);
         }
 
-        StringBuilder sql = new StringBuilder("INSERT INTO Robots(masterUri,robotName,robotType,");
+        StringBuilder sql = new StringBuilder("INSERT INTO Robots(masterUri,robotName,robotType,deviceName,");
         sql.append("ssid,application,platform) ");
-        sql.append("VALUES(?,?,?,?,?,?)");
+        sql.append("VALUES(?,?,?,?,?,?,?)");
         SQLiteDatabase db = dbManager.getWritableDatabase();
         SQLiteStatement stmt = db.compileStatement(sql.toString());
         stmt.bindString(1,id.getMasterUri());
         stmt.bindString(2,robot.getRobotName());
         stmt.bindString(3,robot.getRobotType());
-        stmt.bindString(4,id.getSSID());
-        stmt.bindString(5,robot.getApplicationName());
-        stmt.bindString(6,robot.getPlatform());
+        stmt.bindString(4,id.getDeviceName());
+        stmt.bindString(5,id.getSSID());
+        stmt.bindString(6,robot.getApplicationName());
+        stmt.bindString(7,robot.getPlatform());
         stmt.executeInsert();
         stmt.close();
     }
@@ -141,20 +142,29 @@ public class SBRosManager {
         RobotDescription r = null;
         SQLiteDatabase db = dbManager.getReadableDatabase();
         StringBuilder sql = new StringBuilder(
-                   "SELECT masterUri,robotName,robotType,ssid,application,platform");
+                   "SELECT masterUri,robotName,robotType,deviceName,ssid,application,platform");
         sql.append(" FROM Robots ");
         sql.append(" ORDER BY robotName");
         Cursor cursor = db.rawQuery(sql.toString(),null);
         cursor.moveToFirst();
         while(!cursor.isAfterLast()) {
             RobotId id = new RobotId(cursor.getString(0));
-            id.setSSID(cursor.getString(3));
+            id.setDeviceName(cursor.getString(3));
+            id.setSSID(cursor.getString(4));
             r = new RobotDescription(id, cursor.getString(1), cursor.getString(2), new Date());
             r.setConnectionStatus(RobotDescription.CONNECTION_STATUS_UNCONNECTED);
             cursor.moveToNext();
         }
         cursor.close();
         return r;
+    }
+
+    // Set the Bluetooth device name of the current robot and update database.
+    public void setDeviceName(String name) {
+        if( this.robot!=null ) {
+            this.robot.getRobotId().setDeviceName(name);
+            updateRobot(this.robot);
+        }
     }
 
     // Set the SSID of the current robot and update database.

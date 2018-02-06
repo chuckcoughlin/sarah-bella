@@ -7,20 +7,26 @@ package chuckcoughlin.sb.assistant.common;
 
 
 /**
- * Create a model class for various lists - a name/value pair
+ * Create a model class for various lists - a name/value pair.
+ * Add a hint to help the user.
  */
 
 public class NameValue {
     private String name = "";
     private String value = "";
+    private String hint = "";
 
     public NameValue() {}
 
-    public NameValue(String nam, String val) {
+    public NameValue(String nam, String val,String desc) {
         this.name = nam;
         this.value = val;
+        this.hint  = desc;
     }
 
+    public String getHint() {
+        return this.hint;
+    }
     public String getName() {
         return this.name;
     }
@@ -28,6 +34,9 @@ public class NameValue {
         return this.value;
     }
 
+    public void setHint(String desc) {
+        this.hint = desc;
+    }
     public void setName(String nam) {
         this.name = nam;
     }

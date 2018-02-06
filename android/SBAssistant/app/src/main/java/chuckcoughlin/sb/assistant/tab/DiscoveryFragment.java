@@ -5,6 +5,7 @@
 
 package chuckcoughlin.sb.assistant.tab;
 
+import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -21,6 +22,7 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +34,7 @@ import chuckcoughlin.sb.assistant.dialog.SBRobotViewDialog;
 import chuckcoughlin.sb.assistant.dialog.SBWarningDialog;
 import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
 import chuckcoughlin.sb.assistant.ros.SBRosManager;
+import ros.android.appmanager.BluetoothChecker;
 import ros.android.appmanager.MasterChecker;
 import ros.android.appmanager.SBRobotConnectionErrorListener;
 import ros.android.appmanager.SBRobotConnectionHandler;
@@ -40,6 +43,7 @@ import ros.android.util.RobotApplication;
 import ros.android.util.RobotDescription;
 import ros.android.util.RobotId;
 
+import static android.content.Context.BLUETOOTH_SERVICE;
 import static android.content.Context.WIFI_SERVICE;
 import static chuckcoughlin.sb.assistant.common.SBConstants.DIALOG_TRANSACTION_KEY;
 
@@ -54,6 +58,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     private SBRosManager rosManager;
     private SBRosApplicationManager applicationManager;
     private View contentView = null;
+    private boolean failedBluetoothConnection;
 
 
     // Called when the fragment's instance initializes
@@ -64,6 +69,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         this.dbManager  = SBDbManager.getInstance();
         this.rosManager = SBRosManager.getInstance();
         this.applicationManager = SBRosApplicationManager.getInstance();
+        this.failedBluetoothConnection = false;
     }
 
     // Called to have the fragment instantiate its user interface view.
@@ -177,21 +183,35 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     public void handleConnectionError(String reason) {
         Log.w(CLSS, "handleConnectionError: " + reason);
         rosManager.setConnectionStatus(RobotDescription.CONNECTION_STATUS_UNCONNECTED);
-        SBWarningDialog warning = SBWarningDialog.newInstance("Connection Error", reason);
+        SBWarningDialog warning = SBWarningDialog.newInstance( "Error connecting to robot", reason);
         warning.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
     }
 
+    /**
+     * If this is a bluetooth error, then try wi-fi.
+     * @param type network type (Bluetooth/Wi-fi)
+     * @param reason error description
+     */
     @Override
-    public void handleNetworkError(String reason) {
-        Log.w(CLSS, "handleNetworkError: " + reason);
+    public void handleNetworkError(String type,String reason) {
+        Log.w(CLSS, String.format("handleNetworkError (%s): %s",type,reason));
         rosManager.setConnectionStatus(RobotDescription.CONNECTION_STATUS_UNAVAILABLE);
-        SBWarningDialog warning = SBWarningDialog.newInstance("Network Error", reason);
-        warning.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
-    }
-
-    @Override
-    public boolean handleWifiReconnection(String SSID, String networkName) {
-        return true;
+        if(type.equalsIgnoreCase(SBConstants.NETWORK_BLUETOOTH)) {
+            this.failedBluetoothConnection = true;
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    final Toast toast = Toast.makeText(getActivity().getBaseContext(), reason, Toast.LENGTH_LONG);
+                    toast.show();
+                }
+            });
+            Log.i(CLSS, "handleNetworkError: (bluetooth) " + reason);
+            checkWifi();
+        }
+        else {
+            SBWarningDialog warning = SBWarningDialog.newInstance("Network Error", reason);
+            warning.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
+        }
     }
 
     // The application name is a global parameter of the robot.
@@ -227,21 +247,21 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
 
     // Update robot connection status
     @Override
-    public void receiveConnection(RobotDescription robot) {
-        Log.i(CLSS, "receiveConnection: SUCCESS!");
+    public void receiveRobotConnection(RobotDescription robot) {
+        Log.i(CLSS, "receiveRobotConnection: SUCCESS!");
         rosManager.updateRobot(robot);
         rosManager.setConnectionStatus(RobotDescription.CONNECTION_STATUS_CONNECTED);
     }
 
-    // Once the wifi is connected, connect to the robot itself.
-    // The "checker" wil fill in parameter values.
+    // The basic network connection is made. Now interrogate for robot characteristics.
     @Override
-    public void receiveWifiConnection() {
-        Log.w(CLSS, "receiveWifiConnection: SUCCESS!");
+    public void receiveNetworkConnection() {
+        Log.i(CLSS, "receiveNetworkConnection: SUCCESS!");
         MasterChecker checker = new MasterChecker(this);
         String master = dbManager.getSetting(SBConstants.ROS_MASTER_URI);
         checker.beginChecking(master);
     }
+
 
 
     //======================================== Update the UI ======================================
@@ -366,32 +386,39 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         addDialog.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
     }
 
+    /**
+     * This is also called internally on a bluetooth connection error
+     */
     public void connectRobotClicked() {
         Log.i(CLSS, "Connect robot clicked");
         RobotDescription robot = rosManager.getRobot();
-        WifiManager mgr = (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE);
+        BluetoothManager bluetoothManager = (BluetoothManager)getActivity().getSystemService(BLUETOOTH_SERVICE);
         // If the robot is currently connected, we really mean "Disconnect"
         if( rosManager.getConnectionStatus().equals(RobotDescription.CONNECTION_STATUS_CONNECTED) ) {
-            mgr.disconnect();
+            bluetoothManager.getAdapter().disable();
+            WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE);
+            wifiManager.disconnect();
             rosManager.setConnectionStatus(RobotDescription.CONNECTION_STATUS_UNCONNECTED);
             rosManager.clearRobot();
             applicationManager.shutdown();
         }
-        else {
-            WifiChecker checker = new WifiChecker(this);
+        else if(!failedBluetoothConnection) {
+            BluetoothChecker checker = new BluetoothChecker(this);
             String master = dbManager.getSetting(SBConstants.ROS_MASTER_URI);
             if( master.contains("xxx")) master = null;  // Our "hint" is not the real URI
 
             if (master != null) {
                 RobotId id = new RobotId(master);
-                // Supply SSID in case robot is not the connected WiFi.
-                id.setSSID(dbManager.getSetting(SBConstants.ROS_SSID));
-                id.setWifiPassword(dbManager.getSetting(SBConstants.ROS_WIFIPWD));
-                checker.beginChecking(id,mgr);
+                // Supply device name that needs to match robot.
+                String target = dbManager.getSetting(SBConstants.ROS_PAIRED_DEVICE);
+                checker.beginChecking(id,bluetoothManager,target);
             }
             else {
-                handleNetworkError("The MasterURI must be defined on the Settings panel");
+                handleNetworkError(SBConstants.NETWORK_BLUETOOTH,"The MasterURI must be defined on the Settings panel");
             }
+        }
+        else {
+            checkWifi();
         }
     }
 
@@ -405,6 +432,24 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
             else {
                 applicationManager.startApplication();
             }
+        }
+    }
+
+    private void checkWifi() {
+        WifiChecker checker = new WifiChecker(this);
+        String master = dbManager.getSetting(SBConstants.ROS_MASTER_URI);
+        if( master.contains("xxx")) master = null;  // Our "hint" is not the real URI
+
+        if (master != null) {
+            RobotId id = new RobotId(master);
+            WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE);
+            // Supply SSID in case robot is not the connected WiFi.
+            id.setSSID(dbManager.getSetting(SBConstants.ROS_SSID));
+            id.setWifiPassword(dbManager.getSetting(SBConstants.ROS_WIFIPWD));
+            checker.beginChecking(id,wifiManager);
+        }
+        else {
+            handleNetworkError(SBConstants.NETWORK_WIFI,"The MasterURI must be defined on the Settings panel");
         }
     }
 

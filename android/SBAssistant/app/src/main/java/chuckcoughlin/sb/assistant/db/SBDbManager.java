@@ -75,7 +75,8 @@ public class SBDbManager extends SQLiteOpenHelper {
         StringBuilder SQL = new StringBuilder();
         SQL.append("CREATE TABLE IF NOT EXISTS Settings (");
         SQL.append("  name TEXT PRIMARY KEY,");
-        SQL.append("  value TEXT DEFAULT ''");
+        SQL.append("  value TEXT DEFAULT '',");
+        SQL.append("  hint TEXT DEFAULT 'hint'");
         SQL.append(")");
         sqLiteDatabase.execSQL(SQL.toString());
 
@@ -84,6 +85,7 @@ public class SBDbManager extends SQLiteOpenHelper {
         SQL.append("  masterUri TEXT PRIMARY KEY,");
         SQL.append("  robotName TEXT DEFAULT '',");
         SQL.append("  robotType TEXT DEFAULT '',");
+        SQL.append("  deviceName TEXT DEFAULT '',");
         SQL.append("  ssid TEXT DEFAULT '',");
         SQL.append("  application TEXT DEFAULT '',");
         SQL.append("  platform TEXT DEFAULT ''");
@@ -98,18 +100,20 @@ public class SBDbManager extends SQLiteOpenHelper {
         SQL.append(")");
         sqLiteDatabase.execSQL(SQL.toString());
 
-        // Add initial rows - fail silently if they exist
-        String statement = "INSERT INTO Settings(Name,Value) VALUES('"+SBConstants.ROS_GATEWAY+"','"+SBConstants.DEFAULT_ROS_GATEWAY+"')";
+        // Add initial rows - fail silently if they exist. Use default for value.
+        String statement = "INSERT INTO Settings(Name,Hint) VALUES('"+SBConstants.ROS_GATEWAY+"','"+SBConstants.ROS_GATEWAY_HINT+"')";
         execLenient(sqLiteDatabase,statement);
-        statement = "INSERT INTO Settings(Name,Value) VALUES('"+SBConstants.ROS_MASTER_URI+"','"+SBConstants.DEFAULT_ROS_MASTER_URI+"')";
+        statement = "INSERT INTO Settings(Name,Hint) VALUES('"+SBConstants.ROS_MASTER_URI+"','"+SBConstants.ROS_MASTER_URI_HINT+"')";
         execLenient(sqLiteDatabase,statement);
-        statement = "INSERT INTO Settings(Name,Value) VALUES('"+SBConstants.ROS_SSID+"','"+SBConstants.DEFAULT_ROS_SSID+"')";
+        statement = "INSERT INTO Settings(Name,Hint) VALUES('"+SBConstants.ROS_PAIRED_DEVICE+"','"+SBConstants.ROS_PAIRED_DEVICE_HINT+"')";
         execLenient(sqLiteDatabase,statement);
-        statement = "INSERT INTO Settings(Name,Value) VALUES('"+SBConstants.ROS_WIFIPWD+"','"+SBConstants.DEFAULT_ROS_WIFIPWD+"')";
+        statement = "INSERT INTO Settings(Name,Hint) VALUES('"+SBConstants.ROS_SSID+"','"+SBConstants.ROS_SSID_HINT+"')";
         execLenient(sqLiteDatabase,statement);
-        statement = "INSERT INTO Settings(Name,Value) VALUES('"+SBConstants.ROS_USER+"','"+SBConstants.DEFAULT_ROS_USER+"')";
+        statement = "INSERT INTO Settings(Name,Hint) VALUES('"+SBConstants.ROS_WIFIPWD+"','"+SBConstants.ROS_WIFIPWD_HINT+"')";
         execLenient(sqLiteDatabase,statement);
-        statement = "INSERT INTO Settings(Name,Value) VALUES('"+SBConstants.ROS_USER_PASSWORD+"','"+SBConstants.DEFAULT_ROS_USER_PASSWORD+"')";
+        statement = "INSERT INTO Settings(Name,Hint) VALUES('"+SBConstants.ROS_USER+"','"+SBConstants.ROS_USER_HINT+"')";
+        execLenient(sqLiteDatabase,statement);
+        statement = "INSERT INTO Settings(Name,Hint) VALUES('"+SBConstants.ROS_USER_PASSWORD+"','"+SBConstants.ROS_USER_PASSWORD_HINT+"')";
         execLenient(sqLiteDatabase,statement);
 
         Log.i(CLSS,String.format("onCreate: Created %s at %s",SBConstants.DB_NAME,context.getDatabasePath(SBConstants.DB_NAME)));
@@ -118,6 +122,8 @@ public class SBDbManager extends SQLiteOpenHelper {
         statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('follow','Robot follows the closes object')";
         execLenient(sqLiteDatabase,statement);
         statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('headlamp','Turn the robot headlamp on/off')";
+        execLenient(sqLiteDatabase,statement);
+        statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('park','Auto-park robot under positioning banner')";
         execLenient(sqLiteDatabase,statement);
         statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('system','Monitor robot system status')";
         execLenient(sqLiteDatabase,statement);
@@ -200,7 +206,7 @@ public class SBDbManager extends SQLiteOpenHelper {
         List<NameValue> list = new ArrayList<>();
         SQLiteDatabase database = this.getReadableDatabase();
         String[] args = new String[0];   // Use for PreparedStatement
-        String SQL = "SELECT name,value FROM Settings ORDER BY Name";
+        String SQL = "SELECT name,value,hint FROM Settings ORDER BY Name";
         Cursor cursor = database.rawQuery(SQL,args);
         cursor.moveToFirst();
 
@@ -208,7 +214,8 @@ public class SBDbManager extends SQLiteOpenHelper {
             NameValue nv = new NameValue();
             nv.setName(cursor.getString(0));
             nv.setValue(cursor.getString(1));
-            Log.i(CLSS,String.format("getSettings: %s = %s",nv.getName(),nv.getValue()));
+            nv.setHint(cursor.getString(2));
+            Log.i(CLSS,String.format("getSettings: %s = %s (%s)",nv.getName(),nv.getValue(),nv.getHint()));
             list.add(nv);
             cursor.moveToNext();
         }
@@ -222,11 +229,12 @@ public class SBDbManager extends SQLiteOpenHelper {
      */
     public void updateSetting(NameValue nv) {
         SQLiteDatabase database = this.getWritableDatabase();
-        String SQL = "UPDATE Settings set value = ? WHERE name = ?";
-        String[] bindArgs = new String[2];
+        String SQL = "UPDATE Settings set value=?, hint=? WHERE name = ?";
+        String[] bindArgs = new String[3];
 
         bindArgs[0] = nv.getValue();
-        bindArgs[1] = nv.getName();
+        bindArgs[1] = nv.getHint();
+        bindArgs[2] = nv.getName();
         database.execSQL(SQL,bindArgs);
         database.close();
     }
@@ -237,14 +245,15 @@ public class SBDbManager extends SQLiteOpenHelper {
      */
     public void updateSettings(List<NameValue> items) {
         SQLiteDatabase database = this.getWritableDatabase();
-        String SQL = "UPDATE Settings set value = ? WHERE name = ?";
-        String[] bindArgs = new String[2];
+        String SQL = "UPDATE Settings set value=?, hint=? WHERE name = ?";
+        String[] bindArgs = new String[3];
         int count = items.size();
         int index = 0;
         while( index<count) {
             NameValue nv = items.get(index);
             bindArgs[0] = nv.getValue();
-            bindArgs[1] = nv.getName();
+            bindArgs[1] = nv.getHint();
+            bindArgs[2] = nv.getName();
             database.execSQL(SQL,bindArgs);
             index++;
         }

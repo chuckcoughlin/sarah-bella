@@ -83,6 +83,7 @@ public class SettingsFragment extends BasicAssistantListFragment  {
             Log.i(CLSS,String.format("adapter.getView setting %s = %s",nv.getName(),nv.getValue()));
             nameView.setText(nv.getName());
             editText.setText(nv.getValue());
+            editText.setHint(nv.getHint());
             if(nv.getName().toUpperCase().contains("PASSWORD")) {
                 editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
                 editText.setSelection(editText.getText().length());
