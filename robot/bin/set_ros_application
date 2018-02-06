@@ -13,12 +13,16 @@ fi
 APP=$1
 if [ ${APP} = "follow" ]
 then
-    echo "LAUNCH_PKG=follow_msgs" > ${CONFIG}
-    echo "LAUNCH_FILE=follow_msgs.launch" >> ${CONFIG}
+    echo "LAUNCH_PKG=turtlebot_follower" > ${CONFIG}
+    echo "LAUNCH_FILE=turtlebot_follower.launch" >> ${CONFIG}
 elif [ ${APP} = "headlamp" ]
 then
     echo "LAUNCH_PKG=gpio_msgs" > ${CONFIG}
     echo "LAUNCH_FILE=gpio_msgs.launch" >> ${CONFIG}
+elif [ ${APP} = "park" ]
+then
+    echo "LAUNCH_PKG=turtlebot3_automatic_parking" > ${CONFIG}
+    echo "LAUNCH_FILE=turtlebot3_automatic_parking.launch" >> ${CONFIG}
 elif [ ${APP} = "system" ]
 then
     echo "LAUNCH_PKG=system_check" > ${CONFIG}
