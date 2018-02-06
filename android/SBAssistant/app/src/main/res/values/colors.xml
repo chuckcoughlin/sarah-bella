@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="checked">#303000</color>
+    <color name="checked">#DDEEFF</color>
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorPrimaryLight">#0091ea</color>
@@ -13,7 +13,7 @@
     <color name="lightGray">#DDDDDD</color>
     <color name="darkDarkGray">#101010</color>
     <color name="white">#FFFFFF</color>
-    <color name="maroon">#9F3F30</color>
+    <color name="maroon">#6F3F20</color>
 
     <!--Material Greens used to vary backgrounds of log messages-->
     <!--In between colors were created with this tool:-->

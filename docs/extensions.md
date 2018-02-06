@@ -1,7 +1,7 @@
 # Extensions to Core Configuration
 
 This document summarizes hardware, software and configuration extensions to support specific applications on the Sarah-Bella application.
-Refer to the [applications](http://github.com/chuckcoughlin/sarah-bella/tree/master/docs/applications.md) for general descriptions of the operations.
+Refer to [applications](http://github.com/chuckcoughlin/sarah-bella/tree/master/docs/applications.md) for general descriptions.
 
 We have drawn heavily from common message definitions that are available from the repository: https://github.com/ros/common_msgs. We pick and choose from
 the collection as needed.
@@ -29,8 +29,8 @@ Application selection and restart of the robot depend on a *ssh* login as super-
 
 
 ### 01 - System Check <a id="systemcheck"></a>
-*psutil* is used to obtain system performance metrics and support the sb_system/System message. This package is installed by default on the Linux virtual machine, but not on the
-Raspberry Pi. For a complete description see: https://psutil.readthedocs.io/en/latest. To install:
+*psutil* is used to obtain system performance metrics to support the sb_system/System message. This package is installed by default on the Linux virtual machine, but not on the
+Raspberry Pi. For a complete description see: https://psutil.readthedocs.io/en/latest. To install on the robot:
 ```
    sudo apt-get install build-essential python-dev python-pip
    sudo pip install psutil
@@ -39,9 +39,8 @@ From the common messages we use  sensor_msgs/BatteryState. For a full descriptio
  http://wiki.ros.org/sensor_msgs.
 
 
-The following custom topics are defined on the robot:
+The following messages are exchanged:
 
-##### sb_system
 ```
 System
       String hostname
@@ -65,7 +64,8 @@ System
 
 **node:** sb_subscribe_system (sb_system/System)<br/>
 
-#### #---------------------- robot  --------------------------
+#####---------------------- robot  --------------------------
+**node:** sb_publish_system (sb_system/System)<br/>
 
 ### 02 - Follow <a id="follow"></a>
  See turtlebot follower at: https://github.com/turtlebot/turtlebot_apps.git. Modifications were made to support turtlebot3_msg dependencies.

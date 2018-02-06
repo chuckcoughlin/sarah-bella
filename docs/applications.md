@@ -18,25 +18,26 @@ The android assistant contains command and monitoring code for all applications 
 
 *********************************************************
 ### 00 - Discovery <a id="discovery"></a>
+![SB Assistant](/images/sb-discovery.png)
+````                        SB Assistant - Discovery Page ````
 [toc](#table-of-contents)
 
 The discovery panel connects to a single running robot based on a MasterURI configured in the *Settings*. It reads values published through the ParameterServer which define the robot configuration.  
 
-The  SQLite database contains a list of applications supported by the robot. The panel provides the ability to select and start applications from this list. Application selection is made via a *ssh* connection to the robot, specification of the application and a restart of *rosCore*. The sudoer username and password must be entered in the *Settings* panel.
+The  SQLite database on the tablet contains a list of applications supported by the robot. The panel provides the ability to select and start applications from this list. Application selection is made via a *ssh* connection to the robot, specification of the application and a restart of *rosCore*. The sudoer username and password for the robot must be entered in the *Settings* panel on the tablet.
 
 
 ******************************************************
 ### 01 - System Check <a id="systemcheck"></a>
 [toc](#table-of-contents)
 
-The **system** panel is designed to read system parameters and exercise all devices on the robot.
-
-The following nodes are defined (shown with topics):
-
-
-
-**node:** sb_publish_system (sb_system/System)<br/>
+The **system** panel is designed to read system parameters and exercise devices on the robot. The panel subscribes to the following topics:
+ * /sb_system/System
 
 ******************************************************
 ### 02 - Follow <a id="follow"></a>
 With the *follow* application running, walk in front of the TurtleBot3. Then, slowly walk away from the TurtleBot. The robot should move forward. Moving close to the TurtleBot will cause it to back away. Moving slowly to the left or right will cause the TurtleBot to turn. To stop the robot from following, walk quickly away from the robot.
+
+******************************************************
+### 03 - Auto-park <a id="follow"></a>
+When this application is running, the robot will search for a white tag that marks its intended parking space.

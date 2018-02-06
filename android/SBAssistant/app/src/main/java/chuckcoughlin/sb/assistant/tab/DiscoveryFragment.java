@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -130,6 +131,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         setListAdapter(adapter);
         ListView listView = getListView();
         listView.setItemsCanFocus(true);
+        listView.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
         listView.setVisibility(View.INVISIBLE);
         adapter.clear();
         adapter.addAll(applicationList);
@@ -233,7 +235,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
                 int index = 0;
                 for(RobotApplication app:applicationList) {
                     if(app.getApplicationName().equalsIgnoreCase(appName)) {
-                        getListView().setSelection(index);
+                        getListView().setItemChecked(index,true);
                         Log.i(CLSS, String.format("receiveApplication: selected application %s (%d)",appName,index));
                         break;
                     }
