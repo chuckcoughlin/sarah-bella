@@ -22,9 +22,9 @@ The android assistant contains command and monitoring code for all applications 
 ````                        SB Assistant - Discovery Page ````
 [toc](#table-of-contents)
 
-The discovery panel connects to a single running robot based on a MasterURI configured in the *Settings*. It reads values published through the ParameterServer which define the robot configuration.  
+The discovery panel allows connection to a single running robot based on a MasterURI configured in the *Settings*. It reads values published from the robot through its ParameterServer to validate the device.  
 
-The  SQLite database on the tablet contains a list of applications supported by the robot. The panel provides the ability to select and start applications from this list. Application selection is made via a *ssh* connection to the robot, specification of the application and a restart of *rosCore*. The sudoer username and password for the robot must be entered in the *Settings* panel on the tablet.
+The  SQLite database on the tablet contains a list of applications expected to be supported by the robot. The panel provides an opportunity to select and start applications from this list. The robot is configured for the desired application via a *ssh* connection where a script is run to set the application and restart *rosCore*. This operation requires that a sudoer username and password for the robot be entered in the *Settings* panel on the tablet.
 
 
 ******************************************************
