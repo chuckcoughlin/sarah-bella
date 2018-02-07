@@ -41,6 +41,7 @@ case "$1" in
 	  sleep 1
   	done
 	IP=`echo ${IP}|sed -e 's/^[ \t]*//'`
+	export ROS_IP=${IP}
 	export ROS_MASTER_URI="http://${IP}:11311"
 	export ROS_PACKAGE_PATH=${HOME}/catkin_ws/src:/opt/ros/kinetic/share
 	> $ROSLOG
