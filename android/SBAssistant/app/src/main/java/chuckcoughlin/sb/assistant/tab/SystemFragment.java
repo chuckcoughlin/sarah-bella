@@ -9,28 +9,16 @@
 
 package chuckcoughlin.sb.assistant.tab;
 
-import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import org.ros.exception.RemoteException;
-import org.ros.exception.RosException;
 import org.ros.message.MessageListener;
-import org.ros.namespace.GraphName;
-import org.ros.namespace.NameResolver;
 import org.ros.node.ConnectedNode;
-import org.ros.node.service.ServiceClient;
-import org.ros.node.service.ServiceResponseListener;
 import org.ros.node.topic.Subscriber;
-
-import java.util.HashMap;
-import java.util.List;
 
 import chuckcoughlin.sb.assistant.R;
 import chuckcoughlin.sb.assistant.common.SBConstants;
@@ -38,13 +26,13 @@ import chuckcoughlin.sb.assistant.db.SBDbManager;
 import chuckcoughlin.sb.assistant.ros.SBApplicationStatusListener;
 import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
 import chuckcoughlin.sb.assistant.ros.SBRosManager;
-import ros.android.views.BatteryLevelView;
 
 /**
  * Display the current values of robot system parameters.
  */
 
-public class SystemFragment extends BasicAssistantFragment implements SBApplicationStatusListener,MessageListener<System> {
+public class SystemFragment extends BasicAssistantFragment implements SBApplicationStatusListener,
+                                                                MessageListener<system_check.System> {
     private final static String CLSS = "SystemFragment";
     private SBDbManager dbManager;
     private SBRosManager rosManager;
@@ -77,7 +65,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
         if(appName.equalsIgnoreCase(SBConstants.APPLICATION_SYSTEM)) {
             ConnectedNode node = applicationManager.getApplication().getConnectedNode();
             if( node!=null ) {
-                Subscriber<System> subscriber = node.newSubscriber("/sb_system", System._TYPE);
+                Subscriber<system_check.System> subscriber = node.newSubscriber("/sb_system", system_check.System._TYPE);
                 subscriber.addMessageListener(this);
             }
             else {
@@ -90,7 +78,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     }
     // ========================================= MessageListener ============================
     @Override
-    public void onNewMessage(System system) {
+    public void onNewMessage(system_check.System system) {
         Log.i(CLSS,"Got a Message!");
     }
     /*
