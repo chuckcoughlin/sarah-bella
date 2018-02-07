@@ -1,5 +1,5 @@
 <launch>
-  <param name="robot/name" value="SBAssistant" type="str"/>
+  <param name="robot/name" value="SarahBella" type="str"/>
   <param name="robot/type" value="turtlebot3" type="str"/>
   <param name="robot/application" value="system" type="str"/>
   <param name="robot/platform" value="RaspberryPi" type="str"/>
