@@ -97,12 +97,12 @@ public class RobotApplication extends AbstractNodeMain implements java.io.Serial
 
     @Override
     public void onShutdown(final Node node) {
-        Log.i(CLSS,String.format("$s.onShutdown: connectedNode has been shutdown",getApplicationName()));
+        Log.i(CLSS,String.format("%s.onShutdown: connectedNode has been shutdown",getApplicationName()));
         this.connectedNode = null;
     }
     @Override
     public void onStart(final ConnectedNode node) {
-        Log.i(CLSS,String.format("$s.onStart: Received connectedNode!",getApplicationName()));
+        Log.i(CLSS,String.format("%s.onStart: Received connectedNode!",getApplicationName()));
         this.connectedNode = node;
     }
 	@Override

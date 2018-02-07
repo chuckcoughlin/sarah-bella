@@ -73,10 +73,11 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
 
     // ========================================= SBApplicationStatusListener ============================
     public void applicationStarted(String appName) {
+        Log.i(CLSS, String.format("applicationStarted: %s ...",appName));
         if(appName.equalsIgnoreCase(SBConstants.APPLICATION_SYSTEM)) {
             ConnectedNode node = applicationManager.getApplication().getConnectedNode();
             if( node!=null ) {
-                Subscriber<System> subscriber = node.newSubscriber("/sb_system", "System");
+                Subscriber<System> subscriber = node.newSubscriber("/sb_system", System._TYPE);
                 subscriber.addMessageListener(this);
             }
             else {

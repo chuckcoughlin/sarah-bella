@@ -293,6 +293,9 @@ Using Etcher, flash the decompressed image onto the SD card. On my system, this 
 #### Network Configuration <a id="network-configuration"></a>
 When a network connection to the robot is requested, the tablet first tries to connect through Bluetooth, and, failing that, through wi-fi.
 
+Configure Bluetooth using the robot's pull-down menu. Configure the adapter so that it is always visible (discoverable) and give it a "friendly"
+name of "SarahBella". The Android tablet will pair based on the friendly name.
+
 On startup *ROSPi* will connect automatically to the wireless network without user intervention based on some previous manual configuration.
 To configure simply select the desired network from the pull-down and mark it to
 automatically connect if found. It may not be available during the first login, but will connect on subsequent system restarts.

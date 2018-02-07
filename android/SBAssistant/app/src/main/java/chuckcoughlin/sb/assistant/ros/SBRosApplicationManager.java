@@ -150,6 +150,7 @@ public class SBRosApplicationManager {
                 public void run() {
                     rosCore = RosCore.newPublic(11311);
                     rosCore.start();
+                    Log.i(CLSS, "startApplication: started rosCore");
                     try {
                         rosCore.awaitStart();
                         URI masterURI = URI.create(rosManager.getRobot().getRobotId().getMasterUri());
@@ -157,6 +158,7 @@ public class SBRosApplicationManager {
                         nodeConfiguration = NodeConfiguration.newPublic(localhost, masterURI);
                         nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
                         nodeMainExecutor.execute(application,nodeConfiguration);
+                        application.setExecutionStatus(RobotApplication.APP_STATUS_RUNNING);
                         signalApplicationStart(application.getApplicationName());
                     }
                     catch (Exception ex) {
@@ -177,6 +179,7 @@ public class SBRosApplicationManager {
         application.setExecutionStatus(RobotApplication.APP_STATUS_NOT_RUNNING);
         signalApplicationStop();
         if( nodeMainExecutor!=null ) nodeMainExecutor.shutdown();
+        rosCore.shutdown();
     }
 
     /**
@@ -185,7 +188,6 @@ public class SBRosApplicationManager {
     public void shutdown() {
         stopApplication();
         application = null;
-        rosCore.shutdown();
     }
 
     /**
@@ -252,13 +254,23 @@ public class SBRosApplicationManager {
     }
 
 
-
-
     public void addListener(SBRobotConnectionErrorListener listener) {
         this.errorListeners.add(listener);
     }
-
+    /**
+     * The new listener may have missed the start of the application, so send it on registration.
+     * @param listener
+     */
     public void addListener(SBApplicationStatusListener listener) {
+        if( this.application!=null && application.getExecutionStatus().equalsIgnoreCase(RobotApplication.APP_STATUS_RUNNING)) {
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    listener.applicationStarted(application.getApplicationName());
+                }
+            });
+            thread.start();
+        }
         this.applicationListeners.add(listener);
     }
     public void removeListeners() {
@@ -266,6 +278,7 @@ public class SBRosApplicationManager {
     }
 
     private void signalApplicationStart(String appName) {
+        Log.i(CLSS, String.format("signalApplicationStart: %s",appName));
         this.applicationListeners.signal(new SignalRunnable<SBApplicationStatusListener>() {
             public void run(SBApplicationStatusListener listener) {
                 listener.applicationStarted(appName);
