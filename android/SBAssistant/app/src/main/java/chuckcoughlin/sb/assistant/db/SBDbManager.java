@@ -16,12 +16,13 @@ import ros.android.msgs.MsgConstants;
 
 /**
  * Since we access from multiple fragments, make this a singleton class to avoid repeated
- * allocations. We encapsulate all the database operations here.
+ * allocations. We encapsulate all the database operations here. The instance is created
+ * and shutdown in the MainActivity. The instance must be initialized as its first operation.
  */
 public class SBDbManager extends SQLiteOpenHelper {
     private final static String CLSS = "SBDbManager";
-    private static SBDbManager instance = null;
-    private final Context context;
+    private static volatile SBDbManager instance = null;
+    private volatile Context context = null;
 
     /**
      * Constructor is private per Singleton pattern. This forces use of the single instance.
@@ -43,6 +44,9 @@ public class SBDbManager extends SQLiteOpenHelper {
         if (instance == null) {
             instance = new SBDbManager(context.getApplicationContext());
         }
+        else {
+            throw new IllegalStateException("Attempt to initialize old copy of SDBManager");
+        }
         return instance;
     }
 
@@ -52,6 +56,9 @@ public class SBDbManager extends SQLiteOpenHelper {
      * @return the Singleton instance.
      */
     public static synchronized SBDbManager getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException("Attempt to return uninitialized copy of SDBManager");
+        }
         return instance;
     }
 
@@ -77,18 +84,6 @@ public class SBDbManager extends SQLiteOpenHelper {
         SQL.append("  name TEXT PRIMARY KEY,");
         SQL.append("  value TEXT DEFAULT '',");
         SQL.append("  hint TEXT DEFAULT 'hint'");
-        SQL.append(")");
-        sqLiteDatabase.execSQL(SQL.toString());
-
-        SQL = new StringBuilder();
-        SQL.append("CREATE TABLE IF NOT EXISTS Robots (");
-        SQL.append("  masterUri TEXT PRIMARY KEY,");
-        SQL.append("  robotName TEXT DEFAULT '',");
-        SQL.append("  robotType TEXT DEFAULT '',");
-        SQL.append("  deviceName TEXT DEFAULT '',");
-        SQL.append("  ssid TEXT DEFAULT '',");
-        SQL.append("  application TEXT DEFAULT '',");
-        SQL.append("  platform TEXT DEFAULT ''");
         SQL.append(")");
         sqLiteDatabase.execSQL(SQL.toString());
 
@@ -258,5 +253,13 @@ public class SBDbManager extends SQLiteOpenHelper {
             index++;
         }
         database.close();
+    }
+
+    /**
+     * Called when main activity is destroyed. Clean up any resources.
+     * To use again requires re-initialization.
+     */
+    public static void destroy() {
+        instance = null;
     }
 }

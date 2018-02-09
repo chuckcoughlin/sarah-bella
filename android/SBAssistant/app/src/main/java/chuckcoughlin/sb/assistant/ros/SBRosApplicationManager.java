@@ -45,22 +45,26 @@ import ros.android.util.RobotDescription;
 
 
 /**
+ * Encapsulate the current application running on the tablet. It must match the application
+ * running on the robot to which we are connected.
  * Since we access from multiple fragments, make this a singleton class to avoid repeated
- * allocations. This class encapsulates the node connected to the robot. Individual panels
- * make subscriptions and publications as appropriate.
+ * allocations. It is created and shutdown in the MainActivity.
+ *
+ * This class also encapsulates the node connected to the robot. Individual panels
+ * make subscriptions and publications to it as appropriate.
  *
  * The list of recognized applications is in the database and is hard-coded.  We keep the current
- * application and its running status locally.
+ * application and its running status locally. Listeners are informed appropriately.
  *
  * We start RosCore when the application is started and stop it when the application stops.
  */
 public class SBRosApplicationManager {
     private final static String CLSS = "SBRosManager";
 
-    private static SBRosApplicationManager instance = null;
-    private final SBDbManager dbManager;
-    private final SBRosManager rosManager;
-    private final Context context;
+    private static volatile SBRosApplicationManager instance = null;
+
+
+
     private Thread nodeThread;
     private Handler uiThreadHandler = new Handler();
     private RobotApplication application;
@@ -76,12 +80,8 @@ public class SBRosApplicationManager {
 
     /**
      * Constructor is private per Singleton pattern. This forces use of the single instance.
-     * @param context
      */
-    private SBRosApplicationManager(Context context) {
-        this.context = context.getApplicationContext();
-        this.dbManager = SBDbManager.getInstance();
-        this.rosManager = SBRosManager.getInstance();
+    private SBRosApplicationManager() {
         this.application = null;
         this.applicationListeners = new ListenerGroup(Executors.newSingleThreadExecutor());
         this.apps = new ArrayList<>();
@@ -90,25 +90,32 @@ public class SBRosApplicationManager {
 
     /**
      * Use this method in the initial activity. We need to assign the context.
-     * @param context
      * @return the Singleton instance
      */
-    public static synchronized SBRosApplicationManager initialize(Context context) {
-        // Use the application context, which will ensure that you
-        // don't accidentally leak an Activity's context.
+    public static SBRosApplicationManager getInstance() {
         if (instance == null) {
-            instance = new SBRosApplicationManager(context.getApplicationContext());
+            synchronized(SBRosApplicationManager.class) {instance = new SBRosApplicationManager(); }
         }
         return instance;
     }
-
+    public void addListener(SBRobotConnectionErrorListener listener) {
+        this.errorListeners.add(listener);
+    }
     /**
-     * Use this method for all subsequent calls. We often don't have
-     * a convenient context.
-     * @return the Singleton instance.
+     * The new listener may have missed the start of the application, so send it on registration.
+     * @param listener
      */
-    public static synchronized SBRosApplicationManager getInstance() {
-        return instance;
+    public void addListener(SBApplicationStatusListener listener) {
+        if( this.application!=null && application.getExecutionStatus().equalsIgnoreCase(RobotApplication.APP_STATUS_RUNNING)) {
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    listener.applicationStarted(application.getApplicationName());
+                }
+            });
+            thread.start();
+        }
+        this.applicationListeners.add(listener);
     }
 
     /**
@@ -116,34 +123,57 @@ public class SBRosApplicationManager {
      */
     public RobotApplication getApplication() { return this.application; }
     /**
-     * @return the number of applications defined.
-     */
-    public int getApplicationCount() {
-        return this.apps.size();
-    }
-
-    /**
-     * @return the currently selected application (or null)
+     * @return the list of known applications
      */
     public List<RobotApplication> getApplications() {
         if( apps.size()==0 ) apps = createApplications();
         return this.apps;
     }
 
+    /**
+     * @return the index of the current application in the list of applications
+     */
+    public int indexOfCurrentApplication() {
+        int result = -1;
+        if( application!=null ) {
+            int index = 0;
+            for(RobotApplication app:apps) {
+                if( app.getApplicationName().equalsIgnoreCase(application.getApplicationName())) {
+                    result = index;
+                    break;
+                }
+                index++;
+            }
+        }
+        return result;
+    }
+
+    public void removeListener(SBApplicationStatusListener listener) {
+        this.applicationListeners.remove(listener);
+    }
+
+    /**
+     * Define a new application
+     * @param name
+     */
     public void setApplication(String name) {
-        for(RobotApplication app:apps) {
-            if( app.getApplicationName().equalsIgnoreCase(name)) {
+        // Inform any listeners on the old application that it has stopped.
+        if( this.application!=null && !this.application.getApplicationName().equalsIgnoreCase(name)) {
+            signalApplicationStop();
+        }
+        this.application = null;
+        for (RobotApplication app : apps) {
+            if (app.getApplicationName().equalsIgnoreCase(name)) {
                 this.application = app;
                 break;
             }
         }
     }
-
     /**
      * Start RosCore. We need the MasterURI. The application gets the ConnectedNode,
      * inform any subscribing panels.
      */
-    public void startApplication() {
+    public void startApplication(RobotDescription robot) {
         if( this.application!=null ) {
             Thread thread = new Thread(new Runnable(){
                 @Override
@@ -153,7 +183,7 @@ public class SBRosApplicationManager {
                     Log.i(CLSS, "startApplication: started rosCore");
                     try {
                         rosCore.awaitStart();
-                        URI masterURI = URI.create(rosManager.getRobot().getRobotId().getMasterUri());
+                        URI masterURI = URI.create(robot.getRobotId().getMasterUri());
                         String localhost = "127.0.0.1";
                         nodeConfiguration = NodeConfiguration.newPublic(localhost, masterURI);
                         nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
@@ -182,13 +212,24 @@ public class SBRosApplicationManager {
         rosCore.shutdown();
     }
 
-    /**
-     * The robot has been disconnected.
-     */
-    public void shutdown() {
-        stopApplication();
-        application = null;
+    private void shutdown() {
+        applicationListeners.shutdown();
+        errorListeners.shutdown();
     }
+
+    /**
+     * Called when main activity is destroyed. Clean up any resources.
+     * To use again requires re-initialization.
+     */
+    public static void destroy() {
+        if( instance!=null ) {
+            synchronized (SBRosApplicationManager.class) {
+                instance.shutdown();
+                instance = null;
+            }
+        }
+    }
+
 
     /**
      * Create the initial fixed list of applications
@@ -196,9 +237,8 @@ public class SBRosApplicationManager {
      */
     private List<RobotApplication> createApplications() {
         List<RobotApplication> apps = new ArrayList<>();
-        RobotDescription robot = rosManager.getRobot();
-        if (robot == null) return apps;
 
+        SBDbManager dbManager = SBDbManager.getInstance();
         SQLiteDatabase db = dbManager.getReadableDatabase();
 
         StringBuilder sql = new StringBuilder(
@@ -220,6 +260,41 @@ public class SBRosApplicationManager {
         cursor.close();
         return apps;
     }
+    /**
+     * Inform all listeners that the named application has started. It is up to the
+     * individual listeners to create subscriptions as appropriate.
+     */
+    private void signalApplicationStart(String appName) {
+        Log.i(CLSS, String.format("signalApplicationStart: %s",appName));
+        this.applicationListeners.signal(new SignalRunnable<SBApplicationStatusListener>() {
+            public void run(SBApplicationStatusListener listener) {
+                listener.applicationStarted(appName);
+            }
+        });
+    }
+    /**
+     * Inform all listeners that the application has stopped. It is up to the
+     * individual listeners to terminate all active subscriptions.
+     */
+    private void signalApplicationStop() {
+        this.applicationListeners.signal(new SignalRunnable<SBApplicationStatusListener>() {
+            public void run(SBApplicationStatusListener listener) {
+                listener.applicationShutdown();
+            }
+        });
+    }
+    /**
+     * Inform all listeners of an error.
+     */
+    private void signalError(String msg) {
+        this.errorListeners.signal(new SignalRunnable<SBRobotConnectionErrorListener>() {
+            public void run(SBRobotConnectionErrorListener listener) {
+                listener.handleConnectionError(msg);
+            }
+        });
+    }
+
+    // ======================================== UNUSED ===========================================================
 
     /**
      * Create a new ROS NodeConfiguration object.  NOT USED
@@ -252,62 +327,6 @@ public class SBRosApplicationManager {
         Log.i(CLSS, "createConfiguration() returning configuration with host = " + getNonLoopbackHostName());
         return configuration;
     }
-
-
-    public void addListener(SBRobotConnectionErrorListener listener) {
-        this.errorListeners.add(listener);
-    }
-    /**
-     * The new listener may have missed the start of the application, so send it on registration.
-     * @param listener
-     */
-    public void addListener(SBApplicationStatusListener listener) {
-        if( this.application!=null && application.getExecutionStatus().equalsIgnoreCase(RobotApplication.APP_STATUS_RUNNING)) {
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    listener.applicationStarted(application.getApplicationName());
-                }
-            });
-            thread.start();
-        }
-        this.applicationListeners.add(listener);
-    }
-    public void removeListeners() {
-        this.applicationListeners.shutdown();
-    }
-
-    private void signalApplicationStart(String appName) {
-        Log.i(CLSS, String.format("signalApplicationStart: %s",appName));
-        this.applicationListeners.signal(new SignalRunnable<SBApplicationStatusListener>() {
-            public void run(SBApplicationStatusListener listener) {
-                listener.applicationStarted(appName);
-            }
-        });
-    }
-    /**
-     * Inform all listeners that the application has stopped. It is up to the
-     * individual listeners to terminate all active subscriptions.
-     */
-    private void signalApplicationStop() {
-        this.applicationListeners.signal(new SignalRunnable<SBApplicationStatusListener>() {
-            public void run(SBApplicationStatusListener listener) {
-                listener.applicationShutdown();
-            }
-        });
-    }
-
-    /**
-     * Inform all listeners of an error.
-     */
-    private void signalError(String msg) {
-        this.errorListeners.signal(new SignalRunnable<SBRobotConnectionErrorListener>() {
-            public void run(SBRobotConnectionErrorListener listener) {
-                listener.handleConnectionError(msg);
-            }
-        });
-    }
-
 
     /**
      * @return The first valid non-loopback, IPv4 host name (address in text form

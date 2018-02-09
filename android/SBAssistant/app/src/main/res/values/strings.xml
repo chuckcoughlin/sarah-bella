@@ -12,13 +12,16 @@
     <string name="fragmentSLAMLabel">SLAM - whatever that stands for</string>
     <string name="fragmentSystemLabel">Robot Systems Parameters</string>
     <string name="name_label">Name:</string>
-    <!-- Strings within fragments -->
+    <!-- Strings for Discovery tab-->
     <string name="discoveryButtonConnect">Connect</string>
     <string name="discoveryButtonDisconnect">Disconnect</string>
     <string name="discoveryButtonStart">Start</string>
     <string name="discoveryButtonStop">Stop</string>
     <string name="discoveryButtonView">View</string>
     <string name="discoveryViewPopupTitle">Robot Attributes</string>
+    <!-- Strings for System tab -->
+    <string name="systemRobotLabel">Robot</string>
+    <string name="systemTabletLabel">Tablet</string>
     <!-- Strings that are generically useful -->
     <string name="defaultMasterURI">http://192.168.1.113:11311</string>
     <string name="defaultSSID">g6-coughlin</string>

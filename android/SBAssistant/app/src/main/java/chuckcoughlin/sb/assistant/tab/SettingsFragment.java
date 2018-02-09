@@ -80,7 +80,7 @@ public class SettingsFragment extends BasicAssistantListFragment  {
             TextView nameView = (TextView) convertView.findViewById(R.id.settingsNameView);
             EditText editText = (EditText) convertView.findViewById(R.id.settingsEditView);
             // Populate the data into the template view using the data object
-            Log.i(CLSS,String.format("adapter.getView setting %s = %s",nv.getName(),nv.getValue()));
+            //Log.i(CLSS,String.format("adapter.getView setting %s = %s",nv.getName(),nv.getValue()));
             nameView.setText(nv.getName());
             editText.setText(nv.getValue());
             editText.setHint(nv.getHint());
@@ -105,7 +105,6 @@ public class SettingsFragment extends BasicAssistantListFragment  {
                     }
                 }
             });
-
 
             //Log.i(CLSS,String.format("SettingsListAdapter.getView set %s = %s",nv.getName(),nv.getValue()));
             // Return the completed view to render on screen

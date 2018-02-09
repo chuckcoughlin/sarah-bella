@@ -1,63 +1,305 @@
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/constraintLayout"
-    android:layout_width="match_parent"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
     android:layout_height="match_parent"
-    tools:context="chuckcoughlin.sb.assistant.tab.SystemFragment">
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/fragmentSystemText"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:layout_marginBottom="32dp"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:layout_marginTop="@dimen/activity_vertical_margin"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/constraintLayout"
-        tools:layout_constraintLeft_creator="1"
-        tools:layout_constraintTop_creator="1" />
+        android:layout_weight="0"
+        android:gravity="center"
+        android:textAppearance="@style/TabTitle" />
+
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:orientation="horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        >
-        <!-- Mode button (robot on/off) with "waiting" spinner. -->
-        <FrameLayout android:layout_width="50dp" android:layout_height="50dp">
-            <ImageButton android:layout_width="50dp" android:layout_height="50dp" android:scaleType="fitCenter" android:padding="0dp"
-                android:cropToPadding="false"
-                android:gravity="center"
-                android:src="@drawable/gear"
-                android:id="@+id/mode_button"/>
-            <ProgressBar android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:padding="10dp"
-                android:id="@+id/mode_waiting_spinner"/>
-        </FrameLayout>
-
-        <!-- Robot battery level indicator. -->
-        <LinearLayout android:orientation="vertical"
+        android:orientation="horizontal"
+        android:layout_marginLeft="20dp">
+        <!-- Tablet battery level indicator. -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:paddingLeft="5dp">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="10sp"
-                android:text="Robot"/>
-            <ros.android.views.BatteryLevelView android:layout_width="40dp"
-                android:layout_height="25dp"
-                android:id="@+id/robot_battery"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/systemTabletLabel"
+                android:textSize="10sp" />
+
+            <ros.android.views.BatteryLevelView
+                android:id="@+id/tablet_battery"
+                android:layout_width="40dp"
+                android:layout_height="25dp" />
         </LinearLayout>
-
-        <!-- Laptop battery level indicator. -->
-        <LinearLayout android:orientation="vertical"
+        <!-- Robot battery level indicator. -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:paddingLeft="5dp">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="10sp"
-                android:text="Laptop"/>
-            <ros.android.views.BatteryLevelView android:layout_width="40dp"
-                android:layout_height="25dp"
-                android:id="@+id/laptop_battery"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/systemRobotLabel"
+                android:textSize="10sp" />
+
+            <ros.android.views.BatteryLevelView
+                android:id="@+id/robot_battery"
+                android:layout_width="40dp"
+                android:layout_height="25dp" />
         </LinearLayout>
     </LinearLayout>
-</android.support.constraint.ConstraintLayout>
+
+        <!-- Side-by-side vertical boxes. Left side is system results. Right side is GPIO. -->
+        <GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/GridLayout1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:columnCount="2"
+            android:orientation="horizontal"
+            android:layout_marginTop="20dp"
+            android:layout_marginLeft="20dp"
+            android:rowCount="1">
+
+            <LinearLayout
+                android:layout_width="350dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left|top"
+                android:background="@drawable/border"
+                android:orientation="vertical"
+                android:padding="10dip">
+
+                <TextView
+                    android:layout_width="200dp"
+                    android:layout_height="wrap_content"
+                    android:text="Junk:" />
+<!--
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="4dp"
+                    android:background="@drawable/rectangle" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="1dp"
+                        android:background="#FF0000"
+                        android:text="Robot Status"
+                        android:textColor="#ffff00" />
+                </RelativeLayout>
+  -->
+
+                <!-- List of performance attributes -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="200dp"
+                        android:layout_height="wrap_content"
+                        android:text="Hostname:" />
+
+                    <TextView
+                        android:id="@+id/hostname"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:text="IP Address:" />
+
+                    <TextView
+                        android:id="@+id/ip_address"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="300dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="200dp"
+                        android:layout_height="wrap_content"
+                        android:text="CPU  Usage (~%):" />
+
+                    <TextView
+                        android:id="@+id/cpu_usage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="350dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:text="Memory  Usage (~%):" />
+
+                    <TextView
+                        android:id="@+id/memory_usage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="240dp"
+                        android:layout_height="wrap_content"
+                        android:text="Free memory (~bytes):" />
+
+                    <TextView
+                        android:id="@+id/free_memory"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="240dp"
+                        android:layout_height="wrap_content"
+                        android:text="Awap memory (~%):" />
+
+                    <TextView
+                        android:id="@+id/swap_memory"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="240dp"
+                        android:layout_height="wrap_content"
+                        android:text="Disk Usage (~%):" />
+
+                    <TextView
+                        android:id="@+id/disk_usage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="240dp"
+                        android:layout_height="wrap_content"
+                        android:text="Packets Sent:" />
+
+                    <TextView
+                        android:id="@+id/packets_sent"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="240dp"
+                        android:layout_height="wrap_content"
+                        android:text="Packets Received:" />
+
+                    <TextView
+                        android:id="@+id/packets_received"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="240dp"
+                        android:layout_height="wrap_content"
+                        android:text="Incoming Packets Dropped:" />
+
+                    <TextView
+                        android:id="@+id/in_packets_dropped"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="240dp"
+                        android:layout_height="wrap_content"
+                        android:text="Outgoing Packets Dropped:" />
+
+                    <TextView
+                        android:id="@+id/out_packets_dropped"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="350dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right|top"
+                android:background="@drawable/border"
+                android:orientation="vertical"
+                android:layout_marginLeft="10dp"
+                android:padding="10dip">
+
+                <View
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_margin="20dp"
+                    android:background="@drawable/rectangle" />
+
+                <RelativeLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="10dp"
+                        android:background="#0000FF"
+                        android:text="GPIO"
+                        android:textColor="#00ffff" />
+                </RelativeLayout>
+            </LinearLayout>
+        </GridLayout>
+    </LinearLayout>

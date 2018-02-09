@@ -35,8 +35,7 @@ public class SBRobotViewDialog extends SBBasicDialogFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.discovery_view_dialog, container, true);
         View titleView = view.findViewById(R.id.view_robot_title);
         ((TextView)titleView).setText(R.string.discoveryViewPopupTitle);
@@ -56,7 +55,9 @@ public class SBRobotViewDialog extends SBBasicDialogFragment {
             TextView nameField = (TextView) view.findViewById(R.id.robot_name);
             nameField.setText(robot.getRobotName());
             TextView uriField = (TextView) view.findViewById(R.id.uri_editor);
-            uriField.setText(robot.getRobotId().getMasterUri());;
+            uriField.setText(robot.getRobotId().getMasterUri());
+            TextView deviceNameField = (TextView) view.findViewById(R.id.paired_device_name_editor);
+            deviceNameField.setText(robot.getRobotId().getDeviceName());
             TextView wifiNameField = (TextView) view.findViewById(R.id.wifi_name_editor);
             wifiNameField.setText(robot.getRobotId().getSSID());
             TextView applicationField = (TextView) view.findViewById(R.id.robot_application_editor);

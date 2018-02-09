@@ -34,17 +34,18 @@ import ros.android.util.RobotId;
 // From rosjava
 
 /**
+ * Encapsulate the description of the robot to which we are connected. his class is designed to
+ * accommodate the existence of only a single robot. Maintain the connection state.
  * Since we access from multiple fragments, make this a singleton class to avoid repeated
- * allocations. This class is designed to accommodate the existence of only a single
- * robot. It is responsible for making sure that internal robot object is in sync with the
- * database.
+ * allocations. It is created and shutdown in the MainActivity.
  */
 public class SBRosManager {
     private final static String CLSS = "SBRosManager";
 
-    private static SBRosManager instance = null;
-    private final SBDbManager dbManager;
-    private final Context context;
+    private static volatile SBRosManager instance = null;
+    private String bluetoothError;
+    private String wifiError;
+    private boolean networkConnected;
     private Thread nodeThread;
     private Handler uiThreadHandler = new Handler();
     private RobotDescription robot = null;
@@ -52,127 +53,106 @@ public class SBRosManager {
 
     /**
      * Constructor is private per Singleton pattern. This forces use of the single instance.
-     * @param context
+     * Initialize instance variables.
      */
-    private SBRosManager(Context context) {
-        this.context = context.getApplicationContext();
-        this.dbManager = SBDbManager.getInstance();
-        this.robot = initializeRobot();
+    private SBRosManager() {
+        //Prevent form the reflection api.
+        if (instance != null) {
+            throw new RuntimeException("Attempt to instantiate SBRosManager singleton via reflection");
+        }
+        this.robot = null;
+        this.bluetoothError = null;
+        this.wifiError = null;
+        this.networkConnected = false;
     }
 
     /**
-     * Use this method in the initial activity. We need to assign the context.
-     * @param context
+     * Use this method to access the singleton object.
+     *
      * @return the Singleton instance
      */
-    public static synchronized SBRosManager initialize(Context context) {
+    public static SBRosManager getInstance() {
         // Use the application context, which will ensure that you
         // don't accidentally leak an Activity's context.
         if (instance == null) {
-            instance = new SBRosManager(context.getApplicationContext());
+            synchronized (SBRosManager.class) {
+                instance = new SBRosManager();
+            }
         }
         return instance;
     }
 
-    /**
-     * Use this method for all subsequent calls. We often don't have
-     * a convenient context.
-     * @return the Singleton instance.
-     */
-    public static synchronized SBRosManager getInstance() {
-        return instance;
+    public RobotDescription getRobot() {
+        return this.robot;
     }
 
-    /*
-     * Create a new current robot
-     */
-    public synchronized void createRobot(RobotDescription newRobot) {
-        this.robot = newRobot;
-        RobotId id = robot.getRobotId();
-        if(robot.getConnectionStatus()==null) {
-            robot.setConnectionStatus(RobotDescription.CONNECTION_STATUS_UNCONNECTED);
-        }
-
-        StringBuilder sql = new StringBuilder("INSERT INTO Robots(masterUri,robotName,robotType,deviceName,");
-        sql.append("ssid,application,platform) ");
-        sql.append("VALUES(?,?,?,?,?,?,?)");
-        SQLiteDatabase db = dbManager.getWritableDatabase();
-        SQLiteStatement stmt = db.compileStatement(sql.toString());
-        stmt.bindString(1,id.getMasterUri());
-        stmt.bindString(2,robot.getRobotName());
-        stmt.bindString(3,robot.getRobotType());
-        stmt.bindString(4,id.getDeviceName());
-        stmt.bindString(5,id.getSSID());
-        stmt.bindString(6,robot.getApplicationName());
-        stmt.bindString(7,robot.getPlatform());
-        stmt.executeInsert();
-        stmt.close();
+    public void setRobot(RobotDescription desc) {
+        this.robot = desc;
     }
 
-    /**
-     * Only one robot description is allowed, so we simply delete then insert.
-     * @param updatedRobot the modified robot definition
-     */
-    public void updateRobot(RobotDescription updatedRobot) {
-        dbManager.execSQL("DELETE FROM Robots");
-        createRobot(updatedRobot);
-
-    }
-
-    public void clearRobot() {
-        String sql = "DELETE FROM Robots";
-        dbManager.execSQL(sql);
-        this.robot = null;
-    }
-
-    public RobotDescription getRobot() { return this.robot; }
     public String getConnectionStatus() {
-        if( robot!=null ) return robot.getConnectionStatus();
+        if (robot != null) return robot.getConnectionStatus();
         return RobotDescription.CONNECTION_STATUS_UNCONNECTED;
     }
-    public void setConnectionStatus(String status) {
-        if( robot!=null ) robot.setConnectionStatus(status);
+
+    public boolean hasBluetoothError() {
+        return bluetoothError != null;
     }
 
-    /**
-     * Initialize the robot object from the database.
-     * @return a robot initialized from the database.
-     */
-    private RobotDescription initializeRobot() {
-        RobotDescription r = null;
-        SQLiteDatabase db = dbManager.getReadableDatabase();
-        StringBuilder sql = new StringBuilder(
-                   "SELECT masterUri,robotName,robotType,deviceName,ssid,application,platform");
-        sql.append(" FROM Robots ");
-        sql.append(" ORDER BY robotName");
-        Cursor cursor = db.rawQuery(sql.toString(),null);
-        cursor.moveToFirst();
-        while(!cursor.isAfterLast()) {
-            RobotId id = new RobotId(cursor.getString(0));
-            id.setDeviceName(cursor.getString(3));
-            id.setSSID(cursor.getString(4));
-            r = new RobotDescription(id, cursor.getString(1), cursor.getString(2), new Date());
-            r.setConnectionStatus(RobotDescription.CONNECTION_STATUS_UNCONNECTED);
-            cursor.moveToNext();
-        }
-        cursor.close();
-        return r;
+    public void setBluetoothError(String reason) {
+        this.bluetoothError = reason;
+        this.robot = null;
+        this.networkConnected = false;
+    }
+
+    public void setConnectionStatus(String status) {
+        if (robot != null) robot.setConnectionStatus(status);
     }
 
     // Set the Bluetooth device name of the current robot and update database.
     public void setDeviceName(String name) {
-        if( this.robot!=null ) {
+        if (this.robot != null) {
             this.robot.getRobotId().setDeviceName(name);
-            updateRobot(this.robot);
         }
+    }
+
+    public void setNetworkConnected(boolean flag) {
+        if (flag) {
+            bluetoothError = null;
+            wifiError = null;
+        } else {
+            this.robot = null;
+        }
+        networkConnected = flag;
     }
 
     // Set the SSID of the current robot and update database.
     public void setSSID(String ssid) {
-        if( this.robot!=null ) {
+        if (this.robot != null) {
             this.robot.getRobotId().setSSID(ssid);
-            updateRobot(this.robot);
         }
     }
 
+    public void setWifiError(String reason) {
+        this.wifiError = reason;
+        this.robot = null;
+        this.networkConnected = false;
+    }
+
+
+    private void shutdown() {
+    }
+
+    /**
+     * Called when main activity is destroyed. Clean up any resources.
+     * To use again requires re-initialization.
+     */
+    public static void destroy() {
+        if (instance != null) {
+            synchronized (SBRosApplicationManager.class) {
+                instance.shutdown();
+                instance = null;
+            }
+        }
+    }
 }

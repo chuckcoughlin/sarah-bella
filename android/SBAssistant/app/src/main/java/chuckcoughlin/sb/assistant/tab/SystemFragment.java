@@ -9,6 +9,9 @@
 
 package chuckcoughlin.sb.assistant.tab;
 
+import android.app.Activity;
+import android.content.Context;
+import android.os.BatteryManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,6 +29,7 @@ import chuckcoughlin.sb.assistant.db.SBDbManager;
 import chuckcoughlin.sb.assistant.ros.SBApplicationStatusListener;
 import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
 import chuckcoughlin.sb.assistant.ros.SBRosManager;
+import ros.android.views.BatteryLevelView;
 
 /**
  * Display the current values of robot system parameters.
@@ -34,29 +38,31 @@ import chuckcoughlin.sb.assistant.ros.SBRosManager;
 public class SystemFragment extends BasicAssistantFragment implements SBApplicationStatusListener,
                                                                 MessageListener<system_check.System> {
     private final static String CLSS = "SystemFragment";
-    private SBDbManager dbManager;
-    private SBRosManager rosManager;
     private SBRosApplicationManager applicationManager;
-
-    // Called when the fragment's instance initializes
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        Log.i(CLSS, "onCreate");
-        super.onCreate(savedInstanceState);
-        this.dbManager  = SBDbManager.getInstance();
-        this.rosManager = SBRosManager.getInstance();
-        this.applicationManager = SBRosApplicationManager.getInstance();
-        applicationManager.addListener(this);
-    }
+    private BatteryManager batteryManager;
+    Subscriber<system_check.System> subscriber = null;
+    private View mainView = null;
 
     // Inflate the view for the fragment based on layout XML
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_system, container, false);
-        TextView label = view.findViewById(R.id.fragmentSystemText);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.i(CLSS, "onCreateView");
+        this.applicationManager = SBRosApplicationManager.getInstance();
+        applicationManager.addListener(this);
+        batteryManager = (BatteryManager)getActivity().getSystemService(Context.BATTERY_SERVICE);
+
+        mainView = inflater.inflate(R.layout.fragment_system, container, false);
+        TextView label = mainView.findViewById(R.id.fragmentSystemText);
         label.setText(R.string.system_title);
-        return view;
+        return mainView;
+    }
+
+    @Override
+    public void onDestroyView() {
+        Log.i(CLSS, "onDestroyView");
+        applicationManager.removeListener(this);
+        subscriber.removeMessageListener(this);
+        super.onDestroyView();
     }
 
     // ========================================= SBApplicationStatusListener ============================
@@ -65,7 +71,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
         if(appName.equalsIgnoreCase(SBConstants.APPLICATION_SYSTEM)) {
             ConnectedNode node = applicationManager.getApplication().getConnectedNode();
             if( node!=null ) {
-                Subscriber<system_check.System> subscriber = node.newSubscriber("/sb_system", system_check.System._TYPE);
+                subscriber = node.newSubscriber("/sb_system", system_check.System._TYPE);
                 subscriber.addMessageListener(this);
             }
             else {
@@ -74,13 +80,31 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
         }
     }
     public void applicationShutdown() {
-
+        Log.i(CLSS, String.format("applicationShutdown"));
+        subscriber.removeMessageListener(this);
     }
     // ========================================= MessageListener ============================
     @Override
     public void onNewMessage(system_check.System system) {
-        Log.i(CLSS,"Got a Message!");
+        Log.i(CLSS,String.format("Got a System Message - CPU Usage = %2.2f",system.getCpuPercent()));
+        Activity mainActivity = getActivity();
+        if( mainActivity==null ) {
+            Log.i(CLSS, String.format("Main Activity no longer available"));
+            return;
+        }
+        mainActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                BatteryLevelView tabletBattery = (BatteryLevelView) mainView.findViewById(R.id.tablet_battery);
+                tabletBattery.setBatteryPercent(batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY));
+
+                TextView tv =  (TextView)mainView.findViewById(R.id.cpu_usage);
+                tv.setText(String.valueOf(system.getCpuPercent()));
+
+            }
+        });
     }
+
     /*
     public class TurtlebotDashboard extends android.widget.LinearLayout implements Dashboard.DashboardInterface {
 	private ImageButton modeButton;

@@ -52,6 +52,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal" >
+        <TextView android:text="Paired Device (Bluetooth):"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            style="@style/BlackDialogLabel"/>
+        <TextView android:id="@+id/paired_device_name_editor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/BlackDialogEntry"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
         <TextView android:text="Wifi network name (SSID):"
             android:layout_width="240dp"
             android:layout_height="wrap_content"

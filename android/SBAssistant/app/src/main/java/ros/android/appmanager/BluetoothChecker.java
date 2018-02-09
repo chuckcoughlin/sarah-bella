@@ -22,6 +22,10 @@ import ros.android.util.RobotId;
 
 import static android.content.Context.BLUETOOTH_SERVICE;
 
+/**
+ * Attempt to create a network connection via Bluetooth.
+ * NOTE: Bluetooth is not supported on the emulator. The adapter will be null.
+ */
 public class BluetoothChecker {
     private final static String CLSS = "BluetoothChecker";
     private CheckerThread checkerThread;
@@ -40,14 +44,16 @@ public class BluetoothChecker {
         if( adapter==null ) {
             bluetoothError = "No bluetooth network";
         }
-        else if( !adapter.isEnabled()) {
-            bluetoothError = "Bluetooth network is not enabled";
-            result = false;
-        }
         else {
-            result = true;
+            if( !adapter.isEnabled() ) adapter.enable();
+            if( !adapter.isEnabled()) {
+                bluetoothError = "Bluetooth network is not enabled";
+                result = false;
+            }
+            else {
+                result = true;
+            }
         }
-
         return result;
     }
 

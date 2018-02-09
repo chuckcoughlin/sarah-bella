@@ -36,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
      */
     private ViewPager viewPager;
     private Thread nodeThread;
-    private SBRosManager rosHelper;
 
     public MainActivity() {
         Log.d(CLSS,"Constructor ...");
@@ -49,11 +48,8 @@ public class MainActivity extends AppCompatActivity {
         // If I absolutely have to start over again with the database ...
         //this.deleteDatabase(SBConstants.DB_NAME);
 
-        // Initialize the ros managers ...
+        // Initialize the database manager ...
         SBDbManager.initialize(this);
-        SBRosManager.initialize(this.getApplicationContext());
-        SBRosApplicationManager.initialize(this.getApplicationContext());
-        this.rosHelper = SBRosManager.getInstance();
 
         Log.i(CLSS,"onCreate: entering ...");
         setContentView(R.layout.activity_main);
@@ -73,5 +69,17 @@ public class MainActivity extends AppCompatActivity {
                 toast.show();
             }
         });
+    }
+
+    /**
+     * Shutdown all the Singleton instances to guarantee a fresh state
+     * should we ever restart.
+     */
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        SBDbManager.destroy();
+        SBRosManager.destroy();
+        SBRosApplicationManager.destroy();
     }
 }
