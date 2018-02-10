@@ -1,0 +1,12 @@
+<!-- The "system" application includes:
+     system_check - performance metrics
+     battery_state- battery status
+-->
+<launch>
+  <param name="robot/name" value="SarahBella" type="str"/>
+  <param name="robot/type" value="turtlebot3" type="str"/>
+  <param name="robot/application" value="system" type="str"/>
+  <param name="robot/platform" value="RaspberryPi" type="str"/>
+  <include file="$(find system_check)/launch/system_check.launch" />
+  <include file="$(find sensor_msgs)/launch/battery_state.launch" />
+</launch>
