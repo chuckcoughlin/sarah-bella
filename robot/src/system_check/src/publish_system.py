@@ -14,8 +14,10 @@ from std_msgs.msg import String
 pub = rospy.Publisher('/sb_system',System,queue_size=1)
 rospy.init_node('sb_publish_system')
 rate= rospy.Rate(0.10) #  10 second publish rate
-msg= System('hostname', 'ip_address', 'cpu_percent', 'memory_percent_used', 'free_memory_bytes', 'swap_memory_percent_used', \
-            'disk_percent_used', 'packets_sent', 'packets_received', 'in_packets_dropped', 'out_packets_dropped')
+msg= System('hostname', 'ip_address', 'cpu_percent', 'memory_percent_used',\
+            'free_memory_bytes', 'swap_memory_percent_used', \
+            'disk_percent_used', 'packets_sent', 'packets_received',\
+            'in_packets_dropped', 'out_packets_dropped')
 
 while not rospy.is_shutdown():
 	msg.hostname = socket.gethostname()

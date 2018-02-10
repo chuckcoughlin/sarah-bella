@@ -53,7 +53,6 @@ find_package(catkin REQUIRED COMPONENTS
    System.msg
  )
 
-## Generate services in the 'srv' folder
 # add_service_files(
 #   FILES
 #   Service1.srv
