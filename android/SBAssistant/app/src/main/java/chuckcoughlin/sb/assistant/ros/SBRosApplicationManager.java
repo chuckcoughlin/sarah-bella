@@ -68,7 +68,7 @@ public class SBRosApplicationManager {
     private Thread nodeThread;
     private Handler uiThreadHandler = new Handler();
     private RobotApplication application;
-    private List<RobotApplication> apps;
+    private final List<RobotApplication> apps;
     private RosCore rosCore = null;
     private NodeConfiguration nodeConfiguration= null;
     private NodeMainExecutor nodeMainExecutor  = null;
@@ -126,7 +126,7 @@ public class SBRosApplicationManager {
      * @return the list of known applications
      */
     public List<RobotApplication> getApplications() {
-        if( apps.size()==0 ) apps = createApplications();
+        if( apps.size()==0 ) createApplications();
         return this.apps;
     }
 
@@ -235,8 +235,8 @@ public class SBRosApplicationManager {
      * Create the initial fixed list of applications
      * @return application list.
      */
-    private List<RobotApplication> createApplications() {
-        List<RobotApplication> apps = new ArrayList<>();
+    private void createApplications() {
+        apps.clear();
 
         SBDbManager dbManager = SBDbManager.getInstance();
         SQLiteDatabase db = dbManager.getReadableDatabase();
@@ -258,7 +258,6 @@ public class SBRosApplicationManager {
             cursor.moveToNext();
         }
         cursor.close();
-        return apps;
     }
     /**
      * Inform all listeners that the named application has started. It is up to the

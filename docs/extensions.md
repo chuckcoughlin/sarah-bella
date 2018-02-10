@@ -29,17 +29,13 @@ Application selection and restart of the robot depends on a *ssh* login as super
 
 
 ### 01 - System Check <a id="systemcheck"></a>
+
 *psutil* is used on the robot to obtain system performance metrics in support of the custom *System* message type. This package is installed by default on the Linux virtual machine, but not on the
-Raspberry Pi. For a complete description see: https://psutil.readthedocs.io/en/latest. To install on the robot:
+Raspberry Pi. For a complete description see [here](https://psutil.readthedocs.io/en/latest). To install on the robot:
 ```
    sudo apt-get install build-essential python-dev python-pip
    sudo pip install psutil
 ```
-The *BatteryState* message is from sensor_msgs in the common message bundle. For a full description, see
- http://wiki.ros.org/sensor_msgs.
-
-
-The following messages are exchanged:
 
 ```
 System
@@ -55,6 +51,25 @@ System
       Uint32 in_packets_dropped
       Uint32 out_packets_dropped
 ```
+The *BatteryState* message is from sensor_msgs in the common message bundle. For a full description, see
+[here](http://docs.ros.org/api/sensor_msgs/html/msg/BatteryState.html). The message below lists the subset
+of attributes that are actually implemented.
+
+The same installation instructions apply to both the RaspberryPi and Linux virtual machine:
+```
+  sudo apt-get install build-essential libi2c-dev i2c-tools python-dev libffi-dev
+  sudo apt-get install python-pip
+  sudo -H pip install smbus-cffi
+
+```
+
+```
+BatteryState
+  Float32 voltage          # Voltage in Volts (Mandatory)
+  Float32 percentage       # Charge percentage on 0 to 1 range  (If unmeasured NaN)
+  Bool    present          # True if the battery is present
+```
+
 
  To build the package:
 ```
@@ -62,9 +77,11 @@ System
 ```
 ##### ----------------------- tablet -------------------------
 
+**node:** sb_subscribe_battery_state(sensor_msgs/BatteryState)<br/>
 **node:** sb_subscribe_system (sb_system/System)<br/>
 
 #####---------------------- robot  --------------------------
+**node:** sb_publish_battery_state (sensor_msgs/BatteryState)<br/>
 **node:** sb_publish_system (sb_system/System)<br/>
 
 ### 02 - Follow <a id="follow"></a>

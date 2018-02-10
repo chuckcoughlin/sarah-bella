@@ -115,7 +115,6 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         dbManager = SBDbManager.getInstance();
         rosManager = SBRosManager.getInstance();
         applicationManager = SBRosApplicationManager.getInstance();
-
     }
 
     // The host activity has been created.
@@ -123,7 +122,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         Log.i(CLSS, "DiscoveryFragment.onActivityCreated");
-        
+
         // We populate the list whether or not there is a robot connection. We simply hide it as appropriate.
         List<RobotApplication> applicationList = SBRosApplicationManager.getInstance().getApplications();
         Log.i(CLSS, String.format("onActivityCreated: will display %d applications for all robots", applicationList.size()));
@@ -183,6 +182,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     public void onDetach() {
         super.onDetach();
     }
+
     //======================================== Array Adapter ======================================
     public class RobotApplicationsAdapter extends ArrayAdapter<RobotApplication> implements ListAdapter {
 
@@ -200,7 +200,6 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
             //Log.i(CLSS, String.format("RobotApplicationsAdapter.getView position =  %d", position));
             // Get the data item for this position
             RobotApplication app = getItem(position);
-
             // Check if an existing view is being reused, otherwise inflate the view
             if (convertView == null) {
                 //Log.i(CLSS, String.format("RobotApplicationsAdapter.getView convertView was null"));
@@ -230,10 +229,11 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
      * @param statusView view that holds the status image
      */
     private void updateStatusImage(RobotApplication app,ImageView statusView ) {
-        Log.i(CLSS, String.format("updateStatusImage: for %s (vs %s)",app.getApplicationName(),
-                (applicationManager.getApplication()==null?null:applicationManager.getApplication().getApplicationName())));
+        Log.i(CLSS, String.format("updateStatusImage: for %s (%s)",app.getApplicationName(),
+                (applicationManager.getApplication()==null?null:applicationManager.getApplication().getExecutionStatus())));
         if( applicationManager.getApplication()!=null && app.getApplicationName().equalsIgnoreCase(applicationManager.getApplication().getApplicationName()) ) {
             statusView.setVisibility(View.VISIBLE);
+            app = applicationManager.getApplication();  // Make sure we get the correct instance
             if( app.getExecutionStatus().equalsIgnoreCase(RobotApplication.APP_STATUS_RUNNING)) {
                 statusView.setImageResource(R.drawable.ball_green);
             }
@@ -249,7 +249,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     @Override
     public void handleConnectionError(String reason) {
         Log.w(CLSS, "handleConnectionError: " + reason);
-        rosManager.setConnectionStatus(RobotDescription.CONNECTION_STATUS_UNCONNECTED);
+        rosManager.setConnectionStatus(SBRosManager.CONNECTION_STATUS_UNCONNECTED);
         applicationManager.setApplication(null);
         SBWarningDialog warning = SBWarningDialog.newInstance( "Error connecting to robot", reason);
         warning.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
@@ -316,7 +316,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     public void receiveRobotConnection(RobotDescription robot) {
         Log.i(CLSS, "receiveRobotConnection: SUCCESS!");
         rosManager.setRobot(robot);
-        rosManager.setConnectionStatus(RobotDescription.CONNECTION_STATUS_CONNECTED);
+        rosManager.setConnectionStatus(SBRosManager.CONNECTION_STATUS_CONNECTED);
     }
 
     // The basic network connection is made. Now interrogate for robot characteristics.
@@ -366,7 +366,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         RobotDescription robot = rosManager.getRobot();
         BluetoothManager bluetoothManager = (BluetoothManager)getActivity().getSystemService(BLUETOOTH_SERVICE);
         // If the robot is currently connected, we really mean "Disconnect"
-        if( rosManager.getConnectionStatus().equals(RobotDescription.CONNECTION_STATUS_CONNECTED) ) {
+        if( rosManager.getConnectionStatus().equals(SBRosManager.CONNECTION_STATUS_CONNECTED) ) {
             rosManager.setNetworkConnected(false);
             applicationManager.setApplication(null);
             if( bluetoothManager.getAdapter()!=null )  bluetoothManager.getAdapter().disable();
@@ -375,6 +375,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
 
         }
         else if(!rosManager.hasBluetoothError()) {
+            rosManager.setConnectionStatus(SBRosManager.CONNECTION_STATUS_CONNECTING);
             BluetoothChecker checker = new BluetoothChecker(this);
             String master = dbManager.getSetting(SBConstants.ROS_MASTER_URI);
             if( master.contains("xxx")) master = null;  // Our "hint" is not the real URI
@@ -390,6 +391,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
             }
         }
         else {
+            rosManager.setConnectionStatus(SBRosManager.CONNECTION_STATUS_CONNECTING);
             checkWifi();
         }
     }
@@ -440,7 +442,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
 
         Button button = (Button) contentView.findViewById(R.id.connectButton);
         button.setEnabled(true);
-        if (robot == null || !robot.getConnectionStatus().equalsIgnoreCase(RobotDescription.CONNECTION_STATUS_CONNECTED)) {
+        if (!rosManager.getConnectionStatus().equalsIgnoreCase(SBRosManager.CONNECTION_STATUS_CONNECTED)) {
             button.setText(R.string.discoveryButtonConnect);
             rosManager.setRobot(null);
             robot = rosManager.getRobot();
@@ -468,7 +470,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         else iview.setVisibility(View.VISIBLE);
 
         ProgressBar bar = (ProgressBar) contentView.findViewById(R.id.progress_circle);
-        if (robot == null || !robot.getConnectionStatus().equalsIgnoreCase(RobotDescription.CONNECTION_STATUS_CONNECTING))
+        if (!rosManager.getConnectionStatus().equalsIgnoreCase(SBRosManager.CONNECTION_STATUS_CONNECTING))
             bar.setVisibility(View.INVISIBLE);
         else {
             bar.setVisibility(View.VISIBLE);

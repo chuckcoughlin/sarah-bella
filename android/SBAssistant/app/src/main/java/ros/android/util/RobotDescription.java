@@ -49,11 +49,7 @@ import chuckcoughlin.sb.assistant.common.SBConstants;
  */
 public class RobotDescription implements java.io.Serializable {
 	private static final String CLSS = "RobotDescription";
-	// Connection Status
-	public static final String CONNECTION_STATUS_UNCONNECTED="UNCONNECTED";
-	public static final String CONNECTION_STATUS_CONNECTING = "CONNECTING ...";
-	public static final String CONNECTION_STATUS_CONNECTED  = "CONNECTED";
-	public static final String CONNECTION_STATUS_UNAVAILABLE = "UNAVAILABLE";   // An error
+
 
 	public static final String OK = "ok";
 	public static final String ERROR = "exception";
@@ -69,7 +65,6 @@ public class RobotDescription implements java.io.Serializable {
 	private String robotType;
 	private String applicationName;
 	private String platform;
-	private String connectionStatus;
 	private Date timeLastSeen;
 
 	public RobotDescription() {
@@ -80,7 +75,6 @@ public class RobotDescription implements java.io.Serializable {
 		setRobotId(robotId);
 		this.robotType = robotType;
 		this.platform= SBConstants.PLATFORM_LINUX;
-		this.connectionStatus = CONNECTION_STATUS_UNCONNECTED;
 		this.timeLastSeen = timeLastSeen;
 	}
 
@@ -119,13 +113,6 @@ public class RobotDescription implements java.io.Serializable {
 	}
 	public String getPlatform() { return (platform==null?"":platform); }
 	public void setPlatform(String plat) { this.platform = plat; }
-
-	public String getConnectionStatus() {
-		return connectionStatus;
-	}
-	public void setConnectionStatus(String connectionStatus) {
-		this.connectionStatus = connectionStatus;
-	}
 
 	public Date getTimeLastSeen() {
 		return timeLastSeen;

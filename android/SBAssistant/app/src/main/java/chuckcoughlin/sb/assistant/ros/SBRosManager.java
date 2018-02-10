@@ -41,11 +41,16 @@ import ros.android.util.RobotId;
  */
 public class SBRosManager {
     private final static String CLSS = "SBRosManager";
+    // Network Connection Status
+    public static final String CONNECTION_STATUS_UNCONNECTED="UNCONNECTED";
+    public static final String CONNECTION_STATUS_CONNECTING = "CONNECTING ...";
+    public static final String CONNECTION_STATUS_CONNECTED  = "CONNECTED";
+    public static final String CONNECTION_STATUS_UNAVAILABLE = "UNAVAILABLE";   // An error
 
     private static volatile SBRosManager instance = null;
     private String bluetoothError;
     private String wifiError;
-    private boolean networkConnected;
+    private String connectionStatus;
     private Thread nodeThread;
     private Handler uiThreadHandler = new Handler();
     private RobotDescription robot = null;
@@ -63,7 +68,7 @@ public class SBRosManager {
         this.robot = null;
         this.bluetoothError = null;
         this.wifiError = null;
-        this.networkConnected = false;
+        this.connectionStatus = CONNECTION_STATUS_UNCONNECTED;
     }
 
     /**
@@ -90,10 +95,7 @@ public class SBRosManager {
         this.robot = desc;
     }
 
-    public String getConnectionStatus() {
-        if (robot != null) return robot.getConnectionStatus();
-        return RobotDescription.CONNECTION_STATUS_UNCONNECTED;
-    }
+    public String getConnectionStatus() { return this.connectionStatus; }
 
     public boolean hasBluetoothError() {
         return bluetoothError != null;
@@ -102,12 +104,10 @@ public class SBRosManager {
     public void setBluetoothError(String reason) {
         this.bluetoothError = reason;
         this.robot = null;
-        this.networkConnected = false;
+        this.connectionStatus = CONNECTION_STATUS_UNCONNECTED;
     }
 
-    public void setConnectionStatus(String status) {
-        if (robot != null) robot.setConnectionStatus(status);
-    }
+    public void setConnectionStatus(String status) { this.connectionStatus = status; }
 
     // Set the Bluetooth device name of the current robot and update database.
     public void setDeviceName(String name) {
@@ -120,10 +120,12 @@ public class SBRosManager {
         if (flag) {
             bluetoothError = null;
             wifiError = null;
-        } else {
-            this.robot = null;
+            setConnectionStatus(CONNECTION_STATUS_CONNECTED);
         }
-        networkConnected = flag;
+        else {
+            this.robot = null;
+            setConnectionStatus(CONNECTION_STATUS_UNCONNECTED);
+        }
     }
 
     // Set the SSID of the current robot and update database.
@@ -136,7 +138,7 @@ public class SBRosManager {
     public void setWifiError(String reason) {
         this.wifiError = reason;
         this.robot = null;
-        this.networkConnected = false;
+        setConnectionStatus(CONNECTION_STATUS_UNAVAILABLE);
     }
 
 

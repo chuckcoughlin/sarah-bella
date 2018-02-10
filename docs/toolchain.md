@@ -98,6 +98,11 @@ repository (```git clone http://github.com/chuckcoughlin/sarah-bella``` Load and
 #### Emulator <a id="emulator"></a>
 In order to test the application in the emulator, after configuring a suitable target device with the AVD manager, select the studio menu Tools->Android->Enable ADB Integration and Run->Edit Configuration. Thereafter use the green "run" arrow in the toolbar to launch the application in the emulator. Output is viewable directly in the studio's ''logcat'' tab.
 
+
+Note that the emulator does not support Bluetooth. All Bluetooth testing must take place on the actual tablet.
+
+The robot must be reachable by name for successful message exchange when using the emulator. The easiest way to accomplish this is to the robot's IP address and hostname (ROSPi) into ```/etc/hosts``` on the development system.
+
 #### Persistent Storage <a id="persistent-storage"></a>
 Configuration parameters, maps and other data that are meant to remain in place even through application changes, are stored in a SQLite database accessible through the tablet application. The database can also be read externally.
 
