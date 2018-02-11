@@ -58,10 +58,11 @@ of attributes that are actually implemented.
 The same installation instructions apply to both the RaspberryPi and Linux virtual machine:
 ```
   sudo apt-get install build-essential libi2c-dev i2c-tools python-dev libffi-dev
-  sudo apt-get install python-pip
-  sudo -H pip install smbus-cffi
+  sudo apt-get install -y python-smbus
 
 ```
+Additionally on the RaspberryPi, configure the kernel for *i2c* support per the instructions from (adafruit)[https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c?gclid=Cj0KCQiAzfrTBRC_ARIsAJ5ps0uYaFjCHb16TtKa66gE62ppr7W05HF_GqDnblMaRfbwqxl64iQsYswaAkweEALw_wcB] using ```raspi-config```. On reboot, */dev/ic2-1* should exist. Also ```i2cdetect -y 1 ``` should display a matrix of addresses. NOTE: the current code 
+is appropriate for a MAX17043 LIPO Fuel Gauge (NOT INSTALLED).
 
 ```
 BatteryState
@@ -71,7 +72,7 @@ BatteryState
 ```
 
 
- To build the package:
+ The initial build of the package files was done using:
 ```
     catkin_create_pkg system_check rospy turtlebot3_msgs  turtlebot3_navigation
 ```

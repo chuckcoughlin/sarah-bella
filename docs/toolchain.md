@@ -398,6 +398,10 @@ Download the **wiringPi** GPIO library and build the 'gpio' tool. Copy into our 
   cp gpio/gpio ~/robotics/repo/robot/bin
 ```
 
+```
+  sudo apt-get install python-dev
+  sudo apt-get install python-rpi.gpio
+```
 #### Backups <a id="backups"></a>
 To backup an SD card, mount it on the host system. Then use the Disk Utility application to save the SD card contents
 to an image file on disk. Be sure to select the entire device, not just the named partition. Save as "compressed".
