@@ -2,4 +2,4 @@
 # message package. See ~/common_messages/sensor_msgs for the original
 # complete package. 
 #
-# Currently this directoty builds a single package, battery_status.
+# Currently this directory builds a single package, battery_status.
