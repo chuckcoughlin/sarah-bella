@@ -1,7 +1,7 @@
 ## Application Descriptions
 
-The robot repertoire consists of set of applications constructed
-on a Linux virtual machine running on the development system.  These are subsequently transferred to and compiled on the Turtlebot3. The robot launch configuration determines which application will execute.
+The robot repertoire consists of set of applications constructed and debugged
+on a Linux virtual machine.  These are subsequently transferred to and compiled on the Turtlebot3. The robot launch configuration determines which application will execute.
 
 The sections below contain general descriptions
 of the applications with a brief view of applicable control screens on the Android tablet.
@@ -10,7 +10,7 @@ ROS nodes and messaging details as well as descriptions of hardware modification
 ![SB Assistant](/images/sb-cover.png)
 ````                        SB Assistant - Cover Page ````
 
-The android assistant contains command and monitoring code for all applications installed on the robot. It is a single activity application, featuring sliding panels (Fragments), one for each application.
+The Android assistant contains command and monitoring code for all applications installed on the robot. It is a single activity application, featuring sliding panels (Fragments), one for each application.
 ***************************************************************
 ## Table of Contents <a id="table-of-contents"></a>
   * [Discovery](#discovery)
@@ -22,17 +22,16 @@ The android assistant contains command and monitoring code for all applications 
 ````                        SB Assistant - Discovery Page ````
 [toc](#table-of-contents)
 
-The discovery panel allows connection to a single running robot based on a MasterURI configured in the *Settings*. It reads values published from the robot through its ParameterServer to validate the device.  
+The **discovery** panel allows connection to a single running robot based on a MasterURI configured in the *Settings*. It reads values published from the robot through its ParameterServer to validate the device.  
 
-The  SQLite database on the tablet contains a list of applications expected to be supported by the robot. The panel provides an opportunity to select and start applications from this list. The robot is configured for the desired application via a *ssh* connection where a script is run to set the application and restart *rosCore*. This operation requires that a sudoer username and password for the robot be entered in the *Settings* panel on the tablet.
+A SQLite database on the tablet contains a list of applications expected to be supported by the robot. This panel provides an opportunity to select and start applications from this list. The robot is configured for the desired application via a *ssh* connection where a script is run to set the application and restart *rosCore*. This operation requires that a *sudoer* username and password for the robot be entered in the *Settings* panel on the tablet.
 
 
 ******************************************************
 ### 01 - System Check <a id="systemcheck"></a>
 [toc](#table-of-contents)
 
-The **system** panel is designed to read system parameters and exercise devices on the robot. The panel subscribes to the following topics:
- * /sb_system/System
+The **system** panel is designed to read system parameters and interactively exercise devices on the robot. It displays system CPU and memory performance metrics; It also sports a table that displays status of GPIO outputs and provides control actions for GPIO inputs.
 
 ******************************************************
 ### 02 - Follow <a id="follow"></a>

@@ -22,6 +22,7 @@ import chuckcoughlin.sb.assistant.tab.LogsFragment;
 import chuckcoughlin.sb.assistant.tab.SLAMFragment;
 import chuckcoughlin.sb.assistant.tab.SettingsFragment;
 import chuckcoughlin.sb.assistant.tab.SystemFragment;
+import chuckcoughlin.sb.assistant.tab.TeleopFragment;
 
 
 /**
@@ -39,7 +40,7 @@ public class MainActivityPagerAdapter extends FragmentStatePagerAdapter {
         tabTitles = new String[] {
                 ctx.getString(R.string.cover_title), ctx.getString(R.string.discovery_title), ctx.getString(R.string.settings_title),ctx.getString(R.string.system_title), ctx.getString(R.string.headlamp_title),
                 ctx.getString(R.string.SLAM_title),ctx.getString(R.string.audio_title),
-                ctx.getString(R.string.camera_title),ctx.getString(R.string.log_title)};
+                ctx.getString(R.string.camera_title),ctx.getString(R.string.teleops_title),ctx.getString(R.string.log_title)};
         Log.i(CLSS,"Constructor ...");
     }
 
@@ -78,6 +79,9 @@ public class MainActivityPagerAdapter extends FragmentStatePagerAdapter {
                 frag = new CameraFragment();
                 break;
             case 8:
+                frag = new TeleopFragment();
+                break;
+            case 9:
                 frag = new LogsFragment();
                 break;
             default:

@@ -62,4 +62,5 @@ dependencies {
     implementation files('libs/commons-codec-1.11a.jar')
     implementation files('libs/commons-pool-1.6.jar')
     implementation files('libs/jsch-0.1.54.jar')
+    implementation files('libs/sensor_msgs-1.12.5.jar')
 }

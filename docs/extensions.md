@@ -55,14 +55,8 @@ The *BatteryState* message is from sensor_msgs in the common message bundle. For
 [here](http://docs.ros.org/api/sensor_msgs/html/msg/BatteryState.html). The message below lists the subset
 of attributes that are actually implemented.
 
-The same installation instructions apply to both the RaspberryPi and Linux virtual machine:
-```
-  sudo apt-get install build-essential libi2c-dev i2c-tools python-dev libffi-dev
-  sudo apt-get install -y python-smbus
-
-```
-Additionally on the RaspberryPi, configure the kernel for *i2c* support per the instructions from (adafruit)[https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c?gclid=Cj0KCQiAzfrTBRC_ARIsAJ5ps0uYaFjCHb16TtKa66gE62ppr7W05HF_GqDnblMaRfbwqxl64iQsYswaAkweEALw_wcB] using ```raspi-config```. On reboot, */dev/ic2-1* should exist. Also ```i2cdetect -y 1 ``` should display a matrix of addresses. NOTE: the current code 
-is appropriate for a MAX17043 LIPO Fuel Gauge (NOT INSTALLED).
+NOTE: the current code for BatteryState
+is appropriate for a MAX17043 LIPO Fuel Gauge which is not currently wired.
 
 ```
 BatteryState
@@ -71,24 +65,51 @@ BatteryState
   Bool    present          # True if the battery is present
 ```
 
+The *GPIOState* message is a custom message that provides the current state and configuration of the GPIO board on the Raspberry Pi.
+It consists of a list of 40 *GPIOPin* messages (named pin1,,,pin40) one for each physical pin on the GPIO header. Each pin sub-message consists of:
 
- The initial build of the package files was done using:
+```
+GPIOPin
+  String name
+  Uint32 channel
+  Bool value
+  String mode              # IN, OUT, GND, PWR
+```
+The panel subscribes to the following topics:
+ * /gpio_msgsGPIOState
+ * /gpio_msgs/GPIOPin
+ * /sb_system/System
+ * /std_msgs/BatteryState
+ 
+The *GPIOState* is infrequent (20 secs) and provides a view of the entire state and configuration of the board. The *GPIOPin* message reports changes of individual
+pin states asynchronously.
+
+The panel is provides control of GPIO values with the action:
+ * /gpio_msgs/GPIOPin
+
+The initial construction of the package files was accomplished using:
 ```
     catkin_create_pkg system_check rospy turtlebot3_msgs  turtlebot3_navigation
 ```
-##### ----------------------- tablet -------------------------
 
+##### ----------------------- tablet --------------------------<br/>
 **node:** sb_subscribe_battery_state(sensor_msgs/BatteryState)<br/>
 **node:** sb_subscribe_system (sb_system/System)<br/>
 
-#####---------------------- robot  --------------------------
+##### ---------------------- robot  --------------------------<br/>
 **node:** sb_publish_battery_state (sensor_msgs/BatteryState)<br/>
 **node:** sb_publish_system (sb_system/System)<br/>
 
 ### 02 - Follow <a id="follow"></a>
- See turtlebot follower at: https://github.com/turtlebot/turtlebot_apps.git. Modifications were made to support turtlebot3_msg dependencies.
+ The *follower* application is one of the ROBOTIS demonstrations from: https://github.com/ROBOTIS-GIT/turtlebot3_applications.git. Find documentation (here)[http://emanual.robotis.com/docs/en/platform/turtlebot3/applications]. It requires scikit-learn, NumPy and SciPy python packages. To install:
+ ```
+    sudo apt-get install python-pip
+    sudo pip install -U scikit-learn numpy scipy
+    sudo pip install --upgrade pip
 
- The *follow* applications will cause the TurtleBot3 to look for objects in a window in front of it. And it will seek to keep the centroid of the observed objects directly in front of it and a fixed distance away. If the centroid of the object is too far away it will drive forward, too close backward, and if offset to the side it will turn toward the centroid.
+ ```
+
+ The *follow* application will cause the TurtleBot3 to look for objects in a window 50cm in front of it. And it will seek to keep the centroid of the observed objects directly in front of it and a fixed distance away. If the centroid of the object is too far away it will drive forward, too close backward, and if offset to the side it will turn toward the centroid.
 
 ##### 04 - Park <a id="park"></a>
 See Turtlebot3 Automatic Parking at: https://github.com/ROBOTIS-GIT/turtlebot3_applications

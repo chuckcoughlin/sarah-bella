@@ -32,6 +32,7 @@ We use the kinetic version of ROS. This is the current version used by ROBOTIS f
     * [Network Configuration](#network-configuration)
     * [ROS Development Setup](#ros-development-setup-pi)
     * [Code Updates](#code-updates)
+    * [I2C](#i2c)
     * [GPIO](#gpio)
     * [Backups](#backups)
 
@@ -48,14 +49,14 @@ This drawing and others is constructed using **InkScape** from https://inkscape.
 ### Android Control Application <a id="android-header"></a>
 [toc](#table-of-contents)
 
-The control application is a standard Android application built using Android Studio 3.0. The studio may be downloaded from http://developer.android.com. It runs on the OSX build system and creates a run image for the android tablet.
+The control application is a standard Android application built using Android Studio 3.0. The studio may be downloaded from http://developer.android.com. It runs on the OSX build system and creates a run image for the Android tablet.
 Configure the host build system, making the Android home environment variable available by adding
 ```ANDROID_HOME=~/Library/Androd/sdk``` to ~/.bashrc.
 
 #### External Libraries <a id="external-libraries"></a>
 These next steps make ROS libraries available to the Android build environment. Note that the following are necessary only if creating a project from scratch. For an existing project, the modules are already part of the SBAssistant repository.
 
-The android core package may be found at (you may have to download the entire Maven repository to get at the individual files):  https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_core/rosjava/0.3.5. Download rosjava-0.3.5.jar (org.ros) to ~/robotics/sara-bella/SBAssistant/app/libs. Then from inside Android Studio:
+The Android core package may be found at (you may have to download the entire Maven repository to get at the individual files):  https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_core/rosjava/0.3.5. Download rosjava-0.3.5.jar (org.ros) to ~/robotics/sara-bella/SBAssistant/app/libs. Then from inside Android Studio:
 ```
   File->Synchronize
   right-click on app/libs/rosjava-0.3.5.jar and select "Import as Library"
@@ -75,7 +76,7 @@ Create libraries in a similar way from the following:<br/>
 
 
 #### Jar Conversions <a id="jar-conversions"></a>
-As explained in the blog post from [Alex Lipov](http://blog.osom.info/2015/04/commons-codec-on-android.html), the android core includes some obsolete libraries that will overwrite newer files that the application may require. In particular, *commons-codec* is a problem. The solution involves modifying the jar file and those that reference it to change class names to avoid conflicts. Download *jarjar-1.4.jar* from https://code.google.com/archive/p/jarjar/downloads. Then
+As explained in this blog post from [Alex Lipov](http://blog.osom.info/2015/04/commons-codec-on-android.html), the Android core includes some obsolete libraries that will overwrite newer files that the application may require. In particular, *commons-codec* is a problem. The solution involves modifying the jar file and those that reference it to change class names to avoid conflicts. Download *jarjar-1.4.jar* from https://code.google.com/archive/p/jarjar/downloads. Then
 ```
     java -jar jarjar-1.4.jar process <rulesFile> <inJar> <outJar>
 ```
@@ -332,7 +333,7 @@ take an hour or more. Make sure the robot's battery is charged. Additionally the
 
 After I executed the "sudo apt upgrade", I discovered that my Firefox now crashed on start. To revert to a prior version:
 ```
-    apt-cache show firefox | grep Version
+  apt-cache show firefox | grep Version
 	sudo apt-get purge firefox
 	sudo apt-get install firefox=45.0.2+build1-0ubuntu1   # The older version shown from previos command
 	sudo apt-mark hold firefox                            # Prevents auto-update to newer version
@@ -380,6 +381,15 @@ Here are some commands to verify a successful start:
    rosservice list
 ```
 
+#### I2c <a id="i2c"></a>
+I2c is a mechanism for reading internal values from the kernel, in particular from devices wired into the *i2c* pad on the bottom of the Raspberry Pi. To configure the kernel for *i2c* support per the instructions from (adafruit)[https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c?gclid=Cj0KCQiAzfrTBRC_ARIsAJ5ps0uYaFjCHb16TtKa66gE62ppr7W05HF_GqDnblMaRfbwqxl64iQsYswaAkweEALw_wcB] using ```raspi-config```.
+These same installation instructions apply to both the RaspberryPi and Linux virtual machine:
+```
+  sudo apt-get install build-essential libi2c-dev i2c-tools python-dev libffi-dev
+  sudo apt-get install -y python-smbus
+
+```
+On reboot, */dev/ic2-1* should exist. Also the command ```i2cdetect -y 1 ``` should display a matrix of addresses.
 
 #### GPIO <a id="gpio"></a>
 The GPIO pin layout is shown below:
@@ -387,7 +397,7 @@ The GPIO pin layout is shown below:
 ![GPIO](/images/RaspberryPi-GPIO.png)
 ````                        RaspberryPi GPIO Pin Assignments ````
 
-Download the **wiringPi** GPIO library and build the 'gpio' tool. Copy into our **bin** area for use in ROS scripts as needed.
+Download the *wiringPi* GPIO library and build the 'gpio' tool. Copy into a *bin* area for use in ROS scripts as needed.
 
 ```
   mkdir -p ~/external
@@ -395,13 +405,18 @@ Download the **wiringPi** GPIO library and build the 'gpio' tool. Copy into our 
   git clone git://git.drogon.net/wiringPi
   cd wiringPi
   sudo ./build
-  cp gpio/gpio ~/robotics/repo/robot/bin
+  mkdir ~/robotics/bin
+  cp gpio/gpio ~/robotics/bin
 ```
-
+An alternative GPIO access method is RPi.GPIO.
 ```
   sudo apt-get install python-dev
   sudo apt-get install python-rpi.gpio
 ```
+For further documentation of this package, see: https://sourceforge.net/projects/raspberry-gpio-python/.
+
+Most GPIO pins can be configured as either input or output, so the board configuration must be set before use. To do this, edit ```~/catkin_ws/src/gpio_msgs/src/GPIOConfiguration.py```.
+
 #### Backups <a id="backups"></a>
 To backup an SD card, mount it on the host system. Then use the Disk Utility application to save the SD card contents
 to an image file on disk. Be sure to select the entire device, not just the named partition. Save as "compressed".
