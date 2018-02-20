@@ -1,0 +1,6 @@
+uint8 channel
+bool value
+---
+uint8 channel
+bool value
+string msg
