@@ -1,0 +1,8 @@
+#!/bin/bash
+# Remove code that has been stubbed for development. This code is used
+# to complete compilation and simple tests. On the development machine
+# itself, the script should do nothing.
+name=`uname -n`
+if [ $name != "ROSDev" ] then
+	rm -rf ~/catkin_ws/src/gpio_msgs/src/Rpi
+fi
