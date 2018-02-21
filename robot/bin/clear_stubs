@@ -3,6 +3,7 @@
 # to complete compilation and simple tests. On the development machine
 # itself, the script should do nothing.
 name=`uname -n`
-if [ $name != "ROSDev" ] then
-	rm -rf ~/catkin_ws/src/gpio_msgs/src/Rpi
+if [ $name != "ROSDev" ] 
+then
+	rm -rf ~/catkin_ws/src/gpio_msgs/src/RPi
 fi
