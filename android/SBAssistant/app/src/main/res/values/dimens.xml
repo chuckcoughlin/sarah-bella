@@ -6,7 +6,8 @@
     <dimen name="appbar_padding_top">8dp</dimen>
     <dimen name="list_vertical_padding">4dp</dimen>
     <dimen name="page_margin">@dimen/margin_medium</dimen>
-
+    <!-- Text size for System display -->
+    <dimen name="system_parameter_text_size">18dp</dimen>
     <!-- Field sizes for GPIO display -->
     <dimen name="gpio_image_height">40dp</dimen>
     <dimen name="gpio_image_width">40dp</dimen>

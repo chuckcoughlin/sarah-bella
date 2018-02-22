@@ -10,7 +10,9 @@
     <color name="colorAccent">#aad0ff</color>
     <color name="black">#000000</color>
     <color name="blue">#03A9F4</color>
+    <color name="tan">#deb887</color>
     <color name="lightGray">#DDDDDD</color>
+    <color name="gray">#9f9f9f</color>
     <color name="darkDarkGray">#101010</color>
     <color name="white">#FFFFFF</color>
     <color name="maroon">#8A0000</color>

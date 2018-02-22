@@ -31,7 +31,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/systemTabletLabel"
-                android:textSize="10sp" />
+                android:textSize="12sp" />
 
             <ros.android.views.BatteryLevelView
                 android:id="@+id/tablet_battery"
@@ -49,7 +49,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/systemRobotLabel"
-                android:textSize="10sp" />
+                android:textSize="12sp" />
 
             <ros.android.views.BatteryLevelView
                 android:id="@+id/robot_battery"
@@ -71,7 +71,7 @@
             android:rowCount="1">
 
             <LinearLayout
-                android:layout_width="350dp"
+                android:layout_width="400dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left|top"
                 android:background="@drawable/border"
@@ -84,16 +84,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-
                 <TextView
                     android:layout_width="200dp"
                     android:layout_height="wrap_content"
+                    android:textSize="@dimen/system_parameter_text_size"
                     android:text="Hostname:" />
 
                 <TextView
                     android:id="@+id/hostname"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/system_parameter_text_size"/>
             </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -103,167 +104,174 @@
                     <TextView
                         android:layout_width="100dp"
                         android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:text="IP Address:" />
 
                     <TextView
                         android:id="@+id/ip_address"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"/>
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-
                     <TextView
                         android:layout_width="200dp"
                         android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:text="Battery Capacity:" />
-
                     <TextView
                         android:id="@+id/robot_battery_state"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"/>
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="300dp"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-
                     <TextView
                         android:layout_width="200dp"
                         android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:text="CPU  Usage (~%):" />
-
                     <TextView
                         android:id="@+id/cpu_usage"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"/>
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="350dp"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-
                     <TextView
                         android:layout_width="100dp"
                         android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:text="Memory Usage(~%):" />
 
                     <TextView
                         android:id="@+id/memory_usage"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"/>
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-
                     <TextView
                         android:layout_width="240dp"
                         android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:text="Free memory (~bytes):" />
-
                     <TextView
                         android:id="@+id/free_memory"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"/>
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-
                     <TextView
                         android:layout_width="240dp"
                         android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:text="Swap memory (~%):" />
-
                     <TextView
                         android:id="@+id/swap_memory"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"/>
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-
                     <TextView
                         android:layout_width="240dp"
                         android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:text="Disk Usage (~%):" />
 
                     <TextView
                         android:id="@+id/disk_usage"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"/>
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-
                     <TextView
                         android:layout_width="240dp"
                         android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:text="Packets Sent:" />
 
                     <TextView
                         android:id="@+id/packets_sent"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"/>
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-
                     <TextView
                         android:layout_width="240dp"
                         android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:text="Packets Received:" />
-
                     <TextView
                         android:id="@+id/packets_received"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"/>
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-
                     <TextView
                         android:layout_width="240dp"
                         android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:text="Incoming Packets Dropped:" />
 
                     <TextView
                         android:id="@+id/in_packets_dropped"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"/>
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-
                     <TextView
                         android:layout_width="240dp"
                         android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:text="Outgoing Packets Dropped:" />
 
                     <TextView
                         android:id="@+id/out_packets_dropped"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/system_parameter_text_size"/>
                 </LinearLayout>
             </LinearLayout>
 
             <LinearLayout
-                android:layout_width="350dp"
+                android:layout_width="340dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right|top"
                 android:background="@drawable/border"
@@ -271,109 +279,114 @@
                 android:layout_marginLeft="10dp"
                 android:padding="10dip">
 
-                <!-- List of GPIO pins, two per line, label-image-image-label -->
-                <!-- These get configured dynamically -->
+                <!-- List of GPIO pins, two per line, label-image-image-label
+                    Here we have a "default" layout, when live they are configured dynamically.
+                     See: https://pinout.xyz -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-
                     <TextView
                         android:id="@+id/pin1_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:layout_gravity="center_vertical"
-                        android:gravity="right"
                         android:layout_marginRight="@dimen/gpio_text_field_margin"
-                        android:text="Pin 1" />
+                        android:gravity="end|center_vertical"
+                        android:text="3.3V" />
                     <ImageView
                         android:id="@+id/pin1_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:background="@color/lightGray"
+                        android:background="@drawable/border_gray"
                         android:padding="@dimen/gpio_text_field_margin"
                         android:src="@drawable/flash"/>
-                    <RelativeLayout
-                        android:layout_width="@dimen/gpio_image_width"
-                        android:layout_height="@dimen/gpio_image_height">
                     <ImageView
                         android:id="@+id/pin2_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
                         android:background="@drawable/border_gray"
                         android:padding="@dimen/gpio_image_padding"
-                        android:src="@drawable/flash"
-                        android:layout_alignParentBottom="true"/>
-                        <ImageView
-                            android:layout_width="@dimen/gpio_image_width"
-                            android:layout_height="@dimen/gpio_image_height"
-                            android:background="@drawable/border_gray"
-                            android:layout_alignParentBottom="true"/>
-                </RelativeLayout>
+                        android:src="@drawable/flash"/>
                     <TextView
                         android:id="@+id/pin2_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
-                        android:layout_height="@dimen/gpio_image_height"
-                        android:layout_marginTop="@dimen/gpio_text_field_margin"
-                        android:layout_marginLeft="@dimen/gpio_text_field_margin"
-                        android:text="Pin 2" />
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="start"
+                        android:layout_marginLeft="4dp"
+                        android:text="5V" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-
                     <TextView
                         android:id="@+id/pin3_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
                         android:layout_marginRight="@dimen/gpio_text_field_margin"
-                        android:gravity="right"
-                        android:text="Pin 3" />
+                        android:layout_gravity="center_vertical"
+                        android:gravity="end"
+                        android:text="I2C - SDA" />
                     <ImageView
                         android:id="@+id/pin3_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_blue"/>
                     <ImageView
                         android:id="@+id/pin4_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
+                        android:background="@drawable/border_gray"
                         android:src="@drawable/flash"/>
                     <TextView
                         android:id="@+id/pin4_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="start"
                         android:layout_marginLeft="4dp"
-                        android:text="Pin 4" />
+                        android:text="5V" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-
                     <TextView
                         android:id="@+id/pin5_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:gravity="right"
-                        android:textAlignment="gravity"
-                        android:text="Pin 5" />
+                        android:layout_marginRight="@dimen/gpio_text_field_margin"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="end"
+                        android:text="I2C - SCL" />
                     <ImageView
                         android:id="@+id/pin5_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_gray"
+                        android:src="@drawable/ball_blue"/>
                     <ImageView
                         android:id="@+id/pin6_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_gray"
+                        android:src="@drawable/ground"/>
                     <TextView
                         android:id="@+id/pin6_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_gravity="center_vertical"
+                        android:gravity="start"
+                        android:layout_marginLeft="4dp"
+                        android:text="GND" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -382,24 +395,34 @@
 
                     <TextView
                         android:id="@+id/pin7_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_marginRight="@dimen/gpio_text_field_margin"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="end"
+                        android:text="GCLK0" />
                     <ImageView
                         android:id="@+id/pin7_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_green"/>
                     <ImageView
                         android:id="@+id/pin8_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_blue"/>
                     <TextView
                         android:id="@+id/pin8_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_gravity="center_vertical"
+                        android:gravity="start"
+                        android:layout_marginLeft="4dp"
+                        android:text="UART - TXD" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -408,50 +431,69 @@
 
                     <TextView
                         android:id="@+id/pin9_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_marginRight="@dimen/gpio_text_field_margin"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="end"
+                        android:text="GND" />
                     <ImageView
                         android:id="@+id/pin9_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_gray"
+                        android:src="@drawable/ground"/>
                     <ImageView
                         android:id="@+id/pin10_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_blue"/>
                     <TextView
                         android:id="@+id/pin10_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_gravity="center_vertical"
+                        android:gravity="start"
+                        android:layout_marginLeft="4dp"
+                        android:text="UART - RXD" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-
                     <TextView
                         android:id="@+id/pin11_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_marginRight="@dimen/gpio_text_field_margin"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="end"
+                        android:text="BDC 17" />
                     <ImageView
                         android:id="@+id/pin11_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_green"/>
                     <ImageView
                         android:id="@+id/pin12_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_green"/>
                     <TextView
                         android:id="@+id/pin12_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_gravity="center_vertical"
+                        android:gravity="start"
+                        android:layout_marginLeft="4dp"
+                        android:text="PWM0" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -460,24 +502,34 @@
 
                     <TextView
                         android:id="@+id/pin13_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_marginRight="@dimen/gpio_text_field_margin"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="end"
+                        android:text="BDC 27" />
                     <ImageView
                         android:id="@+id/pin13_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_red"/>
                     <ImageView
                         android:id="@+id/pin14_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_gray"
+                        android:src="@drawable/ground"/>
                     <TextView
                         android:id="@+id/pin14_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_gravity="center_vertical"
+                        android:gravity="start"
+                        android:layout_marginLeft="4dp"
+                        android:text="GND" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -486,24 +538,34 @@
 
                     <TextView
                         android:id="@+id/pin15_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_marginRight="@dimen/gpio_text_field_margin"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="end"
+                        android:text="BDC 22" />
                     <ImageView
                         android:id="@+id/pin15_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_green"/>
                     <ImageView
                         android:id="@+id/pin16_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_green"/>
                     <TextView
                         android:id="@+id/pin16_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_gravity="center_vertical"
+                        android:gravity="start"
+                        android:layout_marginLeft="4dp"
+                        android:text="BDC 23" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -512,24 +574,34 @@
 
                     <TextView
                         android:id="@+id/pin17_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_marginRight="@dimen/gpio_text_field_margin"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="end"
+                        android:text="3.3V" />
                     <ImageView
                         android:id="@+id/pin17_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
+                        android:background="@drawable/border_gray"
                         android:src="@drawable/flash"/>
                     <ImageView
                         android:id="@+id/pin18_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_green"/>
                     <TextView
                         android:id="@+id/pin18_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_gravity="center_vertical"
+                        android:gravity="start"
+                        android:layout_marginLeft="4dp"
+                        android:text="BCD 24" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -538,24 +610,34 @@
 
                     <TextView
                         android:id="@+id/pin19_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_marginRight="@dimen/gpio_text_field_margin"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="end"
+                        android:text="SPI0 - MOSI" />
                     <ImageView
                         android:id="@+id/pin19_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_blue"/>
                     <ImageView
                         android:id="@+id/pin20_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_gray"
+                        android:src="@drawable/ground"/>
                     <TextView
                         android:id="@+id/pin20_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_gravity="center_vertical"
+                        android:gravity="start"
+                        android:layout_marginLeft="4dp"
+                        android:text="GND" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -564,28 +646,34 @@
 
                     <TextView
                         android:id="@+id/pin21_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="right"
-                        android:text="TBD" />
+                        android:layout_marginRight="@dimen/gpio_text_field_margin"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="end"
+                        android:text="SPI0 - MISO" />
                     <ImageView
                         android:id="@+id/pin21_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:background="@color/lightGray"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_blue"/>
                     <ImageView
                         android:id="@+id/pin22_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:background="@color/colorPrimaryLight"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_green"/>
                     <TextView
                         android:id="@+id/pin22_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="left"
-                        android:text="TBD" />
+                        android:layout_gravity="center_vertical"
+                        android:gravity="start"
+                        android:layout_marginLeft="4dp"
+                        android:text="BDC 25" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -594,24 +682,34 @@
 
                     <TextView
                         android:id="@+id/pin23_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_marginRight="@dimen/gpio_text_field_margin"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="end"
+                        android:text="SPI0 - SCLK" />
                     <ImageView
                         android:id="@+id/pin23_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_blue"/>
                     <ImageView
                         android:id="@+id/pin24_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_blue"/>
                     <TextView
                         android:id="@+id/pin24_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_gravity="center_vertical"
+                        android:gravity="start"
+                        android:layout_marginLeft="4dp"
+                        android:text="CE0" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -620,24 +718,34 @@
 
                     <TextView
                         android:id="@+id/pin25_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_marginRight="@dimen/gpio_text_field_margin"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="end"
+                        android:text="GND" />
                     <ImageView
                         android:id="@+id/pin25_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_gray"
+                        android:src="@drawable/ground"/>
                     <ImageView
                         android:id="@+id/pin26_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_blue"/>
                     <TextView
                         android:id="@+id/pin26_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_gravity="center_vertical"
+                        android:gravity="start"
+                        android:layout_marginLeft="4dp"
+                        android:text="CE1" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -646,24 +754,34 @@
 
                     <TextView
                         android:id="@+id/pin27_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_marginRight="@dimen/gpio_text_field_margin"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="end"
+                        android:text="I2C0 - IDSD" />
                     <ImageView
                         android:id="@+id/pin27_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_blue"/>
                     <ImageView
                         android:id="@+id/pin28_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_blue"/>
                     <TextView
                         android:id="@+id/pin28_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_gravity="center_vertical"
+                        android:gravity="start"
+                        android:layout_marginLeft="4dp"
+                        android:text="I2C0 - IDSC" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -672,24 +790,34 @@
 
                     <TextView
                         android:id="@+id/pin29_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_marginRight="@dimen/gpio_text_field_margin"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="end"
+                        android:text="GCLK1" />
                     <ImageView
                         android:id="@+id/pin29_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_green"/>
                     <ImageView
                         android:id="@+id/pin30_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_gray"
+                        android:src="@drawable/ground"/>
                     <TextView
                         android:id="@+id/pin30_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_gravity="center_vertical"
+                        android:gravity="start"
+                        android:layout_marginLeft="4dp"
+                        android:text="GND" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -698,24 +826,34 @@
 
                     <TextView
                         android:id="@+id/pin31_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_marginRight="@dimen/gpio_text_field_margin"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="end"
+                        android:text="GCLK2" />
                     <ImageView
                         android:id="@+id/pin31_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_green"/>
                     <ImageView
                         android:id="@+id/pin32_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_green"/>
                     <TextView
                         android:id="@+id/pin32_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_gravity="center_vertical"
+                        android:gravity="start"
+                        android:layout_marginLeft="4dp"
+                        android:text="PWM0" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -724,50 +862,69 @@
 
                     <TextView
                         android:id="@+id/pin33_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_marginRight="@dimen/gpio_text_field_margin"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="end"
+                        android:text="PWM1" />
                     <ImageView
                         android:id="@+id/pin33_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_green"/>
                     <ImageView
                         android:id="@+id/pin34_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_gray"
+                        android:src="@drawable/ground"/>
                     <TextView
                         android:id="@+id/pin34_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_gravity="center_vertical"
+                        android:gravity="start"
+                        android:layout_marginLeft="4dp"
+                        android:text="GND" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-
                     <TextView
                         android:id="@+id/pin35_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_marginRight="@dimen/gpio_text_field_margin"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="end"
+                        android:text="MISO" />
                     <ImageView
                         android:id="@+id/pin35_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_red"/>
                     <ImageView
                         android:id="@+id/pin36_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_green"/>
                     <TextView
                         android:id="@+id/pin36_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_gravity="center_vertical"
+                        android:gravity="start"
+                        android:layout_marginLeft="4dp"
+                        android:text="BDC 16" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -776,50 +933,70 @@
 
                     <TextView
                         android:id="@+id/pin37_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_marginRight="@dimen/gpio_text_field_margin"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="end"
+                        android:text="BCD 26" />
                     <ImageView
                         android:id="@+id/pin37_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_green"/>
                     <ImageView
                         android:id="@+id/pin38_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_yellow"/>
                     <TextView
                         android:id="@+id/pin38_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_gravity="center_vertical"
+                        android:gravity="start"
+                        android:layout_marginLeft="4dp"
+                        android:text="SPI1 - MOSI" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-
                     <TextView
                         android:id="@+id/pin39_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_marginRight="@dimen/gpio_text_field_margin"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="end"
+                        android:text="GND" />
                     <ImageView
                         android:id="@+id/pin39_image"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_gray"
+                        android:src="@drawable/ground"/>
                     <ImageView
                         android:id="@+id/pin40_image"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_image_width"
                         android:layout_height="@dimen/gpio_image_height"
-                        android:src="@drawable/flash"/>
+                        android:background="@drawable/border_tan"
+                        android:src="@drawable/ball_yellow"/>
                     <TextView
                         android:id="@+id/pin40_label"
+                        android:textSize="@dimen/system_parameter_text_size"
                         android:layout_width="@dimen/gpio_text_field_width"
                         android:layout_height="wrap_content"
-                        android:text="TBD" />
+                        android:layout_gravity="center_vertical"
+                        android:gravity="start"
+                        android:layout_marginLeft="4dp"
+                        android:text="SPI1 - SCLK" />
                 </LinearLayout>
             </LinearLayout>
         </GridLayout>
