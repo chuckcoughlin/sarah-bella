@@ -31,7 +31,7 @@ import android.view.animation.ScaleAnimation;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import org.ros.android.android_honeycomb_mr2.R;
+
 import org.ros.message.MessageListener;
 import org.ros.namespace.GraphName;
 import org.ros.node.ConnectedNode;
@@ -42,6 +42,9 @@ import org.ros.node.topic.Subscriber;
 
 import java.util.Timer;
 import java.util.TimerTask;
+
+import chuckcoughlin.sb.assistant.R;
+
 
 /**
  * VirtualJoystickView creates a virtual joystick view that publishes velocity
@@ -801,12 +804,14 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
    */
   private void publishVelocity(double linearVelocityX, double linearVelocityY,
       double angularVelocityZ) {
-    currentVelocityCommand.getLinear().setX(linearVelocityX);
-    currentVelocityCommand.getLinear().setY(-linearVelocityY);
-    currentVelocityCommand.getLinear().setZ(0);
-    currentVelocityCommand.getAngular().setX(0);
-    currentVelocityCommand.getAngular().setY(0);
-    currentVelocityCommand.getAngular().setZ(-angularVelocityZ);
+      if(currentVelocityCommand!=null ) {
+          currentVelocityCommand.getLinear().setX(linearVelocityX);
+          currentVelocityCommand.getLinear().setY(-linearVelocityY);
+          currentVelocityCommand.getLinear().setZ(0);
+          currentVelocityCommand.getAngular().setX(0);
+          currentVelocityCommand.getAngular().setY(0);
+          currentVelocityCommand.getAngular().setZ(-angularVelocityZ);
+      }
   }
 
   /**

@@ -79,28 +79,6 @@
                 android:padding="10dip">
 
 
-<!--
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_margin="4dp"
-                    android:background="@drawable/rectangle" />
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerHorizontal="true"
-                        android:layout_marginTop="1dp"
-                        android:background="#FF0000"
-                        android:text="Robot Status"
-                        android:textColor="#ffff00" />
-                </RelativeLayout>
-  -->
-
                 <!-- List of performance attributes -->
                 <LinearLayout
                 android:layout_width="match_parent"
@@ -170,7 +148,7 @@
                     <TextView
                         android:layout_width="100dp"
                         android:layout_height="wrap_content"
-                        android:text="Memory  Usage (~%):" />
+                        android:text="Memory Usage(~%):" />
 
                     <TextView
                         android:id="@+id/memory_usage"
@@ -293,25 +271,556 @@
                 android:layout_marginLeft="10dp"
                 android:padding="10dip">
 
-                <View
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    android:layout_margin="20dp"
-                    android:background="@drawable/rectangle" />
-
-                <RelativeLayout
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent">
+                <!-- List of GPIO pins, two per line, label-image-image-label -->
+                <!-- These get configured dynamically -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
 
                     <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerHorizontal="true"
-                        android:layout_marginTop="10dp"
-                        android:background="#0000FF"
-                        android:text="GPIO"
-                        android:textColor="#00ffff" />
+                        android:id="@+id/pin1_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="right"
+                        android:layout_marginRight="@dimen/gpio_text_field_margin"
+                        android:text="Pin 1" />
+                    <ImageView
+                        android:id="@+id/pin1_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:background="@color/lightGray"
+                        android:padding="@dimen/gpio_text_field_margin"
+                        android:src="@drawable/flash"/>
+                    <RelativeLayout
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height">
+                    <ImageView
+                        android:id="@+id/pin2_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:background="@drawable/border_gray"
+                        android:padding="@dimen/gpio_image_padding"
+                        android:src="@drawable/flash"
+                        android:layout_alignParentBottom="true"/>
+                        <ImageView
+                            android:layout_width="@dimen/gpio_image_width"
+                            android:layout_height="@dimen/gpio_image_height"
+                            android:background="@drawable/border_gray"
+                            android:layout_alignParentBottom="true"/>
                 </RelativeLayout>
+                    <TextView
+                        android:id="@+id/pin2_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:layout_marginTop="@dimen/gpio_text_field_margin"
+                        android:layout_marginLeft="@dimen/gpio_text_field_margin"
+                        android:text="Pin 2" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/pin3_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="@dimen/gpio_text_field_margin"
+                        android:gravity="right"
+                        android:text="Pin 3" />
+                    <ImageView
+                        android:id="@+id/pin3_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <ImageView
+                        android:id="@+id/pin4_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <TextView
+                        android:id="@+id/pin4_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="4dp"
+                        android:text="Pin 4" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/pin5_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:gravity="right"
+                        android:textAlignment="gravity"
+                        android:text="Pin 5" />
+                    <ImageView
+                        android:id="@+id/pin5_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <ImageView
+                        android:id="@+id/pin6_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <TextView
+                        android:id="@+id/pin6_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/pin7_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                    <ImageView
+                        android:id="@+id/pin7_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <ImageView
+                        android:id="@+id/pin8_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <TextView
+                        android:id="@+id/pin8_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/pin9_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                    <ImageView
+                        android:id="@+id/pin9_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <ImageView
+                        android:id="@+id/pin10_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <TextView
+                        android:id="@+id/pin10_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/pin11_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                    <ImageView
+                        android:id="@+id/pin11_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <ImageView
+                        android:id="@+id/pin12_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <TextView
+                        android:id="@+id/pin12_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/pin13_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                    <ImageView
+                        android:id="@+id/pin13_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <ImageView
+                        android:id="@+id/pin14_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <TextView
+                        android:id="@+id/pin14_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/pin15_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                    <ImageView
+                        android:id="@+id/pin15_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <ImageView
+                        android:id="@+id/pin16_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <TextView
+                        android:id="@+id/pin16_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/pin17_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                    <ImageView
+                        android:id="@+id/pin17_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <ImageView
+                        android:id="@+id/pin18_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <TextView
+                        android:id="@+id/pin18_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/pin19_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                    <ImageView
+                        android:id="@+id/pin19_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <ImageView
+                        android:id="@+id/pin20_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <TextView
+                        android:id="@+id/pin20_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/pin21_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:text="TBD" />
+                    <ImageView
+                        android:id="@+id/pin21_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:background="@color/lightGray"
+                        android:src="@drawable/flash"/>
+                    <ImageView
+                        android:id="@+id/pin22_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:background="@color/colorPrimaryLight"
+                        android:src="@drawable/flash"/>
+                    <TextView
+                        android:id="@+id/pin22_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="left"
+                        android:text="TBD" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/pin23_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                    <ImageView
+                        android:id="@+id/pin23_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <ImageView
+                        android:id="@+id/pin24_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <TextView
+                        android:id="@+id/pin24_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/pin25_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                    <ImageView
+                        android:id="@+id/pin25_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <ImageView
+                        android:id="@+id/pin26_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <TextView
+                        android:id="@+id/pin26_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/pin27_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                    <ImageView
+                        android:id="@+id/pin27_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <ImageView
+                        android:id="@+id/pin28_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <TextView
+                        android:id="@+id/pin28_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/pin29_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                    <ImageView
+                        android:id="@+id/pin29_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <ImageView
+                        android:id="@+id/pin30_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <TextView
+                        android:id="@+id/pin30_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/pin31_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                    <ImageView
+                        android:id="@+id/pin31_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <ImageView
+                        android:id="@+id/pin32_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <TextView
+                        android:id="@+id/pin32_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/pin33_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                    <ImageView
+                        android:id="@+id/pin33_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <ImageView
+                        android:id="@+id/pin34_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <TextView
+                        android:id="@+id/pin34_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/pin35_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                    <ImageView
+                        android:id="@+id/pin35_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <ImageView
+                        android:id="@+id/pin36_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <TextView
+                        android:id="@+id/pin36_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/pin37_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                    <ImageView
+                        android:id="@+id/pin37_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <ImageView
+                        android:id="@+id/pin38_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <TextView
+                        android:id="@+id/pin38_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/pin39_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                    <ImageView
+                        android:id="@+id/pin39_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <ImageView
+                        android:id="@+id/pin40_image"
+                        android:layout_width="@dimen/gpio_image_width"
+                        android:layout_height="@dimen/gpio_image_height"
+                        android:src="@drawable/flash"/>
+                    <TextView
+                        android:id="@+id/pin40_label"
+                        android:layout_width="@dimen/gpio_text_field_width"
+                        android:layout_height="wrap_content"
+                        android:text="TBD" />
+                </LinearLayout>
             </LinearLayout>
         </GridLayout>
     </LinearLayout>
