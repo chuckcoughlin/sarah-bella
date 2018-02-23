@@ -39,6 +39,7 @@ import sensor_msgs.BatteryState;
 
 public class SystemFragment extends BasicAssistantFragment implements SBApplicationStatusListener {
     private final static String CLSS = "SystemFragment";
+    private final static String PUBLISH_ALL = "/gpio_msgs/publish_all";  // Flag to complete gpio
     private SBRosApplicationManager applicationManager;
     private BatteryManager batteryManager;
     private BatteryStateListener batteryListener = new BatteryStateListener();
@@ -122,7 +123,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     // gpio_msgs
     private class GPIOListener extends AbstractMessageListener<GPIOPin> {
         public GPIOListener() {
-            super(GPIOPin._TYPE);
+            super(GPIOState._TYPE);
         }
 
         @Override
@@ -137,8 +138,6 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
             mainActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    BatteryLevelView tabletBattery = (BatteryLevelView) mainView.findViewById(R.id.tablet_battery);
-                    tabletBattery.setBatteryPercent(batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY));
 
                 }
             });

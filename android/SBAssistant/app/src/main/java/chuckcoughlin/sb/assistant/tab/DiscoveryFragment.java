@@ -372,6 +372,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
             if( bluetoothManager.getAdapter()!=null )  bluetoothManager.getAdapter().disable();
             WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE);
             wifiManager.disconnect();
+            updateUI();
 
         }
         else if(!rosManager.hasBluetoothError()) {
@@ -505,7 +506,8 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         int position = applicationManager.indexOfCurrentApplication();
         Log.i(CLSS, String.format("updateStatusForApplication %d",position));
         if( position<0 ) return;
-        // Simply fetching the view updates it.
-        getListAdapter().getView(position,null,viewGroup);
+        // Update the view
+        View view = getListAdapter().getView(position,null,viewGroup);
+        view.invalidate();
     }
 }

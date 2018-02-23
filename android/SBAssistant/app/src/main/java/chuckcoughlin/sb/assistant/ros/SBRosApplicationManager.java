@@ -175,6 +175,7 @@ public class SBRosApplicationManager {
      */
     public void startApplication(RobotDescription robot) {
         if( this.application!=null ) {
+            application.setExecutionStatus(RobotApplication.APP_STATUS_RUNNING);
             Thread thread = new Thread(new Runnable(){
                 @Override
                 public void run() {
@@ -188,7 +189,6 @@ public class SBRosApplicationManager {
                         nodeConfiguration = NodeConfiguration.newPublic(localhost, masterURI);
                         nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
                         nodeMainExecutor.execute(application,nodeConfiguration);
-                        application.setExecutionStatus(RobotApplication.APP_STATUS_RUNNING);
                         signalApplicationStart(application.getApplicationName());
                     }
                     catch (Exception ex) {
