@@ -21,13 +21,20 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.ros.internal.node.client.ParameterClient;
+import org.ros.internal.node.server.NodeIdentifier;
+import org.ros.internal.node.xmlrpc.XmlRpcTimeoutException;
+import org.ros.namespace.GraphName;
 import org.ros.node.ConnectedNode;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import chuckcoughlin.sb.assistant.R;
 import chuckcoughlin.sb.assistant.common.AbstractMessageListener;
 import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.ros.SBApplicationStatusListener;
 import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
+import chuckcoughlin.sb.assistant.ros.SBRosManager;
 import ros.android.views.BatteryLevelView;
 import gpio_msgs.GPIOPin;
 import gpio_msgs.GPIOState;
@@ -44,7 +51,6 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     private BatteryManager batteryManager;
     private BatteryStateListener batteryListener = new BatteryStateListener();
     private GPIOListener gpioListener = new GPIOListener();
-    private GPIOStateListener gpioStateListener = new GPIOStateListener();
     private SystemListener systemListener = new SystemListener();
     private View mainView = null;
 
@@ -78,9 +84,30 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
             if (node != null) {
                 batteryListener.subscribe(node, "/sensor_msgs");
                 gpioListener.subscribe(node, "/gpio_msgs");
-                gpioStateListener.subscribe(node, "/gpio_msgs");
                 systemListener.subscribe(node, "/sb_system");
-            } else {
+                new Thread(new Runnable(){
+                    public void run() {
+                        try {
+                            Log.i(CLSS, "Set parameter to trigger full message...");
+                            SBRosManager rosManager = SBRosManager.getInstance();
+                            String uriString = rosManager.getRobot().getRobotId().getMasterUri();
+                            URI masterUri = new URI(uriString);
+                            ParameterClient paramClient = new ParameterClient(new NodeIdentifier(GraphName.of("/SystemFragment"), masterUri), masterUri);
+                            paramClient.setParam(GraphName.of(PUBLISH_ALL),"True");
+                        }
+                        catch (XmlRpcTimeoutException tex) {
+                            Log.e(CLSS, "Exception while creating parameter client");
+                        }
+                        catch(URISyntaxException e) {
+                            Log.e(CLSS, "Uri Syntax Exception while creating parameter client");
+                        }
+                        catch (Throwable ex) {
+                            Log.e(CLSS, "Exception while creating parameter client ", ex);
+                        }
+                    }
+                }).start();
+            }
+            else {
                 Log.i(CLSS, String.format("applicationStarted: %s has no connected node", appName));
             }
         }
@@ -90,7 +117,6 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
         Log.i(CLSS, String.format("applicationShutdown"));
         batteryListener.shutdown();
         gpioListener.shutdown();
-        gpioStateListener.shutdown();
         systemListener.shutdown();
     }
 
@@ -121,38 +147,21 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     }
 
     // gpio_msgs
-    private class GPIOListener extends AbstractMessageListener<GPIOPin> {
-        public GPIOListener() {
-            super(GPIOState._TYPE);
-        }
-
-        @Override
-        public void onNewMessage(GPIOPin pin) {
-            Log.i(CLSS, String.format("Got a GPIO pin Message - channel = %d", pin.getChannel()
-            ));
-            Activity mainActivity = getActivity();
-            if (mainActivity == null) {
-                Log.i(CLSS, String.format("GPIOListener: Main Activity no longer available"));
-                return;
-            }
-            mainActivity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-
-                }
-            });
-        }
-    }
 
     /**
      * This an infrequent message. Use it to configure the UI.
      * gpio_msgs
      */
-    private class GPIOStateListener extends AbstractMessageListener<GPIOState> {
-        public GPIOStateListener() {
+    private class GPIOListener extends AbstractMessageListener<GPIOState> {
+        public GPIOListener() {
             super(GPIOState._TYPE);
         }
 
+        /**
+         * Receive a GPIOState message. If the message contains all pins, then re-configure
+         * the path, otherwise simply update the pin value.
+         * @param state the GPIOState message
+         */
         @Override
         public void onNewMessage(GPIOState state) {
             Log.i(CLSS, String.format("Got a Message - GPIOState"));
@@ -164,46 +173,9 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
             mainActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    configureView(mainView, state.getPin1());
-                    configureView(mainView, state.getPin2());
-                    configureView(mainView, state.getPin3());
-                    configureView(mainView, state.getPin4());
-                    configureView(mainView, state.getPin5());
-                    configureView(mainView, state.getPin6());
-                    configureView(mainView, state.getPin7());
-                    configureView(mainView, state.getPin8());
-                    configureView(mainView, state.getPin9());
-                    configureView(mainView, state.getPin10());
-                    configureView(mainView, state.getPin11());
-                    configureView(mainView, state.getPin12());
-                    configureView(mainView, state.getPin13());
-                    configureView(mainView, state.getPin14());
-                    configureView(mainView, state.getPin15());
-                    configureView(mainView, state.getPin16());
-                    configureView(mainView, state.getPin17());
-                    configureView(mainView, state.getPin18());
-                    configureView(mainView, state.getPin19());
-                    configureView(mainView, state.getPin20());
-                    configureView(mainView, state.getPin21());
-                    configureView(mainView, state.getPin22());
-                    configureView(mainView, state.getPin23());
-                    configureView(mainView, state.getPin24());
-                    configureView(mainView, state.getPin25());
-                    configureView(mainView, state.getPin26());
-                    configureView(mainView, state.getPin27());
-                    configureView(mainView, state.getPin28());
-                    configureView(mainView, state.getPin29());
-                    configureView(mainView, state.getPin30());
-                    configureView(mainView, state.getPin31());
-                    configureView(mainView, state.getPin32());
-                    configureView(mainView, state.getPin33());
-                    configureView(mainView, state.getPin34());
-                    configureView(mainView, state.getPin35());
-                    configureView(mainView, state.getPin36());
-                    configureView(mainView, state.getPin37());
-                    configureView(mainView, state.getPin38());
-                    configureView(mainView, state.getPin39());
-                    configureView(mainView, state.getPin40());
+                    for( GPIOPin pin:state.getPins()) {
+                            configureView(mainView,pin);
+                    }
                 }
             });
         }
@@ -218,15 +190,18 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
         ImageView iv = (ImageView) mainView.findViewById(id);
         if (pin.getMode().equals("IN")) {
             iv.setImageResource(R.drawable.ball_yellow);
-        } else if (pin.getMode().equals("OUT")) {
+        }
+        else if (pin.getMode().equals("OUT")) {
             if (pin.getValue()) {
                 iv.setImageResource(R.drawable.ball_red);
             } else {
                 iv.setImageResource(R.drawable.ball_green);
             }
-        } else if (pin.getMode().equals("PWR")) {
+        }
+        else if (pin.getMode().equals("PWR")) {
             iv.setImageResource(R.drawable.flash);
-        } else if (pin.getMode().equals("GND")) {
+        }
+        else if (pin.getMode().equals("GND")) {
             iv.setImageResource(R.drawable.ground);
         }
     }

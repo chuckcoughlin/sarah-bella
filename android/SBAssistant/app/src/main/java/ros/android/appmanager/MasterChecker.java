@@ -166,11 +166,11 @@ public class MasterChecker {
                 return;
             }
             catch (XmlRpcTimeoutException tex) {
-                Log.e(CLSS, "Timeout Exception while creating node in MasterChecker for " + masterUri);
+                Log.e(CLSS, "Timeout Exception while creating parameter client in MasterChecker for " + masterUri);
                 handler.handleConnectionError(tex.getLocalizedMessage());
             }
             catch (Throwable ex) {
-                Log.e(CLSS, "Exception while creating node in MasterChecker for master URI " + masterUri, ex);
+                Log.e(CLSS, "Exception while creating parameter client in MasterChecker for master URI " + masterUri, ex);
                 handler.handleConnectionError(ex.getLocalizedMessage());
             }
         }
