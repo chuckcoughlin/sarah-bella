@@ -19,7 +19,7 @@ then
 	cp ${LAUNCH}/turtlebot3_lidar_odom.launch ${LAUNCH}/turtlebot3_lidar.launch
     echo "LAUNCH_PKG=turtlebot_follower" > ${CONFIG}
     echo "LAUNCH_FILE=follower.launch" >> ${CONFIG}
-elif [ ${APP} = "gpio" -o "gpio_msgs" ]
+elif [ ${APP} = "gpio" -o ${APP} = "gpio_msgs" ]
 then
     echo "LAUNCH_PKG=gpio_msgs" > ${CONFIG}
     echo "LAUNCH_FILE=gpio_msgs.launch" >> ${CONFIG}
