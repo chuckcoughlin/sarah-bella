@@ -4,6 +4,13 @@
 # Package: gpio_msgs. Support for publishing Raspberry Pu GPIO outputs.
 #                     On start of the method we configure the GPIO pins.
 #
+# NOTE: We've tried separate topic messages for GPIOState and GPIOPin,
+#       but there appears to be a synchronization issue. Issue is: 
+#       "ros could not process inbound connection: topic types do not match".
+#       
+#		We normally only report changes. However if "/gpio_msgs/publish_all"
+#       is set, the entire array is sent (and then parameter reset).
+#
 from subprocess import call
 import rospy
 import sys
@@ -13,35 +20,43 @@ from gpio_msgs.msg import GPIOState
 from gpio_msgs.msg import GPIOPin
 import GPIOConfiguration
 
+def str2bool(s):
+	return s.lower() in ('true','t','1','yes')
+
 # Configure the GPIO pins.
 GPIOConfiguration.configure()
 
 	
 pub = rospy.Publisher('/gpio_msgs',GPIOState,queue_size=1)
 rospy.init_node('sb_publish_gpio_state')
-rate = rospy.Rate(0.05)  # 20 second publish rate
+rate = rospy.Rate(10)  # 10hz response rate
 # Specify all the args whether we use them or not.
-msg = GPIOState('pin1','pin2','pin3','pin4','pin5',\
-                'pin6','pin7','pin8','pin9','pin10',\
-                'pin11','pin12','pin13','pin14','pin15',\
-                'pin16','pin17','pin18','pin19','pin20',\
-                'pin21','pin22','pin23','pin24','pin25',\
-                'pin26','pin27','pin28','pin29','pin30',\
-                'pin31','pin32','pin33','pin34','pin35',\
-                'pin36','pin37','pin38','pin39','pin40')
+msg = GPIOState('pins')
 
 # Initialize the pin object fields, including values of outputs
-pins = GPIOConfiguration.initialize(msg)
-for pin in pins:
+pinlist = GPIOConfiguration.initialize(msg)
+for pin in pinlist:
 	if pin.mode=="OUT":
 		pin.value = GPIO.input(pin.channel)
 
 while not rospy.is_shutdown():
-	for pin in pins:
+	publish = str2bool(rospy.get_param("/gpio_msgs/publish_all","False"))
+	rospy.set_param("/gpio_msgs/publish_all","False")
+	pins = []
+	for pin in pinlist:
 		if pin.mode=="OUT":
-			pin.value = GPIO.input(pin.channel)
+			val = GPIO.input(pin.channel)
+			pin.value=val
+			if publish or val != pin.value:
+				pins.append(pin)
+		elif publish:
+				pins.append(pin)
 
-	pub.publish(msg)
+	if len(pins)>0:
+		state = GPIOState()
+		state.pins = pins
+		pub.publish(state)
+
 	rate.sleep()
 
-print "gpio_msgs.publish_gpio_output: complete"
+print "gpio_msgs.publish_gpio_state: complete"
