@@ -20,6 +20,9 @@ from gpio_msgs.msg import GPIOState
 from gpio_msgs.msg import GPIOPin
 import GPIOConfiguration
 
+def str2bool(s):
+	return s.lower() in ('true','t','1','yes')
+
 # Configure the GPIO pins.
 GPIOConfiguration.configure()
 
@@ -37,7 +40,7 @@ for pin in pinlist:
 		pin.value = GPIO.input(pin.channel)
 
 while not rospy.is_shutdown():
-	publish = bool(rospy.get_param("/gpio_msgs/publish_all","False"))
+	publish = str2bool(rospy.get_param("/gpio_msgs/publish_all","False"))
 	rospy.set_param("/gpio_msgs/publish_all","False")
 	pins = []
 	for pin in pinlist:
