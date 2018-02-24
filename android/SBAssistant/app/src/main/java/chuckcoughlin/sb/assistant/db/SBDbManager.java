@@ -100,6 +100,8 @@ public class SBDbManager extends SQLiteOpenHelper {
         execLenient(sqLiteDatabase,statement);
         statement = "INSERT INTO Settings(Name,Hint) VALUES('"+SBConstants.ROS_MASTER_URI+"','"+SBConstants.ROS_MASTER_URI_HINT+"')";
         execLenient(sqLiteDatabase,statement);
+        statement = "INSERT INTO Settings(Name,Hint) VALUES('"+SBConstants.ROS_HOST+"','"+SBConstants.ROS_HOST_HINT+"')";
+        execLenient(sqLiteDatabase,statement);
         statement = "INSERT INTO Settings(Name,Hint) VALUES('"+SBConstants.ROS_PAIRED_DEVICE+"','"+SBConstants.ROS_PAIRED_DEVICE_HINT+"')";
         execLenient(sqLiteDatabase,statement);
         statement = "INSERT INTO Settings(Name,Hint) VALUES('"+SBConstants.ROS_SSID+"','"+SBConstants.ROS_SSID_HINT+"')";

@@ -38,6 +38,7 @@ import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
 import chuckcoughlin.sb.assistant.ros.SBRosManager;
 import ros.android.appmanager.BluetoothChecker;
 import ros.android.appmanager.MasterChecker;
+import ros.android.appmanager.RemoteCommand;
 import ros.android.appmanager.SBRobotConnectionErrorListener;
 import ros.android.appmanager.SBRobotConnectionHandler;
 import ros.android.appmanager.WifiChecker;
@@ -54,13 +55,17 @@ import static chuckcoughlin.sb.assistant.common.SBConstants.DIALOG_TRANSACTION_K
  * Lifecycle methods are presented here in chronological order. Use the SBRosManager
  * instance to preserve connection state whenever the fragment is not displayed.
  */
-public class DiscoveryFragment extends BasicAssistantListFragment implements SBRobotConnectionHandler, AdapterView.OnItemClickListener {
+public class DiscoveryFragment extends BasicAssistantListFragment implements SBRobotConnectionHandler,
+                                                AdapterView.OnItemClickListener {
     private final static String CLSS = "DiscoveryFragment";
+    private final static String SET_APP_COMMAND = "~/robotics/robot/bin/set_ros_application %s";
+    private final static String START_APP_COMMAND = "~/robotics/robot/bin/install_ros_init";
     private View contentView = null;
     private ViewGroup viewGroup = null;
     private SBDbManager dbManager = null;
     private SBRosManager rosManager = null;
     private SBRosApplicationManager applicationManager = null;
+    private RemoteCommand command = null;
 
 
     // Called when the fragment's instance initializes
@@ -115,6 +120,9 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         dbManager = SBDbManager.getInstance();
         rosManager = SBRosManager.getInstance();
         applicationManager = SBRosApplicationManager.getInstance();
+        command = new RemoteCommand(dbManager.getSetting(SBConstants.ROS_HOST),
+                                    dbManager.getSetting(SBConstants.ROS_USER),
+                                    dbManager.getSetting(SBConstants.ROS_USER_PASSWORD),this);
     }
 
     // The host activity has been created.
@@ -134,6 +142,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         listView.setVisibility(View.INVISIBLE);
         listView.setEnabled(false);
         listView.setOnItemClickListener(this);
+        listView.setClickable(true);
         adapter.clear();
         adapter.addAll(applicationList);
         updateUI();
@@ -217,6 +226,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
             updateStatusImage(app,statusImage);
 
             // Return the completed view to render on screen
+            convertView.postInvalidate(0,0,convertView.getRight(),convertView.getBottom());
             return convertView;
         }
     }
@@ -244,7 +254,8 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         else {
             statusView.setVisibility(View.INVISIBLE);
         }
-}
+        statusView.invalidate(0,0,statusView.getWidth(), statusView.getHeight());
+    }
     // =========================================== Checker Callbacks ====================================
     @Override
     public void handleConnectionError(String reason) {
@@ -330,9 +341,6 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     }
 
 
-
-
-
     //======================================== OnItemClickListener =====================================
     // If there has been no change to the list selection, do nothing. Otherwise,
     // disable the view to prevent clicks until we've heard from the robot.
@@ -344,10 +352,9 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         if( applicationManager.getApplication()==null ||
                ! app.getApplicationName().equalsIgnoreCase(applicationManager.getApplication().getApplicationName() )) {
 
-            getListView().setEnabled(false);
-            MasterChecker checker = new MasterChecker(this);
-            String master = dbManager.getSetting(SBConstants.ROS_MASTER_URI);
-            checker.beginChecking(master);
+            applicationManager.setApplication(app.getApplicationName());
+            command.execute(String.format(SET_APP_COMMAND,app.getApplicationName()));
+            command.sudo(START_APP_COMMAND);
         }
     }
     //======================================== Button Callbacks ======================================
@@ -508,6 +515,6 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         if( position<0 ) return;
         // Update the view
         View view = getListAdapter().getView(position,null,viewGroup);
-        view.invalidate();
+        view.invalidate(0,0,view.getWidth(), view.getHeight());
     }
 }

@@ -9,9 +9,9 @@
     <!-- Text size for System display -->
     <dimen name="system_parameter_text_size">18dp</dimen>
     <!-- Field sizes for GPIO display -->
-    <dimen name="gpio_image_height">40dp</dimen>
-    <dimen name="gpio_image_width">40dp</dimen>
-    <dimen name="gpio_image_padding">5dp</dimen>
+    <dimen name="gpio_image_height">36dp</dimen>
+    <dimen name="gpio_image_width">36dp</dimen>
+    <dimen name="gpio_image_padding">4dp</dimen>
     <dimen name="gpio_text_field_width">120dp</dimen>
     <dimen name="gpio_text_field_margin">5dp</dimen>
 </resources>

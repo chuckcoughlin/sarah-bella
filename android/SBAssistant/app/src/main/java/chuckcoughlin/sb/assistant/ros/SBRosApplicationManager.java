@@ -23,6 +23,7 @@ import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMain;
 import org.ros.node.NodeMainExecutor;
 
+import java.net.BindException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -179,10 +180,10 @@ public class SBRosApplicationManager {
             Thread thread = new Thread(new Runnable(){
                 @Override
                 public void run() {
-                    rosCore = RosCore.newPublic(11311);
-                    rosCore.start();
-                    Log.i(CLSS, "startApplication: started rosCore");
                     try {
+                        rosCore = RosCore.newPublic(11311);
+                        rosCore.start();
+                        Log.i(CLSS, "startApplication: started rosCore");
                         rosCore.awaitStart();
                         URI masterURI = URI.create(robot.getRobotId().getMasterUri());
                         String localhost = "127.0.0.1";
@@ -192,7 +193,7 @@ public class SBRosApplicationManager {
                         signalApplicationStart(application.getApplicationName());
                     }
                     catch (Exception ex) {
-                        signalError(String.format("%s.startApplication: Unable to start core (%s), continuing",CLSS,ex.getLocalizedMessage()));
+                        signalError(String.format("%s.startApplication: Unable to start (restart?) core (%s), continuing",CLSS,ex.getLocalizedMessage()));
                     }
                 }
             });

@@ -8,7 +8,7 @@ of the applications with a brief view of applicable control screens on the Andro
 ROS nodes and messaging details as well as descriptions of hardware modifications are described in  [extensions](https://github.com/chuckcoughlin/sarah-bella/tree/master/docs/extensions.md).  
 
 ![SB Assistant](/images/sb-cover.png)
-````                        SB Assistant - Cover Page ````
+```                        SB Assistant - Cover Page ```
 
 The Android assistant contains command and monitoring code for all applications installed on the robot. It is a single activity application, featuring sliding panels (Fragments), one for each application.
 ***************************************************************
@@ -19,7 +19,7 @@ The Android assistant contains command and monitoring code for all applications 
 *********************************************************
 ### 00 - Discovery <a id="discovery"></a>
 ![SB Assistant](/images/sb-discovery.png)
-````                        SB Assistant - Discovery Page ````
+```                        SB Assistant - Discovery Page ```</br>
 [toc](#table-of-contents)
 
 The **discovery** panel allows connection to a single running robot based on a MasterURI configured in the *Settings*. It reads values published from the robot through its ParameterServer to validate the device.  
@@ -29,6 +29,8 @@ A SQLite database on the tablet contains a list of applications expected to be s
 
 ******************************************************
 ### 01 - System Check <a id="systemcheck"></a>
+![SB Assistant](/images/sb-system.png)
+```                        SB Assistant - System Page ```</br>
 [toc](#table-of-contents)
 
 The **system** panel is designed to read system parameters and interactively exercise devices on the robot. It displays system CPU and memory performance metrics; It also sports a table that displays status of GPIO outputs and provides control actions for GPIO inputs.

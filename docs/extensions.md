@@ -80,7 +80,7 @@ The panel subscribes to the following topics:
  * /gpio_msgs/GPIOPin
  * /sb_system/System
  * /std_msgs/BatteryState
- 
+
 The *GPIOState* is infrequent (20 secs) and provides a view of the entire state and configuration of the board. The *GPIOPin* message reports changes of individual
 pin states asynchronously.
 
@@ -101,13 +101,7 @@ The initial construction of the package files was accomplished using:
 **node:** sb_publish_system (sb_system/System)<br/>
 
 ### 02 - Follow <a id="follow"></a>
- The *follower* application is one of the ROBOTIS demonstrations from: https://github.com/ROBOTIS-GIT/turtlebot3_applications.git. Find documentation (here)[http://emanual.robotis.com/docs/en/platform/turtlebot3/applications]. It requires scikit-learn, NumPy and SciPy python packages. To install:
- ```
-    sudo apt-get install python-pip
-    sudo pip install -U scikit-learn numpy scipy
-    sudo pip install --upgrade pip
-
- ```
+ The *follower* application is one of the ROBOTIS demonstrations. I chose the version from: https://github.com/NVIDIA-Jetson/turtlebot3/tree/master/turtlebot_apps/turtlebot_follower. I modified references from *turtlebot_msgs* to *turtlebot3_msgs*.
 
  The *follow* application will cause the TurtleBot3 to look for objects in a window 50cm in front of it. And it will seek to keep the centroid of the observed objects directly in front of it and a fixed distance away. If the centroid of the object is too far away it will drive forward, too close backward, and if offset to the side it will turn toward the centroid.
 

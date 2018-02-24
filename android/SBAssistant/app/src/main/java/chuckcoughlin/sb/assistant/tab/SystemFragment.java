@@ -28,6 +28,8 @@ import org.ros.namespace.GraphName;
 import org.ros.node.ConnectedNode;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 
 import chuckcoughlin.sb.assistant.R;
 import chuckcoughlin.sb.assistant.common.AbstractMessageListener;
@@ -44,7 +46,8 @@ import sensor_msgs.BatteryState;
  * Display the current values of robot system parameters.
  */
 
-public class SystemFragment extends BasicAssistantFragment implements SBApplicationStatusListener {
+public class SystemFragment extends BasicAssistantFragment implements SBApplicationStatusListener,
+                                                                      View.OnClickListener {
     private final static String CLSS = "SystemFragment";
     private final static String PUBLISH_ALL = "/gpio_msgs/publish_all";  // Flag to complete gpio
     private SBRosApplicationManager applicationManager;
@@ -53,6 +56,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     private GPIOListener gpioListener = new GPIOListener();
     private SystemListener systemListener = new SystemListener();
     private View mainView = null;
+    private Map<View,GPIOPin> viewPinMap = new HashMap<>();
 
     // Inflate the view for the fragment based on layout XML
     @Override
@@ -89,6 +93,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
                     public void run() {
                         try {
                             Log.i(CLSS, "Set parameter to trigger full message...");
+                            Thread.sleep(5000);
                             SBRosManager rosManager = SBRosManager.getInstance();
                             String uriString = rosManager.getRobot().getRobotId().getMasterUri();
                             URI masterUri = new URI(uriString);
@@ -174,7 +179,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
                 @Override
                 public void run() {
                     for( GPIOPin pin:state.getPins()) {
-                            configureView(mainView,pin);
+                        configureView(mainView,pin);
                     }
                 }
             });
@@ -185,11 +190,18 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
         Resources res = parent.getResources();
         int id = res.getIdentifier(String.format("pin%d_label", pin.getChannel()), "id", getContext().getPackageName());
         TextView tv = (TextView) parent.findViewById(id);
-        tv.setText(pin.getLabel());
         id = res.getIdentifier(String.format("pin%d_image", pin.getChannel()), "id", getContext().getPackageName());
         ImageView iv = (ImageView) mainView.findViewById(id);
+        if( tv==null || iv==null ) {
+            Log.i(CLSS,String.format("Unable to find GPIO image or view for pin %d",pin.getChannel()));
+            return;
+        }
+        tv.setText(pin.getLabel());
+        viewPinMap.put(iv,pin);
+        iv.setOnClickListener(null);
         if (pin.getMode().equals("IN")) {
             iv.setImageResource(R.drawable.ball_yellow);
+            iv.setOnClickListener(this);
         }
         else if (pin.getMode().equals("OUT")) {
             if (pin.getValue()) {
@@ -250,5 +262,12 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
                 }
             });
         }
+    }
+    // =============================================== ClickListener =================================================
+    // Use this method to simulate a toggle button when an image is clicked
+    public void onClick(View view) {
+        GPIOPin pin = viewPinMap.get(view);
+        Log.i(CLSS,String.format("Received a click view is %s for pin %d",(view.isSelected()?"selected":"not selected"),(pin==null?0:pin.getChannel())));
+        view.setSelected(!view.isSelected());
     }
 }

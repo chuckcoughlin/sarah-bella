@@ -361,6 +361,7 @@ We want *roscore* to start automatically when the RaspberryPi is booted. Install
    sudo chmod 755 /etc/init.d/ros
    sudo update-rc.d ros defaults
 ```
+The logging level may be set in ```/opt/ros/kinetic/share/ros/config/rosconsole.conf```.
 
 #### Code Updates <a id="code-updates"></a>
 Follow the steps below to install updates from the *git* repository:

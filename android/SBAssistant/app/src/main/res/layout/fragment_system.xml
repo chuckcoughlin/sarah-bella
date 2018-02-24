@@ -7,10 +7,10 @@
         android:id="@+id/fragmentSystemText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="4dp"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginTop="8dp"
         android:layout_weight="0"
         android:gravity="center"
         android:textAppearance="@style/TabTitle" />
@@ -26,13 +26,11 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingLeft="5dp">
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/systemTabletLabel"
                 android:textSize="12sp" />
-
             <ros.android.views.BatteryLevelView
                 android:id="@+id/tablet_battery"
                 android:layout_width="40dp"
@@ -66,7 +64,7 @@
             android:layout_height="wrap_content"
             android:columnCount="2"
             android:orientation="horizontal"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="10dp"
             android:layout_marginLeft="20dp"
             android:rowCount="1">
 
@@ -81,28 +79,26 @@
 
                 <!-- List of performance attributes -->
                 <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
                 <TextView
-                    android:layout_width="200dp"
+                    android:layout_width="240dp"
                     android:layout_height="wrap_content"
                     android:textSize="@dimen/system_parameter_text_size"
                     android:text="Hostname:" />
-
                 <TextView
                     android:id="@+id/hostname"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="@dimen/system_parameter_text_size"/>
-            </LinearLayout>
+                </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-
                     <TextView
-                        android:layout_width="100dp"
+                        android:layout_width="240dp"
                         android:layout_height="wrap_content"
                         android:textSize="@dimen/system_parameter_text_size"
                         android:text="IP Address:" />
@@ -118,7 +114,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
                     <TextView
-                        android:layout_width="200dp"
+                        android:layout_width="240dp"
                         android:layout_height="wrap_content"
                         android:textSize="@dimen/system_parameter_text_size"
                         android:text="Battery Capacity:" />
@@ -129,14 +125,14 @@
                         android:textSize="@dimen/system_parameter_text_size"/>
                 </LinearLayout>
                 <LinearLayout
-                    android:layout_width="300dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
                     <TextView
-                        android:layout_width="200dp"
+                        android:layout_width="240dp"
                         android:layout_height="wrap_content"
                         android:textSize="@dimen/system_parameter_text_size"
-                        android:text="CPU  Usage (~%):" />
+                        android:text="CPU usage (~%):" />
                     <TextView
                         android:id="@+id/cpu_usage"
                         android:layout_width="wrap_content"
@@ -144,11 +140,11 @@
                         android:textSize="@dimen/system_parameter_text_size"/>
                 </LinearLayout>
                 <LinearLayout
-                    android:layout_width="350dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
                     <TextView
-                        android:layout_width="100dp"
+                        android:layout_width="240dp"
                         android:layout_height="wrap_content"
                         android:textSize="@dimen/system_parameter_text_size"
                         android:text="Memory Usage(~%):" />
@@ -197,7 +193,7 @@
                         android:layout_width="240dp"
                         android:layout_height="wrap_content"
                         android:textSize="@dimen/system_parameter_text_size"
-                        android:text="Disk Usage (~%):" />
+                        android:text="Disk usage (~%):" />
 
                     <TextView
                         android:id="@+id/disk_usage"
