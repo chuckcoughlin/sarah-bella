@@ -1,7 +1,8 @@
 #!/bin/sh
+#
 # Update the launch configuration per the supplied application.
-# Restart ros
-# run as super-user
+# The new application will take effect when ros is restarted.
+#
 export HOME=/home/chuckc
 export CONFIG=${HOME}/robotics/robot/config/launch.conf
 export SRC=${HOME}/catkin_ws/src
@@ -23,6 +24,11 @@ elif [ ${APP} = "gpio" -o ${APP} = "gpio_msgs" ]
 then
     echo "LAUNCH_PKG=gpio_msgs" > ${CONFIG}
     echo "LAUNCH_FILE=gpio_msgs.launch" >> ${CONFIG}
+# "headlamp" is the same as "system"
+elif [ ${APP} = "headlamp" ]
+then
+    echo "LAUNCH_PKG=system_check" > ${CONFIG}
+    echo "LAUNCH_FILE=system.launch" >> ${CONFIG}
 elif [ ${APP} = "park" ]
 then
     echo "LAUNCH_PKG=turtlebot3_automatic_parking" > ${CONFIG}
