@@ -59,7 +59,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
                                                 AdapterView.OnItemClickListener {
     private final static String CLSS = "DiscoveryFragment";
     private final static String SET_APP_COMMAND = "~/robotics/robot/bin/set_ros_application %s";
-    private final static String START_APP_COMMAND = "~/robotics/robot/bin/install_ros_init";
+    private final static String START_APP_COMMAND = "~/robotics/robot/bin/restart_ros";
     private View contentView = null;
     private ViewGroup viewGroup = null;
     private SBDbManager dbManager = null;
