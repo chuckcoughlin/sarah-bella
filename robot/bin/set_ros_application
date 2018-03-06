@@ -18,8 +18,8 @@ then
 	# Configure the correct LIDAR option
 	LAUNCH=${SRC}/turtlebot3/turtlebot3_bringup/launch
 	cp ${LAUNCH}/turtlebot3_lidar_odom.launch ${LAUNCH}/turtlebot3_lidar.launch
-    echo "LAUNCH_PKG=turtlebot_follower" > ${CONFIG}
-    echo "LAUNCH_FILE=follower.launch" >> ${CONFIG}
+    echo "LAUNCH_PKG=turtlebot3_follow_filter" > ${CONFIG}
+    echo "LAUNCH_FILE=turtlebot3_follow_filter.launch" >> ${CONFIG}
 elif [ ${APP} = "gpio" -o ${APP} = "gpio_msgs" ]
 then
     echo "LAUNCH_PKG=gpio_msgs" > ${CONFIG}
