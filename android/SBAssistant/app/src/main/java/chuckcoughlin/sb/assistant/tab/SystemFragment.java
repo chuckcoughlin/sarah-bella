@@ -21,11 +21,16 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.ros.exception.RemoteException;
+import org.ros.exception.ServiceNotFoundException;
 import org.ros.internal.node.client.ParameterClient;
 import org.ros.internal.node.server.NodeIdentifier;
 import org.ros.internal.node.xmlrpc.XmlRpcTimeoutException;
 import org.ros.namespace.GraphName;
 import org.ros.node.ConnectedNode;
+import org.ros.node.service.ServiceClient;
+import org.ros.node.service.ServiceResponseListener;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -37,6 +42,9 @@ import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.ros.SBApplicationStatusListener;
 import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
 import chuckcoughlin.sb.assistant.ros.SBRosManager;
+import gpio_msgs.GPIOSet;
+import gpio_msgs.GPIOSetRequest;
+import gpio_msgs.GPIOSetResponse;
 import ros.android.views.BatteryLevelView;
 import gpio_msgs.GPIOPin;
 import gpio_msgs.GPIOState;
@@ -55,6 +63,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     private BatteryStateListener batteryListener = new BatteryStateListener();
     private GPIOListener gpioListener = new GPIOListener();
     private SystemListener systemListener = new SystemListener();
+    private ServiceClient<GPIOSetRequest, GPIOSetResponse> gpioServiceClient = null;
     private View mainView = null;
     private Map<View,GPIOPin> viewPinMap = new HashMap<>();
 
@@ -76,7 +85,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     public void onDestroyView() {
         Log.i(CLSS, "onDestroyView");
         applicationManager.removeListener(this);
-
+        applicationShutdown();
         super.onDestroyView();
     }
 
@@ -99,6 +108,10 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
                             URI masterUri = new URI(uriString);
                             ParameterClient paramClient = new ParameterClient(new NodeIdentifier(GraphName.of("/SystemFragment"), masterUri), masterUri);
                             paramClient.setParam(GraphName.of(PUBLISH_ALL),"True");
+                            gpioServiceClient = node.newServiceClient("sb_service_gpio_set", GPIOSet._TYPE);
+                        }
+                        catch( ServiceNotFoundException snfe ) {
+                            Log.e(CLSS, String.format("Exception while creating service client (%s)",snfe.getLocalizedMessage()));
                         }
                         catch (XmlRpcTimeoutException tex) {
                             Log.e(CLSS, "Exception while creating parameter client");
@@ -123,6 +136,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
         batteryListener.shutdown();
         gpioListener.shutdown();
         systemListener.shutdown();
+        gpioServiceClient = null;
     }
 
     // ========================================= MessageListeners ============================
@@ -152,7 +166,6 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     }
 
     // gpio_msgs
-
     /**
      * This an infrequent message. Use it to configure the UI.
      * gpio_msgs
@@ -184,40 +197,22 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
                 }
             });
         }
+    }
+    // gpio_msgs
+    /**
+     * Listen for responses to GPIO service requests. There is a new instance for each request.
+     */
+    private class GPIOResponseListener implements ServiceResponseListener<GPIOSetResponse> {
+        @Override
+        public void onSuccess(GPIOSetResponse msg) {
+            Log.i(CLSS, String.format("Got a success - GPIOSetResponse pin %d=%s",msg.getChannel(),(msg.getValue()?"true":"false")));
+        }
+        @Override
+        public void onFailure(RemoteException ex) {
+            Log.i(CLSS, String.format("Got a failure - GPIOSetResponse (%s)",ex.getLocalizedMessage()));
+        }
 
     }
-    private void configureView(View parent, GPIOPin pin) {
-        Resources res = parent.getResources();
-        int id = res.getIdentifier(String.format("pin%d_label", pin.getChannel()), "id", getContext().getPackageName());
-        TextView tv = (TextView) parent.findViewById(id);
-        id = res.getIdentifier(String.format("pin%d_image", pin.getChannel()), "id", getContext().getPackageName());
-        ImageView iv = (ImageView) mainView.findViewById(id);
-        if( tv==null || iv==null ) {
-            Log.i(CLSS,String.format("Unable to find GPIO image or view for pin %d",pin.getChannel()));
-            return;
-        }
-        tv.setText(pin.getLabel());
-        viewPinMap.put(iv,pin);
-        iv.setOnClickListener(null);
-        if (pin.getMode().equals("IN")) {
-            iv.setImageResource(R.drawable.ball_yellow);
-            iv.setOnClickListener(this);
-        }
-        else if (pin.getMode().equals("OUT")) {
-            if (pin.getValue()) {
-                iv.setImageResource(R.drawable.ball_red);
-            } else {
-                iv.setImageResource(R.drawable.ball_green);
-            }
-        }
-        else if (pin.getMode().equals("PWR")) {
-            iv.setImageResource(R.drawable.flash);
-        }
-        else if (pin.getMode().equals("GND")) {
-            iv.setImageResource(R.drawable.ground);
-        }
-    }
-
     private class SystemListener extends AbstractMessageListener<system_check.System> {
         public SystemListener() {
             super(system_check.System._TYPE);
@@ -263,11 +258,58 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
             });
         }
     }
+
     // =============================================== ClickListener =================================================
     // Use this method to simulate a toggle button when an image is clicked
     public void onClick(View view) {
         GPIOPin pin = viewPinMap.get(view);
         Log.i(CLSS,String.format("Received a click view is %s for pin %d",(view.isSelected()?"selected":"not selected"),(pin==null?0:pin.getChannel())));
-        view.setSelected(!view.isSelected());
+        GPIOSetRequest request = gpioServiceClient.newMessage();
+        request.setChannel(pin.getChannel());
+        if( gpioServiceClient!=null ) {
+            view.setSelected(!view.isSelected());
+            if (view.isSelected()) {
+                view.setBackgroundResource(R.drawable.border_darkgray);
+                request.setValue(true);
+            } else {
+                view.setBackgroundResource(R.drawable.border_lightgray);
+                request.setValue(false);
+            }
+            gpioServiceClient.call(request, new GPIOResponseListener());
+        }
     }
+
+    // ========================================= Helper Functions ============================
+    private void configureView(View parent, GPIOPin pin) {
+        Resources res = parent.getResources();
+        int id = res.getIdentifier(String.format("pin%d_label", pin.getChannel()), "id", getContext().getPackageName());
+        TextView tv = (TextView) parent.findViewById(id);
+        id = res.getIdentifier(String.format("pin%d_image", pin.getChannel()), "id", getContext().getPackageName());
+        ImageView iv = (ImageView) mainView.findViewById(id);
+        if( tv==null || iv==null ) {
+            Log.i(CLSS,String.format("Unable to find GPIO image or view for pin %d",pin.getChannel()));
+            return;
+        }
+        tv.setText(pin.getLabel());
+        viewPinMap.put(iv,pin);
+        iv.setOnClickListener(null);
+        if (pin.getMode().equals("IN")) {
+            iv.setImageResource(R.drawable.ball_yellow);
+            iv.setOnClickListener(this);
+        }
+        else if (pin.getMode().equals("OUT")) {
+            if (pin.getValue()) {
+                iv.setImageResource(R.drawable.ball_red);
+            } else {
+                iv.setImageResource(R.drawable.ball_green);
+            }
+        }
+        else if (pin.getMode().equals("PWR")) {
+            iv.setImageResource(R.drawable.flash);
+        }
+        else if (pin.getMode().equals("GND")) {
+            iv.setImageResource(R.drawable.ground);
+        }
+    }
+
 }

@@ -17,7 +17,6 @@ import chuckcoughlin.sb.assistant.tab.BasicAssistantFragment;
 import chuckcoughlin.sb.assistant.tab.CameraFragment;
 import chuckcoughlin.sb.assistant.tab.CoverFragment;
 import chuckcoughlin.sb.assistant.tab.DiscoveryFragment;
-import chuckcoughlin.sb.assistant.tab.HeadlampFragment;
 import chuckcoughlin.sb.assistant.tab.LogsFragment;
 import chuckcoughlin.sb.assistant.tab.SLAMFragment;
 import chuckcoughlin.sb.assistant.tab.SettingsFragment;
@@ -38,7 +37,7 @@ public class MainActivityPagerAdapter extends FragmentStatePagerAdapter {
         super(fm);
 
         tabTitles = new String[] {
-                ctx.getString(R.string.cover_title), ctx.getString(R.string.discovery_title), ctx.getString(R.string.settings_title),ctx.getString(R.string.system_title), ctx.getString(R.string.headlamp_title),
+                ctx.getString(R.string.cover_title), ctx.getString(R.string.discovery_title), ctx.getString(R.string.settings_title),ctx.getString(R.string.system_title),
                 ctx.getString(R.string.SLAM_title),ctx.getString(R.string.audio_title),
                 ctx.getString(R.string.camera_title),ctx.getString(R.string.teleops_title),ctx.getString(R.string.log_title)};
         Log.i(CLSS,"Constructor ...");
@@ -67,21 +66,18 @@ public class MainActivityPagerAdapter extends FragmentStatePagerAdapter {
                 frag =  new SystemFragment();
                 break;
             case 4:
-                frag = new HeadlampFragment();
-                break;
-            case 5:
                 frag = new SLAMFragment();
                 break;
-            case 6:
+            case 5:
                 frag = new AudioFragment();
                 break;
-            case 7:
+            case 6:
                 frag = new CameraFragment();
                 break;
-            case 8:
+            case 7:
                 frag = new TeleopFragment();
                 break;
-            case 9:
+            case 8:
                 frag = new LogsFragment();
                 break;
             default:

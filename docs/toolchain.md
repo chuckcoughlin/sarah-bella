@@ -56,7 +56,9 @@ Configure the host build system, making the Android home environment variable av
 #### External Libraries <a id="external-libraries"></a>
 These next steps make ROS libraries available to the Android build environment. Note that the following are necessary only if creating a project from scratch. For an existing project, the modules are already part of the SBAssistant repository.
 
-The Android core package may be found at (you may have to download the entire Maven repository to get at the individual files):  https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_core/rosjava/0.3.5. Download rosjava-0.3.5.jar (org.ros) to ~/robotics/sara-bella/SBAssistant/app/libs. Then from inside Android Studio:
+The Android core package may be found https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_core/rosjava/0.3.5/rosjava-0.3.5.jar (org.ros). Download this to ~/robotics/sara-bella/SBAssistant/app/libs. You can either download the entire repository using *git* or simply copy the file using *wget*.
+
+Then from inside Android Studio:
 ```
   File->Synchronize
   right-click on app/libs/rosjava-0.3.5.jar and select "Import as Library"
