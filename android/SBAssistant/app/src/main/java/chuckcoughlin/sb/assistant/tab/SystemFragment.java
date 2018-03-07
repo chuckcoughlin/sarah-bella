@@ -60,20 +60,23 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     private final static String PUBLISH_ALL = "/gpio_msgs/publish_all";  // Flag to complete gpio
     private SBRosApplicationManager applicationManager;
     private BatteryManager batteryManager;
-    private BatteryStateListener batteryListener = new BatteryStateListener();
-    private GPIOListener gpioListener = new GPIOListener();
-    private SystemListener systemListener = new SystemListener();
+    private BatteryStateListener batteryListener = null;
+    private GPIOListener gpioListener = null;
+    private SystemListener systemListener = null;
     private ServiceClient<GPIOSetRequest, GPIOSetResponse> gpioServiceClient = null;
     private View mainView = null;
     private Map<View,GPIOPin> viewPinMap = new HashMap<>();
 
-    // Inflate the view for the fragment based on layout XML
+    // Inflate the view for the fragment based on layout XML. Create fragment member objects.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.i(CLSS, "onCreateView");
         this.applicationManager = SBRosApplicationManager.getInstance();
         applicationManager.addListener(this);
         batteryManager = (BatteryManager) getActivity().getSystemService(Context.BATTERY_SERVICE);
+        batteryListener = new BatteryStateListener();
+        gpioListener = new GPIOListener();
+        systemListener = new SystemListener();
 
         mainView = inflater.inflate(R.layout.fragment_system, container, false);
         TextView label = mainView.findViewById(R.id.fragmentSystemText);
