@@ -10,7 +10,6 @@ project(system_check)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   turtlebot3_msgs
-  turtlebot3_navigation
   message_generation
 )
 
@@ -105,7 +104,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES system_check
-  CATKIN_DEPENDS rospy turtlebot3_msgs turtlebot3_navigation message_runtime
+  CATKIN_DEPENDS rospy turtlebot3_msgs message_runtime
 #  DEPENDS system_lib
 )
 
