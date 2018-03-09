@@ -11,9 +11,18 @@ then
 	echo "USAGE: $0 <application_name>"
 	exit 1
 fi
-
+#
+# ===========================================================================================
+# Options:
+#   diagnostics, follow, gpio, system
+# ===========================================================================================
+#
 APP=$1
-if [ ${APP} = "follow" -o ${APP} = "follower" ]
+if [ ${APP} = "diagnostics" ]
+then
+    echo "LAUNCH_PKG=turtlebot3_bringup" > ${CONFIG}
+    echo "LAUNCH_FILE=turtlebot3_robot.launch" >> ${CONFIG}
+elif [ ${APP} = "follow" -o ${APP} = "follower" ]
 then
 	# Configure the correct LIDAR option
 	LAUNCH=${SRC}/turtlebot3/turtlebot3_bringup/launch

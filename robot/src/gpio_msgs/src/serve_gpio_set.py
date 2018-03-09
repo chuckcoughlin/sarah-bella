@@ -25,5 +25,5 @@ def set_GPIO(request):
 
 
 rospy.init_node('sb_serve_gpio_set')
-serve = rospy.Service('/gpio_msgs',GPIOSet,set_GPIO)
+serve = rospy.Service('/sb_serve_gpio_set',gpio_msgs.srv.GPIOSet,set_GPIO)
 rospy.spin()

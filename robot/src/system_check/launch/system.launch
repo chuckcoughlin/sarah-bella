@@ -9,5 +9,5 @@
   <param name="robot/platform" value="RaspberryPi" type="str"/>
   <include file="$(find system_check)/launch/system_check.launch" />
   <include file="$(find gpio_msgs)/launch/gpio_msgs.launch" />
-  <include file="$(find sensor_msgs)/launch/battery_state.launch" />
+  <include file="$(find turtlebot3_bringup)/launch/turtlebot3_robot.launch" />
 </launch>
