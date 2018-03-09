@@ -26,12 +26,14 @@ public abstract class AbstractMessageListener<T> implements MessageListener<T> {
     }
 
     public void subscribe(ConnectedNode node,String topic) {
-        this.subscriber = node.newSubscriber(topic,messageType);
-        subscriber.addMessageListener(this);
+        if( node!=null ) {
+            this.subscriber = node.newSubscriber(topic,messageType);
+            subscriber.addMessageListener(this);
+        }
     }
 
     public void shutdown() {
-        subscriber.removeMessageListener(this);
+        if(subscriber!=null) subscriber.removeMessageListener(this);
     }
 
     public abstract void onNewMessage (T msg );

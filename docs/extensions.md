@@ -10,6 +10,7 @@ the collection as needed.
 ## Table of Contents <a id="table-of-contents"></a>
   * [Discovery](#discovery)
   * [System Check](#systemcheck)
+  * [Headlamp](#headlamp)
 
 *********************************************************
 ### 00 - Discovery <a id="discovery"></a>
@@ -51,22 +52,28 @@ System
       Uint32 in_packets_dropped
       Uint32 out_packets_dropped
 ```
-The *BatteryState* message is from sensor_msgs in the common message bundle. For a full description, see
-[here](http://docs.ros.org/api/sensor_msgs/html/msg/BatteryState.html). The message below lists the subset
-of attributes that are actually implemented.
-
-NOTE: the current code for BatteryState
-is appropriate for a MAX17043 LIPO Fuel Gauge which is not currently wired.
+The *sensor_state* message is built into the Turtlebot3 firmware (updated 1/17/2018). For a full description, see [here]( http://docs.ros.org/hydro/api/kobuki_msgs/html/msg/SensorState.html). Not all properties are displayed by the tablet.
 
 ```
-BatteryState
-  Float32 voltage          # Voltage in Volts (Mandatory)
-  Float32 percentage       # Charge percentage on 0 to 1 range  (If unmeasured NaN)
-  Bool    present          # True if the battery is present
+sensor_state
+  Header header
+  Uint16 time_stamp    # milliseconds from start (rollover at 65536)
+  Uint8  bumper        # bumper state
+  Uint8  cliff         # cliff sensor state
+  Uint16 left_encoder  # accumulated ticks left wheel (max. 65535)
+  Uint16 right_encoder # accumulated ticks right wheel (max. 65535)
+  Uint8  battery       # battery voltage in 0.1V (ex. 16.1V -> 161)
 ```
 
-The *GPIOState* message is a custom message that provides the current state and configuration of the GPIO board on the Raspberry Pi.
-It consists of a list of 40 *GPIOPin* messages (named pin1,,,pin40) one for each physical pin on the GPIO header. Each pin sub-message consists of:
+The *GPIOState* message is a custom message that provides the current state and configuration of the GPIO header.
+It consists of a list of *GPIOPin* messages. Normally the pin messages represent only
+those output channels that have changed. However, the the ROS parameter
+```/gpio_msgs/publish_all``` is set to "True", then the message will contain the
+entire list of 40 pins. This parameter is handled like a semaphore, and is immediately
+reset to "False" by the robot. The GPIOState message is designed to have a response
+time on the order of 0.1 seconds.
+
+Each GPIOPin sub-message consists of:
 
 ```
 GPIOPin
@@ -77,14 +84,10 @@ GPIOPin
 ```
 The panel subscribes to the following topics:
  * /gpio_msgsGPIOState
- * /gpio_msgs/GPIOPin
  * /sb_system/System
- * /std_msgs/BatteryState
+ * /sensor_msgs/BatteryState
 
-The *GPIOState* is infrequent (20 secs) and provides a view of the entire state and configuration of the board. The *GPIOPin* message reports changes of individual
-pin states asynchronously.
-
-The panel is provides control of GPIO values with the action:
+The panel provides control of GPIO values with the action:
  * /gpio_msgs/GPIOPin
 
 The initial construction of the package files was accomplished using:
@@ -94,13 +97,20 @@ The initial construction of the package files was accomplished using:
 
 ##### ----------------------- tablet --------------------------<br/>
 **node:** sb_subscribe_battery_state(sensor_msgs/BatteryState)<br/>
+**node:** sb_subscribe_gpio (gpio_msgs/GPIOState)<br/>
 **node:** sb_subscribe_system (sb_system/System)<br/>
 
 ##### ---------------------- robot  --------------------------<br/>
 **node:** sb_publish_battery_state (sensor_msgs/BatteryState)<br/>
+**node:** sb_publish_gpio_state (gpio_msgs/GPIOState)<br/>
 **node:** sb_publish_system (sb_system/System)<br/>
+**node:** sb_serve_gpio_set (GPIOSetRequest/GPIOSetResponse)<br/>
 
-### 02 - Follow <a id="follow"></a>
+### 02 - Headlamp <a id="headlamp"></a>
+ The current limit for the GPIO board is about 2ma, thus a lamp must controlled through
+ a relay or some other isolating mechanism.
+
+ ### 03- Follow <a id="follow"></a>
  The *follower* application is one of the ROBOTIS demonstrations. I chose the version from: https://github.com/NVIDIA-Jetson/turtlebot3/tree/master/turtlebot_apps/turtlebot_follower. I modified references from *turtlebot_msgs* to *turtlebot3_msgs*.
 
  The *follow* application will cause the TurtleBot3 to look for objects in a window 50cm in front of it. And it will seek to keep the centroid of the observed objects directly in front of it and a fixed distance away. If the centroid of the object is too far away it will drive forward, too close backward, and if offset to the side it will turn toward the centroid.

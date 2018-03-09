@@ -23,17 +23,19 @@ We use the kinetic version of ROS. This is the current version used by ROBOTIS f
     * [ROS Development Setup](#ros-development-setup)
     * [Source Repository](#source-repository)
     * [Turtlebot3 Support](#turtlebot3-support)
+    * [OpenCR Firmware](#opencr-firmware)
     * [Package Creation](#package-creation)
     * [RosJava Support](#rosjava-support)
     * [Transfer to the Robot](#transfer-to-robot)
     * [System Configuration](#system-configuration)
-  * [Raspberry Pi Robot](#raspberrypi-header)
+  * [Turtlebot3 (burger)](#turtlebot3-header)
     * [Initial Image](#initial-image)
     * [Network Configuration](#network-configuration)
     * [ROS Development Setup](#ros-development-setup-pi)
     * [Code Updates](#code-updates)
     * [I2C](#i2c)
     * [GPIO](#gpio)
+    * [OpenCR Updates](#opencr)
     * [Backups](#backups)
 
 Here is a diagram that shows the relationships between the various development components.
@@ -113,7 +115,7 @@ Configuration parameters, maps and other data that are meant to remain in place 
 
 On the tablet:
 ```
-/data/user/0/chuckcoughlin.sb.assistant/databases/SBAssistant.db
+  /data/user/0/chuckcoughlin.sb.assistant/databases/SBAssistant.db
 ```
 
 For the emulator (running the debug version):
@@ -180,7 +182,7 @@ Use an Unbuntu 16.04 boot image downloaded from https://www.ubuntu.com/download/
 Create a virtual machine sized at 6gb of RAM and 50gb of disk.
 
 Next, install the Robot Operation System (ROS) build environment.
-For details, see http:wiki.ros.org/kinetic/installation/Ubuntu. Complete the steps in section 1. Install the *ros-kinetic-desktop-full* suite.
+For details, see http://emanual.robotis.com/docs/en/platform/turtlebot3/pc_setup/#pc-setup. Complete the steps in sections 6.2 and 6.3.
 
 Now install dependent packages for Turtlebot3 control and Java message generation:
 ```
@@ -188,6 +190,14 @@ Now install dependent packages for Turtlebot3 control and Java message generatio
 		ros-kinetic-depthimage-to-laserscan ros-kinetic-rosserial-arduino ros-kinetic-rosserial-python ros-kinetic-rosserial-server ros-kinetic-rosserial-client \
 		ros-kinetic-rosserial-msgs ros-kinetic-amcl ros-kinetic-map-server ros-kinetic-move-base ros-kinetic-urdf ros-kinetic-xacro ros-kinetic-compressed-image-transport \
 		ros-kinetic-rqt-image-view ros-kinetic-gmapping ros-kinetic-navigation
+```
+
+Add the followng environment variables to ~/.bashrc
+```
+  export ROS_MASTER_URI=http://localhost:11311
+  export ROS_HOSTNAME=localhost
+  export OPENCR_PORT=/dev/ttyACM0
+  export OPENCR_MODEL=burger
 ```
 
 #### Source Repository <a id="source-repository"></a>
@@ -211,13 +221,18 @@ This step describes the initial installation of source code for turtlebot ROS su
 successful build, but have not been checked into the *sara-bella* repository. <a id="message-packages"></a>
 
 ```
-		cd ~/catkin_ws/src
+    cd ~/catkin_ws/src
     git clone https://github.com/ROBOTIS-GIT/turtlebot3_msgs.git
     git clone https://github.com/ROBOTIS-GIT/turtlebot3.git
     git clone https://github.com/ROBOTIS-GIT/hls_lfcd_lds_driver.git
     cd .. && catkin_make
 ```
 Note: If building after a repository checkout, the ```catkin_make``` command may have to be executed twice to resolve build dependencies.
+
+#### OpenCR Firmware <a id="opencr-firmware"></a>
+The Arduino IDE is an easy mechanism for updating firmware on the OpenCR board. Communication is via a USB cable from the Mac host to the board. Transfer must be made with the robot powered off. Instructions for download and installation of the IDE can be found at: http://emanual.robotis.com/docs/en/parts/controller/opencr10/#install-on-mac.
+
+We were able to update the base firmware (currently 1.0.17), but were unsuccessful in loading the example code in the instructions. Instead, we successfully updated directly from the Raspberry Pi, [see](#opencr).
 
 #### Package Creation <a id="package-creation"></a>
 A package encapsulates a related set of robot functionality. Ultimately we need to transfer the package definition onto the
@@ -261,6 +276,8 @@ The virtual machine is the master location for ROS topic/message development. On
     sudo apt-get install ros-kinetic-genjava
     sudo apt-get install --only-upgrade ros-kinetic-*
 ```
+Note: This package does not appear to be available under ROS *lunar*.
+
 Whenever custom messages change or additional packages are used execute:
 
 ```
@@ -277,15 +294,21 @@ robot. This is accomplished by simply checking the changes into *git* (pushing t
 #### System Configuration <a id="system-configuration"></a>
 We keep system-specific configurations in ~/robotics/conf. These files are referenced as necessary when the ROS packages are built on the robot.
 
+System package updates can be installed any time by:
+```
+  sudo apt-get update
+  sudo apt-get distro-upgrade
+```
+
 **********************************************************
-### Raspberry Pi Robot <a id="raspberrypi-header"></a>
+### Turtlebot3 <a id="turtlebot3-header"></a>
 [toc](#table-of-contents)
 
 "ROSPi" (our name) is the RaspberryPi that is the robot's single board computer (SBC). After an initial flash and configuration
 this device has its own ROS build system. The complete collection of applications is loaded via *git* and then built using the standard *catkin_make* procedure.
 Scripts are provided to configure and start the desired application. These are executed remotely via *ssh* from the tablet.
 
-#### Initial Image <a id="initial-image"></a>
+#### Initial Raspberry Pi Image <a id="initial-image"></a>
 On the host machine, download and install "Etcher" from https://etcher.io. We will use this to transfer images to the SD card.
 Download Ubuntu Mate for RaspberryPi 3 from https://ubuntu-mate.org/download. This is the initial boot image.
 For the actual download, you will need a torrent translator like qBittorent at https://www.qbittorrent.org/download.php.
@@ -332,14 +355,14 @@ ROS package downloads.
 ```
 
 Like the main development system, the Raspberry Pi requires the ROS development libraries. Follow the instructions at:
-http://turtlebot3.readthedocs.io/en/latest/sbc_software.html, sections 6.3.1, 6.3.3 and 6.3.4. These steps can be expected to
+http://emanual.robotis.com/docs/en/platform/turtlebot3/sbc_setup/#sbc-setup, sections 7.1.1 and 7.1.2. These steps can be expected to
 take an hour or more. Make sure the robot's battery is charged. Additionally the packages listed [here](#message-packages) must also be installed.
 
 After I executed the "sudo apt upgrade", I discovered that my Firefox now crashed on start. To revert to a prior version:
 ```
   apt-cache show firefox | grep Version
 	sudo apt-get purge firefox
-	sudo apt-get install firefox=45.0.2+build1-0ubuntu1   # The older version shown from previos command
+	sudo apt-get install firefox=45.0.2+build1-0ubuntu1   # The older version shown from previous command
 	sudo apt-mark hold firefox                            # Prevents auto-update to newer version
 ```
 When complete, execute:
@@ -351,6 +374,9 @@ Replace similar lines in ~/.bashrc:
    IP_ADDRESS=`hostname -I`
    export ROS_MASTER_URI="http://${IP_ADDRESS}:11311"
    export ROS_HOSTNAME=${IP_ADDRESS}
+   export OPENCR_PORT=/dev/ttyACM0
+   export OPENCR_MODEL=burger
+   export TURTLEBOT3_MODEL=burger
 ```
 
 The ROS installation places the ROS workspace at /home/<username>/catkin_ws. Unfortunately it updates firefox, so it is necessary
@@ -421,6 +447,9 @@ An alternative GPIO access method is RPi.GPIO.
 For further documentation of this package, see: https://sourceforge.net/projects/raspberry-gpio-python/.
 
 Most GPIO pins can be configured as either input or output, so the board configuration must be set before use. To do this, edit ```~/catkin_ws/src/gpio_msgs/src/GPIOConfiguration.py```.
+
+#### OpenCR <a id="opencr"></a>
+Scripting is an alternative to an Arduino IDE on the Mac build system. Complete directions may be found [here](http://emanual.robotis.com/docs/en/platform/turtlebot3/opencr_setup/#opencr-setup), section 8.1.1. Make sure that the board is in *DFU* mode. No extraneous connections are required. Make sure that */dev/ttyACM0* exists. I have found that loose cables may be the culprit if the device file is not present.
 
 #### Backups <a id="backups"></a>
 To backup an SD card, mount it on the host system. Then use the Disk Utility application to save the SD card contents

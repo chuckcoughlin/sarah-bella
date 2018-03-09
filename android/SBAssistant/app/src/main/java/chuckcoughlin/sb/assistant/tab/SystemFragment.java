@@ -72,11 +72,12 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.i(CLSS, "onCreateView");
         this.applicationManager = SBRosApplicationManager.getInstance();
-        applicationManager.addListener(this);
+
         batteryManager = (BatteryManager) getActivity().getSystemService(Context.BATTERY_SERVICE);
         batteryListener = new BatteryStateListener();
         gpioListener = new GPIOListener();
         systemListener = new SystemListener();
+        applicationManager.addListener(this);
 
         mainView = inflater.inflate(R.layout.fragment_system, container, false);
         TextView label = mainView.findViewById(R.id.fragmentSystemText);
@@ -93,14 +94,15 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     }
 
     // ========================================= SBApplicationStatusListener ============================
+    // This may be called immediately on establishment of the listener.
     public void applicationStarted(String appName) {
         Log.i(CLSS, String.format("applicationStarted: %s ...", appName));
         if (appName.equalsIgnoreCase(SBConstants.APPLICATION_SYSTEM)) {
             ConnectedNode node = applicationManager.getApplication().getConnectedNode();
             if (node != null) {
                 batteryListener.subscribe(node, "/sensor_msgs");
-                gpioListener.subscribe(node, "/gpio_msgs");
-                systemListener.subscribe(node, "/sb_system");
+                gpioListener.subscribe(node,    "/gpio_msgs");
+                systemListener.subscribe(node,  "/sb_system");
                 new Thread(new Runnable(){
                     public void run() {
                         try {
@@ -111,7 +113,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
                             URI masterUri = new URI(uriString);
                             ParameterClient paramClient = new ParameterClient(new NodeIdentifier(GraphName.of("/SystemFragment"), masterUri), masterUri);
                             paramClient.setParam(GraphName.of(PUBLISH_ALL),"True");
-                            gpioServiceClient = node.newServiceClient("sb_service_gpio_set", GPIOSet._TYPE);
+                            gpioServiceClient = node.newServiceClient("/sb_serve_gpio_set", GPIOSet._TYPE);
                         }
                         catch( ServiceNotFoundException snfe ) {
                             Log.e(CLSS, String.format("Exception while creating service client (%s)",snfe.getLocalizedMessage()));
