@@ -14,7 +14,7 @@ fi
 #
 # ===========================================================================================
 # Options:
-#   diagnostics, follow, gpio, system
+#   diagnostics, follower, follow3, gpio, system
 # ===========================================================================================
 #
 APP=$1
@@ -22,7 +22,13 @@ if [ ${APP} = "diagnostics" ]
 then
     echo "LAUNCH_PKG=turtlebot3_bringup" > ${CONFIG}
     echo "LAUNCH_FILE=turtlebot3_robot.launch" >> ${CONFIG}
+# ===== C++ =======
 elif [ ${APP} = "follow" -o ${APP} = "follower" ]
+then
+    echo "LAUNCH_PKG=turtlebot_follower" > ${CONFIG}
+    echo "LAUNCH_FILE=follower.launch" >> ${CONFIG}
+# ===== Python =======
+elif [ ${APP} = "follow3" -o ${APP} = "follower3" ]
 then
 	# Configure the correct LIDAR option
 	LAUNCH=${SRC}/turtlebot3/turtlebot3_bringup/launch

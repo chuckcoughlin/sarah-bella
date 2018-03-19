@@ -21,10 +21,10 @@ import rospy
 import actionlib
 from geometry_msgs.msg import Twist, Point, Quaternion
 from nav_msgs.msg import Odometry
+from sensor_msgs.msg import JointState
 import turtlebot3_example.msg
 from turtlebot3_msgs.msg import SensorState
 import numpy as np
-
 
 class Turtlebot3Action(object):
     _feedback = turtlebot3_example.msg.turtlebot3ActionFeedback()
@@ -34,7 +34,7 @@ class Turtlebot3Action(object):
         self._action_name = name
         self._as = actionlib.SimpleActionServer(self._action_name, turtlebot3_example.msg.turtlebot3Action,
                                                 execute_cb=self.execute_cb, auto_start=False)
-        self.stats_sub = rospy.Subscriber('/sensor_state', SensorState, self.get_state)
+        self.stats_sub = rospy.Subscriber('/joint_states', JointState, self.get_state)
         self.odom_sub = rospy.Subscriber('/odom', Odometry, self.get_odom)
         self.init_stats = True
         self._as.start()
@@ -45,7 +45,16 @@ class Turtlebot3Action(object):
         self.position = odom.pose.pose.position
 
     def get_state(self, data):
-        self.right_encoder = data.right_encoder
+        TICK2RAD = 0.001533981
+        last_pos = 0.0
+        diff_pos = 0.0
+        cur_pos = 0.0
+        encoder = 0
+
+        cur_pos = data.position[0]
+        diff_pos = cur_pos - last_pos
+        encoder = encoder + (diff_pos / TICK2RAD)
+        self.right_encoder = encoder
 
     def turn(self, angle):
         if self.init_stats:
@@ -57,6 +66,7 @@ class Turtlebot3Action(object):
                 self.twist.angular.z = -0.5
             else:
                 self.twist.angular.z = 0.5
+
             self.cmd_pub.publish(self.twist)
             self.r.sleep()
         self.init_stats = True
@@ -152,3 +162,4 @@ if __name__ == '__main__':
     rospy.init_node('turtlebot3')
     server = Turtlebot3Action(rospy.get_name())
     rospy.spin()
+    

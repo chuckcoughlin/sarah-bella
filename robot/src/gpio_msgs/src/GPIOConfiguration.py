@@ -10,7 +10,11 @@ from gpio_msgs.msg import GPIOState, GPIOPin
 def configure():
 	GPIO.setmode(GPIO.BOARD)
 	chanlist = [4,11,27]
-	GPIO.setup(chanlist,GPIO.OUT)
+	for channel in chanlist:
+		try:
+			GPIO.setup([channel],GPIO.OUT)
+		except:
+			print "ERROR: Setting GPIO ",channel," to OUT"
 
 
 # Argument is a GPIOState.
@@ -173,16 +177,18 @@ def initialize(state):
 	pin26.mode = GPIO.gpio_function(26)
 	pins.append(pin26)
 
+	# Got error when tried to set this
 	pin27 = GPIOPin()
 	pin27.label = "BCM 0"
 	pin27.channel = 27
-	pin27.mode = GPIO.gpio_function(27)
+	#pin27.mode = GPIO.gpio_function(27)
 	pins.append(pin27)
 
+	# Got error when tried to set this
 	pin28 = GPIOPin()
 	pin28.label = "BCM 1"
 	pin28.channel = 28
-	pin28.mode = GPIO.gpio_function(28)
+	#pin28.mode = GPIO.gpio_function(28)
 	pins.append(pin28)
 
 	pin29 = GPIOPin()
