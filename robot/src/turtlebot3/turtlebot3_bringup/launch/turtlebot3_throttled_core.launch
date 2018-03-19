@@ -1,0 +1,8 @@
+<!-- Add a node for export that throttles the system state to 2 sec -->
+<launch>
+  <node pkg="rosserial_python" type="serial_node.py" name="turtlebot3_core" output="screen">
+    <param name="port" value="/dev/ttyACM0"/>
+    <param name="baud" value="115200"/>
+  </node>
+  <node pkg="topic_tools" type="throttle" name="system_state_throttle" args="messages sensor_state 0.5"/>
+</launch>
