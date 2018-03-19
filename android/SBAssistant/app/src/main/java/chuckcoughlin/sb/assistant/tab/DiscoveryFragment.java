@@ -246,15 +246,18 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
             app = applicationManager.getApplication();  // Make sure we get the correct instance
             if( app.getExecutionStatus().equalsIgnoreCase(RobotApplication.APP_STATUS_RUNNING)) {
                 statusView.setImageResource(R.drawable.ball_green);
+                Log.i(CLSS, String.format("updateStatusImage: set ball GREEN for %s",app.getApplicationName()));
             }
             else {
                 statusView.setImageResource(R.drawable.ball_yellow);
+                Log.i(CLSS, String.format("updateStatusImage: set ball YELLOW for %s",app.getApplicationName()));
             }
+            statusView.postInvalidate();
+            //statusView.invalidate(0,0,statusView.getWidth(), statusView.getHeight());
         }
         else {
             statusView.setVisibility(View.INVISIBLE);
         }
-        statusView.invalidate(0,0,statusView.getWidth(), statusView.getHeight());
     }
     // =========================================== Checker Callbacks ====================================
     @Override

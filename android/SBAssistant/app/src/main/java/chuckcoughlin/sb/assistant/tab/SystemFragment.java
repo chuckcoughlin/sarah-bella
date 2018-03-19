@@ -48,7 +48,7 @@ import gpio_msgs.GPIOSetResponse;
 import ros.android.views.BatteryLevelView;
 import gpio_msgs.GPIOPin;
 import gpio_msgs.GPIOState;
-import sensor_msgs.BatteryState;
+import turtlebot3_msgs.SensorState;
 
 /**
  * Display the current values of robot system parameters.
@@ -60,8 +60,8 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     private final static String PUBLISH_ALL = "/gpio_msgs/publish_all";  // Flag to complete gpio
     private SBRosApplicationManager applicationManager;
     private BatteryManager batteryManager;
-    private BatteryStateListener batteryListener = null;
     private GPIOListener gpioListener = null;
+    private SensorStateListener sensorStateListener = null;
     private SystemListener systemListener = null;
     private ServiceClient<GPIOSetRequest, GPIOSetResponse> gpioServiceClient = null;
     private View mainView = null;
@@ -74,7 +74,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
         this.applicationManager = SBRosApplicationManager.getInstance();
 
         batteryManager = (BatteryManager) getActivity().getSystemService(Context.BATTERY_SERVICE);
-        batteryListener = new BatteryStateListener();
+        sensorStateListener = new SensorStateListener();
         gpioListener = new GPIOListener();
         systemListener = new SystemListener();
         applicationManager.addListener(this);
@@ -100,7 +100,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
         if (appName.equalsIgnoreCase(SBConstants.APPLICATION_SYSTEM)) {
             ConnectedNode node = applicationManager.getApplication().getConnectedNode();
             if (node != null) {
-                batteryListener.subscribe(node, "/sensor_msgs");
+                sensorStateListener.subscribe(node, "/sensor_state");
                 gpioListener.subscribe(node,    "/gpio_msgs");
                 systemListener.subscribe(node,  "/sb_system");
                 new Thread(new Runnable(){
@@ -138,38 +138,13 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
 
     public void applicationShutdown() {
         Log.i(CLSS, String.format("applicationShutdown"));
-        batteryListener.shutdown();
+        sensorStateListener.shutdown();
         gpioListener.shutdown();
         systemListener.shutdown();
         gpioServiceClient = null;
     }
 
     // ========================================= MessageListeners ============================
-    public class BatteryStateListener extends AbstractMessageListener<BatteryState> {
-        public BatteryStateListener() {
-            super(BatteryState._TYPE);
-        }
-
-        @Override
-        public void onNewMessage(BatteryState bs) {
-            Log.i(CLSS, String.format("Got a Battery Message - capacity = %2.2f", bs.getCapacity()));
-            Activity mainActivity = getActivity();
-            if (mainActivity == null) {
-                Log.i(CLSS, String.format("BatteryStateListener: Main Activity no longer available"));
-                return;
-            }
-            mainActivity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    BatteryLevelView robotBattery = (BatteryLevelView) mainView.findViewById(R.id.robot_battery);
-                    robotBattery.setBatteryPercent(bs.getCapacity());
-                    TextView tv = (TextView) mainView.findViewById(R.id.robot_battery_state);
-                    tv.setText(String.valueOf(bs.getCapacity()));
-                }
-            });
-        }
-    }
-
     // gpio_msgs
     /**
      * This an infrequent message. Use it to configure the UI.
@@ -217,6 +192,30 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
             Log.i(CLSS, String.format("Got a failure - GPIOSetResponse (%s)",ex.getLocalizedMessage()));
         }
 
+    }
+    public class SensorStateListener extends AbstractMessageListener<SensorState> {
+        public SensorStateListener() {
+            super(SensorState._TYPE);
+        }
+
+        @Override
+        public void onNewMessage(SensorState bs) {
+            Log.i(CLSS, String.format("Got a Sensor Message - battery = %2.2f", bs.getBattery()/10));
+            Activity mainActivity = getActivity();
+            if (mainActivity == null) {
+                Log.i(CLSS, String.format("SensorStateListener: Main Activity no longer available"));
+                return;
+            }
+            mainActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    BatteryLevelView robotBattery = (BatteryLevelView) mainView.findViewById(R.id.robot_battery);
+                    robotBattery.setBatteryPercent((float)(120./bs.getBattery()));
+                    TextView tv = (TextView) mainView.findViewById(R.id.robot_battery_state);
+                    tv.setText(String.valueOf(bs.getBattery()/10.));
+                }
+            });
+        }
     }
     private class SystemListener extends AbstractMessageListener<system_check.System> {
         public SystemListener() {

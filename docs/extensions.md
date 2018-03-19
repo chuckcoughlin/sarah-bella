@@ -52,10 +52,10 @@ System
       Uint32 in_packets_dropped
       Uint32 out_packets_dropped
 ```
-The *sensor_state* message is built into the Turtlebot3 firmware (updated 1/17/2018). For a full description, see [here]( http://docs.ros.org/hydro/api/kobuki_msgs/html/msg/SensorState.html). Not all properties are displayed by the tablet.
+The *SensorState* message from turtlebot3_msgs is built into the Turtlebot3 firmware (updated 1/17/2018). For a full description, see [here]( http://docs.ros.org/hydro/api/kobuki_msgs/html/msg/SensorState.html). Not all properties are displayed by the tablet.
 
 ```
-sensor_state
+SensorState
   Header header
   Uint16 time_stamp    # milliseconds from start (rollover at 65536)
   Uint8  bumper        # bumper state
@@ -85,7 +85,7 @@ GPIOPin
 The panel subscribes to the following topics:
  * /gpio_msgsGPIOState
  * /sb_system/System
- * /sensor_msgs/BatteryState
+ * /turtlebot3_msgs/SensorState
 
 The panel provides control of GPIO values with the action:
  * /gpio_msgs/GPIOPin
@@ -101,7 +101,7 @@ The initial construction of the package files was accomplished using:
 **node:** sb_subscribe_system (sb_system/System)<br/>
 
 ##### ---------------------- robot  --------------------------<br/>
-**node:** sb_publish_battery_state (sensor_msgs/BatteryState)<br/>
+**node:** sb_publish_sensor_state (turtlebot3_msgs/SensorState)<br/>
 **node:** sb_publish_gpio_state (gpio_msgs/GPIOState)<br/>
 **node:** sb_publish_system (sb_system/System)<br/>
 **node:** sb_serve_gpio_set (GPIOSetRequest/GPIOSetResponse)<br/>

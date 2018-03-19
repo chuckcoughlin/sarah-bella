@@ -48,7 +48,7 @@ On the host system:
 
 This drawing and others is constructed using **InkScape** from https://inkscape.org/en/release/0.92.2.
 *********************************************************
-### Android Control Application <a id="android-header"></a>
+## Android Control Application <a id="android-header"></a>
 [toc](#table-of-contents)
 
 The control application is a standard Android application built using Android Studio 3.0. The studio may be downloaded from http://developer.android.com. It runs on the OSX build system and creates a run image for the Android tablet.
@@ -56,9 +56,9 @@ Configure the host build system, making the Android home environment variable av
 ```ANDROID_HOME=~/Library/Androd/sdk``` to ~/.bashrc.
 
 #### External Libraries <a id="external-libraries"></a>
-These next steps make ROS libraries available to the Android build environment. Note that the following are necessary only if creating a project from scratch. For an existing project, the modules are already part of the SBAssistant repository.
+These next steps make ROS libraries available to the Android build environment. Note that the following are necessary only if creating a project from scratch. For an existing project, the modules are already part of the SBAssistant *git* repository.
 
-The Android core package may be found https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_core/rosjava/0.3.5/rosjava-0.3.5.jar (org.ros). Download this to ~/robotics/sara-bella/SBAssistant/app/libs. You can either download the entire repository using *git* or simply copy the file using *wget*.
+The Android core package may be found at https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_core/rosjava/0.3.5/rosjava-0.3.5.jar (org.ros). Download this to ~/robotics/sara-bella/SBAssistant/app/libs. You can either download the entire repository using *git* and pick out the relevant files or simply copy the file using *wget*.
 
 Then from inside Android Studio:
 ```
@@ -92,7 +92,6 @@ Where the rules file contains:
 ```
 Process:
 * *commons-codec-1.11.jar* as *commons-codec-1.11a.jar
-* *rosjava-0.3.5.jar* as *rosjava-0.3.5a.jar*
 * *rosjava-0.3.5.jar* as *rosjava-0.3.5a.jar*
 * *message_generation-0.3.0.jar* as *message_generation-0.3.0a.jar*
 
@@ -140,7 +139,7 @@ To transfer non-apk files download and install Android File Transfer from http:/
 
 ***************************************************************
 
-### Linux Build System <a id="linux-header"></a>
+## Linux Build System <a id="linux-header"></a>
 [toc](#table-of-contents)
 
 The robot's ROS control code is developed on a Linux machine. We implement this as a virtual machine on the OSX host build system.
@@ -301,7 +300,7 @@ System package updates can be installed any time by:
 ```
 
 **********************************************************
-### Turtlebot3 <a id="turtlebot3-header"></a>
+## Turtlebot3 <a id="turtlebot3-header"></a>
 [toc](#table-of-contents)
 
 "ROSPi" (our name) is the RaspberryPi that is the robot's single board computer (SBC). After an initial flash and configuration
