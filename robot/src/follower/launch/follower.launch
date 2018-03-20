@@ -2,14 +2,18 @@
   The turtlebot people (or whatever) follower nodelet.
  -->
 <launch>
+  <param name="robot/name" value="SarahBella" type="str"/>
+  <param name="robot/type" value="turtlebot3" type="str"/>
+  <param name="robot/application" value="follower" type="str"/>
+  <param name="robot/platform" value="RaspberryPi" type="str"/>
   <arg name="simulation" default="false"/>
   <group unless="$(arg simulation)"> <!-- Real robot -->
-    <include file="$(find turtlebot_follower)/launch/includes/velocity_smoother.launch.xml">
+    <include file="$(find follower)/launch/includes/velocity_smoother.launch.xml">
       <arg name="nodelet_manager"  value="/mobile_base_nodelet_manager"/>
       <arg name="navigation_topic" value="/cmd_vel_mux/input/navi"/>
     </include>
 
-    <include file="$(find turtlebot3_bringup)/launch/turtlebot3_core.launch"/>
+    <include file="$(find turtlebot3_bringup)/launch/turtlebot3_robot.launch"/>
 <!--
     <include file="$(find turtlebot3_bringup)/launch/3dsensor.launch">
       <arg name="rgb_processing"                  value="true"/>  
@@ -29,13 +33,13 @@
   <node pkg="topic_tools" type="throttle" name="camera_throttle"
         args="messages camera/rgb/image_color/compressed 5"/>
 
-  <include file="$(find turtlebot_follower)/launch/includes/safety_controller.launch.xml"/>
+  <include file="$(find follower)/launch/includes/safety_controller.launch.xml"/>
 
   <!--  Real robot: Load turtlebot follower into the 3d sensors nodelet manager to avoid pointcloud serializing -->
   <!--  Simulation: Load turtlebot follower into nodelet manager for compatibility -->
-  <node pkg="nodelet" type="nodelet" name="turtlebot_follower"
-        args="load turtlebot_follower/TurtlebotFollower camera/camera_nodelet_manager">
-    <remap from="turtlebot_follower/cmd_vel" to="follower_velocity_smoother/raw_cmd_vel"/>
+  <node pkg="nodelet" type="nodelet" name="follower"
+        args="load follower/TurtlebotFollower camera/camera_nodelet_manager">
+    <remap from="follower/cmd_vel" to="follower_velocity_smoother/raw_cmd_vel"/>
     <remap from="depth/points" to="camera/depth/points"/>
     <param name="enabled" value="true" />
     <param name="x_scale" value="7.0" />
@@ -48,5 +52,5 @@
     <param name="goal_z" value="0.6" />
   </node>
   <!-- Launch the script which will toggle turtlebot following on and off based on a joystick button. default: on -->
-  <node name="switch" pkg="turtlebot_follower" type="switch.py"/>
+  <node name="switch" pkg="follower" type="switch.py"/>
 </launch>

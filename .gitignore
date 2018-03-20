@@ -2,5 +2,6 @@ bin/
 build/
 .DS_Store
 .idea
-robot/src/turtlebot3_msgs
+*.pyc
+launch.conf
 robot/src/hls_lfcd_lds_driver

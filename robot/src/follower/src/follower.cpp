@@ -36,12 +36,12 @@
 #include <turtlebot3_msgs/SetFollowState.h>
 
 #include "dynamic_reconfigure/server.h"
-#include "turtlebot_follower/FollowerConfig.h"
+#include "follower/FollowerConfig.h"
 
 #include <depth_image_proc/depth_traits.h>
 
 
-namespace turtlebot_follower
+namespace follower
 {
 
 //* The turtlebot follower nodelet.
@@ -85,7 +85,7 @@ private:
   ros::ServiceServer switch_srv_;
 
   // Dynamic reconfigure server
-  dynamic_reconfigure::Server<turtlebot_follower::FollowerConfig>* config_srv_;
+  dynamic_reconfigure::Server<follower::FollowerConfig>* config_srv_;
 
   /*!
    * @brief OnInit method from node handle.
@@ -114,13 +114,13 @@ private:
 
     switch_srv_ = private_nh.advertiseService("change_state", &TurtlebotFollower::changeModeSrvCb, this);
 
-    config_srv_ = new dynamic_reconfigure::Server<turtlebot_follower::FollowerConfig>(private_nh);
-    dynamic_reconfigure::Server<turtlebot_follower::FollowerConfig>::CallbackType f =
+    config_srv_ = new dynamic_reconfigure::Server<follower::FollowerConfig>(private_nh);
+    dynamic_reconfigure::Server<follower::FollowerConfig>::CallbackType f =
         boost::bind(&TurtlebotFollower::reconfigure, this, _1, _2);
     config_srv_->setCallback(f);
   }
 
-  void reconfigure(turtlebot_follower::FollowerConfig &config, uint32_t level)
+  void reconfigure(follower::FollowerConfig &config, uint32_t level)
   {
     min_y_ = config.min_y;
     max_y_ = config.max_y;
@@ -315,6 +315,6 @@ private:
   ros::Publisher bboxpub_;
 };
 
-PLUGINLIB_DECLARE_CLASS(turtlebot_follower, TurtlebotFollower, turtlebot_follower::TurtlebotFollower, nodelet::Nodelet);
+PLUGINLIB_DECLARE_CLASS(follower, TurtlebotFollower, follower::TurtlebotFollower, nodelet::Nodelet);
 
 }

@@ -1,6 +1,8 @@
 <!-- The "system" application includes:
      system_check - performance metrics
-     battery_state- battery status
+     sensor_state - sensor values including battery
+  Does not start the LIDAR.
+  Throttle the sensor state. We don't need battery status 10x/sec
 -->
 <launch>
   <param name="robot/name" value="SarahBella" type="str"/>
@@ -9,5 +11,5 @@
   <param name="robot/platform" value="RaspberryPi" type="str"/>
   <include file="$(find system_check)/launch/system_check.launch" />
   <include file="$(find gpio_msgs)/launch/gpio_msgs.launch" />
-  <include file="$(find turtlebot3_bringup)/launch/turtlebot3_robot.launch" />
+  <include file="$(find turtlebot3_bringup)/launch/turtlebot3_throttled_core.launch" />
 </launch>

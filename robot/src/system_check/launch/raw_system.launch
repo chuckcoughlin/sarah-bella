@@ -1,0 +1,14 @@
+<!-- The "system" application includes:
+     system_check - performance metrics
+     sensor_state - sensor values including battery
+  Does not start the LIDAR.
+-->
+<launch>
+  <param name="robot/name" value="SarahBella" type="str"/>
+  <param name="robot/type" value="turtlebot3" type="str"/>
+  <param name="robot/application" value="system" type="str"/>
+  <param name="robot/platform" value="RaspberryPi" type="str"/>
+  <include file="$(find system_check)/launch/system_check.launch" />
+  <include file="$(find gpio_msgs)/launch/gpio_msgs.launch" />
+  <include file="$(find turtlebot3_bringup)/launch/turtlebot3_core.launch" />
+</launch>
