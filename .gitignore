@@ -3,4 +3,5 @@ build/
 .DS_Store
 .idea
 *.pyc
+launch.conf
 robot/src/hls_lfcd_lds_driver
