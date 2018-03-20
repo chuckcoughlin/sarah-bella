@@ -52,7 +52,7 @@ System
       Uint32 in_packets_dropped
       Uint32 out_packets_dropped
 ```
-The *SensorState* message from turtlebot3_msgs is built into the Turtlebot3 firmware (updated 1/17/2018). For a full description, see [here]( http://docs.ros.org/hydro/api/kobuki_msgs/html/msg/SensorState.html). Not all properties are displayed by the tablet.
+The *SensorState* message from turtlebot3_msgs is built into the Turtlebot3 firmware (updated 1/17/2018). For a full description, see [here]( http://docs.ros.org/hydro/api/kobuki_msgs/html/msg/SensorState.html). The tablet subscribes to a throttled stream. Not all properties are displayed.
 
 ```
 SensorState
@@ -83,9 +83,9 @@ GPIOPin
   String mode              # IN, OUT, GND, PWR
 ```
 The panel subscribes to the following topics:
- * /gpio_msgsGPIOState
+ * /gpio_msgs/GPIOState
  * /sb_system/System
- * /turtlebot3_msgs/SensorState
+ * /sensor_state_throttle/SensorState
 
 The panel provides control of GPIO values with the action:
  * /gpio_msgs/GPIOPin
@@ -114,6 +114,13 @@ The initial construction of the package files was accomplished using:
  The *follower* application is one of the ROBOTIS demonstrations. I chose the version from: https://github.com/NVIDIA-Jetson/turtlebot3/tree/master/turtlebot_apps/turtlebot_follower. I modified references from *turtlebot_msgs* to *turtlebot3_msgs*.
 
  The *follow* application will cause the TurtleBot3 to look for objects in a window 50cm in front of it. And it will seek to keep the centroid of the observed objects directly in front of it and a fixed distance away. If the centroid of the object is too far away it will drive forward, too close backward, and if offset to the side it will turn toward the centroid.
+
+ https://github.com/jjones646/turtlebot-follower.git Class project outline. Python.
+
+ https://github.com/NVIDIA-Jetson/turtlebot3/blob/master/turtlebot_apps/turtlebot_follower/src/follower.cpp Jetson-NVIDIA. cpp, turtlebot3, switch.py. rapp
+
+ https://github.com/ROBOTIS-GIT/turtlebot3_applications. Official demo. python. follow_filter
+
 
 ##### 04 - Park <a id="park"></a>
 See Turtlebot3 Automatic Parking at: https://github.com/ROBOTIS-GIT/turtlebot3_applications

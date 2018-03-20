@@ -243,6 +243,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
                 (applicationManager.getApplication()==null?null:applicationManager.getApplication().getExecutionStatus())));
         if( applicationManager.getApplication()!=null && app.getApplicationName().equalsIgnoreCase(applicationManager.getApplication().getApplicationName()) ) {
             statusView.setVisibility(View.VISIBLE);
+            statusView.setImageIcon(null);
             app = applicationManager.getApplication();  // Make sure we get the correct instance
             if( app.getExecutionStatus().equalsIgnoreCase(RobotApplication.APP_STATUS_RUNNING)) {
                 statusView.setImageResource(R.drawable.ball_green);
@@ -253,7 +254,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
                 Log.i(CLSS, String.format("updateStatusImage: set ball YELLOW for %s",app.getApplicationName()));
             }
             statusView.postInvalidate();
-            //statusView.invalidate(0,0,statusView.getWidth(), statusView.getHeight());
+            statusView.invalidate(0,0,statusView.getWidth(), statusView.getHeight());
         }
         else {
             statusView.setVisibility(View.INVISIBLE);
