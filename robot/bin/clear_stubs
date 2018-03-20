@@ -6,7 +6,6 @@ name=`uname -n`
 if [ $name != "ROSDev" ] 
 then
 	rm -rf ~/catkin_ws/src/gpio_msgs/src/RPi
-	rm -rf ~/catkin_ws/src/turtlebot3_follow_filter
 	rm -rf ~/catkin_ws/src/turtlebot3/turtlebot3_example
 	rm -rf ~/catkin_ws/src/turtlebot3/turtlebot3_navigation
 	rm -rf ~/catkin_ws/src/turtlebot3/turtlebot3_slam

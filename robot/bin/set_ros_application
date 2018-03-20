@@ -25,7 +25,7 @@ then
 # ===== C++ =======
 elif [ ${APP} = "follow" -o ${APP} = "follower" ]
 then
-    echo "LAUNCH_PKG=turtlebot_follower" > ${CONFIG}
+    echo "LAUNCH_PKG=follower" > ${CONFIG}
     echo "LAUNCH_FILE=follower.launch" >> ${CONFIG}
 # ===== Python =======
 elif [ ${APP} = "follow3" -o ${APP} = "follower3" ]
