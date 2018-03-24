@@ -1,0 +1,8 @@
+<launch>
+ <!-- Axes -->
+  <param name="axis_linear" value="1" type="int"/>
+  <param name="axis_angular" value="0" type="int"/>
+  <param name="scale_linear" value="2" type="double"/>
+  <param name="scale_angular" value="2" type="double"/>
+  <node pkg="teleop" type="turtle_teleop_joy" name="teleop"/>
+</launch>
