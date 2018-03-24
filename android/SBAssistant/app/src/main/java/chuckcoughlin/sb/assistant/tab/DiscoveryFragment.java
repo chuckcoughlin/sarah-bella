@@ -9,7 +9,6 @@ import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,7 +18,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -39,7 +37,6 @@ import chuckcoughlin.sb.assistant.ros.SBRosManager;
 import ros.android.appmanager.BluetoothChecker;
 import ros.android.appmanager.MasterChecker;
 import ros.android.appmanager.RemoteCommand;
-import ros.android.appmanager.SBRobotConnectionErrorListener;
 import ros.android.appmanager.SBRobotConnectionHandler;
 import ros.android.appmanager.WifiChecker;
 import ros.android.util.RobotApplication;
@@ -233,32 +230,34 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
 
     /**
      * Update the application status icon at the indicated position in the list. Use this version
-     * where the application template is known.
+     * where the application template is known. Run this on the UI Thread.
      *
      * @param app the current application
      * @param statusView view that holds the status image
      */
-    private void updateStatusImage(RobotApplication app,ImageView statusView ) {
+    private void updateStatusImage(final RobotApplication app,ImageView statusView ) {
         Log.i(CLSS, String.format("updateStatusImage: for %s (%s)",app.getApplicationName(),
                 (applicationManager.getApplication()==null?null:applicationManager.getApplication().getExecutionStatus())));
-        if( applicationManager.getApplication()!=null && app.getApplicationName().equalsIgnoreCase(applicationManager.getApplication().getApplicationName()) ) {
-            statusView.setVisibility(View.VISIBLE);
-            statusView.setImageIcon(null);
-            app = applicationManager.getApplication();  // Make sure we get the correct instance
-            if( app.getExecutionStatus().equalsIgnoreCase(RobotApplication.APP_STATUS_RUNNING)) {
-                statusView.setImageResource(R.drawable.ball_green);
-                Log.i(CLSS, String.format("updateStatusImage: set ball GREEN for %s",app.getApplicationName()));
+
+        getActivity().runOnUiThread(new Runnable() {
+            public void run() {
+                statusView.setVisibility(View.INVISIBLE);
+                if (applicationManager.getApplication() != null && app.getApplicationName().equalsIgnoreCase(applicationManager.getApplication().getApplicationName())) {
+                    statusView.setImageIcon(null);
+                    RobotApplication rapp = applicationManager.getApplication();  // Make sure we get the correct instance
+                    if (rapp.getExecutionStatus().equalsIgnoreCase(RobotApplication.APP_STATUS_RUNNING)) {
+                        statusView.setImageResource(R.drawable.ball_green);
+                        Log.i(CLSS, String.format("updateStatusImage: set ball GREEN for %s", app.getApplicationName()));
+                    }
+                    else {
+                        statusView.setImageResource(R.drawable.ball_yellow);
+                        Log.i(CLSS, String.format("updateStatusImage: set ball YELLOW for %s", app.getApplicationName()));
+                    }
+                    statusView.invalidate();
+                    statusView.setVisibility(View.VISIBLE);
+                }
             }
-            else {
-                statusView.setImageResource(R.drawable.ball_yellow);
-                Log.i(CLSS, String.format("updateStatusImage: set ball YELLOW for %s",app.getApplicationName()));
-            }
-            statusView.postInvalidate();
-            statusView.invalidate(0,0,statusView.getWidth(), statusView.getHeight());
-        }
-        else {
-            statusView.setVisibility(View.INVISIBLE);
-        }
+        });
     }
     // =========================================== Checker Callbacks ====================================
     @Override
