@@ -114,14 +114,14 @@ def finding_spot_position():
     end_angle_distance = get_angle_distance(spot_angle.data_3)
 
     if start_angle_distance[1] != 0 and center_angle_distance[1] != 0 and end_angle_distance[1] != 0:
-        print("calibration......")
-        start_point = get_point(start_angle_distance)
+        rospy.loginfo(("calibration......")
+        start_point =get_point(start_angle_distance)
         center_point = get_point(center_angle_distance)
         end_point = get_point(end_angle_distance)
         stats = True
     else:
         stats = False
-        print("wrong scan!!")
+        rospy.logwarn("wrong scan!!")
 
     return spot_point.retun_val(stats, start_point, center_point, end_point)
 
@@ -163,19 +163,19 @@ if __name__=="__main__":
                 finding_spot_position()
                 if spot_point.stats == True:
                     theta = np.arctan2(spot_point.data_1[1] - spot_point.data_3[1], spot_point.data_1[0] - spot_point.data_3[0])
-                    print("=================================")
-                    print("|        |     x     |     y     |")
-                    print('| start  | {0:>10.3f}| {1:>10.3f}|'.format(spot_point.data_1[0], spot_point.data_1[1]))
-                    print('| center | {0:>10.3f}| {1:>10.3f}|'.format(spot_point.data_2[0], spot_point.data_2[1]))
-                    print('| end    | {0:>10.3f}| {1:>10.3f}|'.format(spot_point.data_3[0], spot_point.data_3[1]))
-                    print("=================================")
-                    print('| theta  | {0:.2f} deg'.format(np.rad2deg(theta)))
-                    print('| yaw    | {0:.2f} deg'.format(np.rad2deg(yaw)))
-                    print("=================================")
-                    print("===== Go to parking spot!!! =====")
+                    rospy.loginfo("=================================")
+                    rospy.loginfo("|        |     x     |     y     |")
+                    rospy.loginfo('| start  | {0:>10.3f}| {1:>10.3f}|'.format(spot_point.data_1[0], spot_point.data_1[1]))
+                    rospy.loginfo('| center | {0:>10.3f}| {1:>10.3f}|'.format(spot_point.data_2[0], spot_point.data_2[1]))
+                    rospy.loginfo('| end    | {0:>10.3f}| {1:>10.3f}|'.format(spot_point.data_3[0], spot_point.data_3[1]))
+                    rospy.loginfo("=================================")
+                    rospy.loginfo('| theta  | {0:.2f} deg'.format(np.rad2deg(theta)))
+                    rospy.loginfo('| yaw    | {0:.2f} deg'.format(np.rad2deg(yaw)))
+                    rospy.loginfo("=================================")
+                    rospy.loginfo("===== Go to parking spot!!! =====")
                     step = 1
             else:
-                print("Fail finding parking spot.")
+                rospy.logerror("Fail finding parking spot.")
         elif step == 1:
             init_yaw = yaw
             yaw = theta + yaw

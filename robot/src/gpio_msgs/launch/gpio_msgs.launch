@@ -4,6 +4,6 @@
   <param name="robot/application" value="system" type="str"/>
   <param name="robot/platform" value="RaspberryPi" type="str"/>
   <!-- Launch file for gpio_msgs (part of the system application) -->
-  <node pkg="gpio_msgs" type="publish_gpio_state.py" name="sb_publish_gpio_state" output="screen"/>
-  <node pkg="gpio_msgs" type="serve_gpio_set.py" name="sb_serve_gpio_set" output="screen"/>
+  <node pkg="gpio_msgs" type="publish_gpio_state.py" name="sb_publish_gpio_state" output="log"/>
+  <node pkg="gpio_msgs" type="serve_gpio_set.py" name="sb_serve_gpio_set" output="log"/>
 </launch>

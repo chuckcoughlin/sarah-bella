@@ -31,7 +31,7 @@
 
   <!-- Make a slower camera feed available; only required if we use android client -->
   <node pkg="topic_tools" type="throttle" name="camera_throttle"
-        args="messages camera/rgb/image_color/compressed 5"/>
+        args="messages camera/rgb/image_color/compressed 5 output="log"/>
 
   <include file="$(find follower)/launch/includes/safety_controller.launch.xml"/>
 
@@ -52,5 +52,5 @@
     <param name="goal_z" value="0.6" />
   </node>
   <!-- Launch the script which will toggle turtlebot following on and off based on a joystick button. default: on -->
-  <node name="switch" pkg="follower" type="switch.py"/>
+  <node name="switch" pkg="follower" type="switch.py" output="log"/>
 </launch>

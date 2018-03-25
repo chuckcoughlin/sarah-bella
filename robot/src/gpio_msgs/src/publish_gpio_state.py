@@ -41,6 +41,8 @@ for pin in pinlist:
 
 while not rospy.is_shutdown():
 	publish = str2bool(rospy.get_param("/gpio_msgs/publish_all","False"))
+	if publish:
+		rospy.loginfo("publish_all: set to TRUE")
 	rospy.set_param("/gpio_msgs/publish_all","False")
 	pins = []
 	for pin in pinlist:
@@ -56,7 +58,8 @@ while not rospy.is_shutdown():
 		state = GPIOState()
 		state.pins = pins
 		pub.publish(state)
+		rospy.loginfo("Published %d GPIO pin values"%(len(pins))
 
 	rate.sleep()
 
-print "gpio_msgs.publish_gpio_state: complete"
+rospy.loginfo("complete")

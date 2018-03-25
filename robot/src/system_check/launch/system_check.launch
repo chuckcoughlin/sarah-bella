@@ -4,6 +4,6 @@
   <param name="robot/application" value="system" type="str"/>
   <param name="robot/platform" value="RaspberryPi" type="str"/>
   <!-- Launch file for system_check -->
-  <node pkg="system_check" type="publish_system.py" name="sb_publish_system" output="screen">
+  <node pkg="system_check" type="publish_system.py" name="sb_publish_system" output="log">
   </node>
 </launch>

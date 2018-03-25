@@ -21,10 +21,7 @@ private:
 };
 
 
-TeleopTurtle::TeleopTurtle():
-  linear_(1),
-  angular_(2)
-{
+TeleopTurtle::TeleopTurtle(): linear_(1), angular_(2) {
 
   nh_.param("axis_linear", linear_, linear_);
   nh_.param("axis_angular", angular_, angular_);
@@ -33,8 +30,6 @@ TeleopTurtle::TeleopTurtle():
 
 
   vel_pub_ = nh_.advertise<geometry_msgs::Twist>("turtle1/cmd_vel", 1);
-
-
   joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("joy", 10, &TeleopTurtle::joyCallback, this);
 
 }
