@@ -194,7 +194,7 @@ private:
       x /= n;
       y /= n;
       if(z > max_z_){
-        ROS_INFO_THROTTLE(1, "Centroid too far away %f, stopping the robot\n", z);
+        ROS_INFO_THROTTLE(10, "Centroid too far away %f, stopping the robot\n", z);
         if (enabled_)
         {
           cmdpub_.publish(geometry_msgs::TwistPtr(new geometry_msgs::Twist()));
@@ -202,7 +202,7 @@ private:
         return;
       }
 
-      ROS_INFO_THROTTLE(1, "Centroid at %f %f %f with %d points", x, y, z, n);
+      ROS_INFO_THROTTLE(5, "Centroid at %f %f %f with %d points", x, y, z, n);
       publishMarker(x, y, z);
 
       if (enabled_)
@@ -215,7 +215,7 @@ private:
     }
     else
     {
-      ROS_INFO_THROTTLE(1, "Not enough points(%d) detected, stopping the robot", n);
+      ROS_INFO_THROTTLE(5, "Not enough points(%d) detected, stopping the robot", n);
       publishMarker(x, y, z);
 
       if (enabled_)

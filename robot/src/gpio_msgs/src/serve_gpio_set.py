@@ -21,6 +21,7 @@ def set_GPIO(request):
 	else:
 		response.msg="GPIOSet error: channel ",channel," not configured as an IN"
 		response.value = False
+	rospy.loginfo(response.msg)
 	return response
 
 

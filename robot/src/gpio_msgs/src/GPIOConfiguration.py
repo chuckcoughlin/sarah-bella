@@ -3,6 +3,7 @@
 # Configure the GPIO ports as IN or OUT appropriately.
 # This should be called on startup.
 #
+import rospy
 import RPi.GPIO as GPIO
 from gpio_msgs.msg import GPIOState, GPIOPin
 
@@ -14,7 +15,7 @@ def configure():
 		try:
 			GPIO.setup([channel],GPIO.OUT)
 		except:
-			print "ERROR: Setting GPIO ",channel," to OUT"
+			rospy.logwarn("ERROR: Setting GPIO ",channel," to OUT")
 
 
 # Argument is a GPIOState.
@@ -264,4 +265,5 @@ def initialize(state):
 	pins.append(pin40)
 	
 	state.pins = pins
+	rospy.loginfo("Initialized state with %d pins"%(len(pins)))
 	return pins

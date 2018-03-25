@@ -36,4 +36,4 @@ while not rospy.is_shutdown():
 	pub.publish(msg)
 	rate.sleep()
 
-print "system_check.publish_system: complete"
+rospy.loginfo("complete")
