@@ -210,9 +210,10 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
                 @Override
                 public void run() {
                     BatteryLevelView robotBattery = (BatteryLevelView) mainView.findViewById(R.id.robot_battery);
-                    robotBattery.setBatteryPercent((float)(120./bs.getBattery()));
+                    // A battery voltage less than 11 should trigger a shutdown.
+                    robotBattery.setBatteryPercent(100.* (bs.getBattery()-11.0));
                     TextView tv = (TextView) mainView.findViewById(R.id.robot_battery_state);
-                    tv.setText(String.valueOf(bs.getBattery()/10.));
+                    tv.setText(String.valueOf(bs.getBattery()));
                 }
             });
         }

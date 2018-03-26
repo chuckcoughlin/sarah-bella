@@ -23,6 +23,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,14 +99,6 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
             }
         });
 
-        button = (Button) contentView.findViewById(R.id.startButton);
-        ;
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startApplicationClicked();
-            }
-        });
         return contentView;
     }
 
@@ -215,12 +208,18 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
             // Lookup view for data population
             TextView nameView = (TextView) convertView.findViewById(R.id.application_name);
             TextView descriptionView = (TextView) convertView.findViewById(R.id.application_description);
-            ImageView statusImage    = convertView.findViewById(R.id.application_status);
+            ToggleButton statusToggle    = convertView.findViewById(R.id.application_selector);
+            statusToggle.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startApplicationClicked();
+                }
+            });
 
             // Populate the data into the template view using the data object
             nameView.setText(app.getApplicationName());
             descriptionView.setText(app.getDescription());
-            updateStatusImage(app,statusImage);
+            updateStatusImage(app,statusToggle);
 
             // Return the completed view to render on screen
             convertView.postInvalidate(0,0,convertView.getRight(),convertView.getBottom());
@@ -233,28 +232,26 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
      * where the application template is known. Run this on the UI Thread.
      *
      * @param app the current application
-     * @param statusView view that holds the status image
+     * @param toggle button that shows the application state
      */
-    private void updateStatusImage(final RobotApplication app,ImageView statusView ) {
+    private void updateStatusImage(final RobotApplication app,ToggleButton toggle ) {
         Log.i(CLSS, String.format("updateStatusImage: for %s (%s)",app.getApplicationName(),
                 (applicationManager.getApplication()==null?null:applicationManager.getApplication().getExecutionStatus())));
 
         getActivity().runOnUiThread(new Runnable() {
             public void run() {
-                statusView.setVisibility(View.INVISIBLE);
+                toggle.setVisibility(View.INVISIBLE);
                 if (applicationManager.getApplication() != null && app.getApplicationName().equalsIgnoreCase(applicationManager.getApplication().getApplicationName())) {
-                    statusView.setImageIcon(null);
                     RobotApplication rapp = applicationManager.getApplication();  // Make sure we get the correct instance
                     if (rapp.getExecutionStatus().equalsIgnoreCase(RobotApplication.APP_STATUS_RUNNING)) {
-                        statusView.setImageResource(R.drawable.ball_green);
+                        toggle.setChecked(true);
                         Log.i(CLSS, String.format("updateStatusImage: set ball GREEN for %s", app.getApplicationName()));
                     }
                     else {
-                        statusView.setImageResource(R.drawable.ball_yellow);
+                        toggle.setChecked(false);
                         Log.i(CLSS, String.format("updateStatusImage: set ball YELLOW for %s", app.getApplicationName()));
                     }
-                    statusView.invalidate();
-                    statusView.setVisibility(View.VISIBLE);
+                    toggle.setVisibility(View.VISIBLE);
                 }
             }
         });
@@ -265,8 +262,10 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         Log.w(CLSS, "handleConnectionError: " + reason);
         rosManager.setConnectionStatus(SBRosManager.CONNECTION_STATUS_UNCONNECTED);
         applicationManager.setApplication(null);
-        SBWarningDialog warning = SBWarningDialog.newInstance( "Error connecting to robot", reason);
-        warning.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
+        if(getActivity()!=null) {
+            SBWarningDialog warning = SBWarningDialog.newInstance("Error connecting to robot", reason);
+            warning.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
+        }
     }
 
     /**
@@ -424,7 +423,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
             handleNetworkError(SBConstants.NETWORK_WIFI,"The MasterURI must be defined on the Settings panel");
         }
     }
-    //  Start button clicked:
+    //  Start/stop toggle clicked:
     //    If this is not the application currently running on the robot,
     //    restart ROS on the robot with the newly desired application.
     //    Signal any interested listeners that the application has started
@@ -464,13 +463,6 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
 
         button = (Button) contentView.findViewById(R.id.viewButton);
         button.setEnabled(robot != null);
-
-        button = (Button) contentView.findViewById(R.id.startButton);
-        button.setEnabled(robot != null && applicationManager.getApplication()!=null);
-        if (robot == null || applicationManager.getApplication()==null ||
-                !applicationManager.getApplication().getExecutionStatus().equals(RobotApplication.APP_STATUS_RUNNING))
-            button.setText(R.string.discoveryButtonStart);
-        else button.setText((R.string.discoveryButtonStop));
 
         ImageView iview = (ImageView) contentView.findViewById(R.id.robot_icon);
         if (robot == null) iview.setVisibility(View.INVISIBLE);

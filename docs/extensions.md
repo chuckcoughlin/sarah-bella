@@ -11,6 +11,9 @@ the collection as needed.
   * [Discovery](#discovery)
   * [System Check](#systemcheck)
   * [Headlamp](#headlamp)
+  * [Teleop](#teleop)
+  * [Follow](#follow)
+  * [Park](#park)
 
 *********************************************************
 ### 00 - Discovery <a id="discovery"></a>
@@ -110,7 +113,9 @@ The initial construction of the package files was accomplished using:
  The current limit for the GPIO board is about 2ma, thus a lamp must controlled through
  a relay or some other isolating mechanism.
 
- ### 03- Follow <a id="follow"></a>
+ ### 03- Teleop <a id="teleop"></a>
+http://wiki.ros.org/joy/Tutorials/WritingTeleopNode
+ ### 04- Follow <a id="follow"></a>
  The *follower* application is one of the ROBOTIS demonstrations. I chose the version from: https://github.com/NVIDIA-Jetson/turtlebot3/tree/master/turtlebot_apps/turtlebot_follower. I modified references from *turtlebot_msgs* to *turtlebot3_msgs*.
 
  The *follow* application will cause the TurtleBot3 to look for objects in a window 50cm in front of it. And it will seek to keep the centroid of the observed objects directly in front of it and a fixed distance away. If the centroid of the object is too far away it will drive forward, too close backward, and if offset to the side it will turn toward the centroid.
@@ -122,5 +127,5 @@ The initial construction of the package files was accomplished using:
  https://github.com/ROBOTIS-GIT/turtlebot3_applications. Official demo. python. follow_filter
 
 
-##### 04 - Park <a id="park"></a>
+##### 05 - Park <a id="park"></a>
 See Turtlebot3 Automatic Parking at: https://github.com/ROBOTIS-GIT/turtlebot3_applications

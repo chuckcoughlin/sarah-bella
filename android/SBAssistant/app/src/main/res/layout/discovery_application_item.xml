@@ -20,11 +20,15 @@
         android:textSize="20sp"
         android:paddingLeft="20dp"
         android:paddingRight="20dp"/>
-    <ImageView android:layout_width="25dp"
-        android:layout_height="25dp"
-        android:layout_gravity="center"
-        android:adjustViewBounds="true"
-        android:src="@drawable/ball_yellow"
-        android:id="@+id/application_status"/>
+    <ToggleButton
+        android:id="@+id/application_selector"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scaleType="fitCenter"
+        android:button="@drawable/toggle"
+        android:textSize="20sp"
+        android:textOn="@string/discoveryToggleOn"
+        android:textOff="@string/discoveryToggleOff"
+        android:background="@null"/>
 </ros.android.views.CheckableLinearLayout>
 

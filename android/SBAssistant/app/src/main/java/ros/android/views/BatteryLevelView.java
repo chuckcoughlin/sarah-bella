@@ -87,7 +87,7 @@ public class BatteryLevelView extends View {
     pluggedIn = false;
   }
 
-  public void setBatteryPercent(float percent) {
+  public void setBatteryPercent(double percent) {
     levelPercent = percent;
     invalidate();
   }

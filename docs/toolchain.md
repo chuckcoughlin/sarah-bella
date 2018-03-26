@@ -189,6 +189,8 @@ Now install dependent packages for Turtlebot3 control and Java message generatio
 		ros-kinetic-depthimage-to-laserscan ros-kinetic-rosserial-arduino ros-kinetic-rosserial-python ros-kinetic-rosserial-server ros-kinetic-rosserial-client \
 		ros-kinetic-rosserial-msgs ros-kinetic-amcl ros-kinetic-map-server ros-kinetic-move-base ros-kinetic-urdf ros-kinetic-xacro ros-kinetic-compressed-image-transport \
 		ros-kinetic-rqt-image-view ros-kinetic-gmapping ros-kinetic-navigation
+    sudo apt-get install ros-kinetic-hls-lfcd-lds-driver
+    sudo apt-get install ros-kinetic-turtlebot-teleop
     sudo apt-get install ros-kinetic-interactive-markers
     sudo apt-get install ros-kinetic-laser-filters
 ```
@@ -249,6 +251,7 @@ http://wiki.ros.org/catkin/Tutorials. Make sure that the following lines have be
 ```
   source /opt/ros/kinetic/setup.bash
   source ~/robotics/catkin_ws/devel/setup.bash
+  rm -rf ~/.ros/log/*
 ```
 Note that the standard ROS packages are installed in /opt/ros/kinetic/share. These can be browsed to determine
 message contents and other details.
