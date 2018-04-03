@@ -49,8 +49,9 @@ public class MainActivity extends AppCompatActivity {
         // If I absolutely have to start over again with the database ...
         //this.deleteDatabase(SBConstants.DB_NAME);
 
-        // Initialize the database manager ...
+        // Initialize the database manager and others ...
         SBDbManager.initialize(this);
+        SBLogManager.initialize();
 
         Log.i(CLSS,"onCreate: entering ...");
         setContentView(R.layout.activity_main);

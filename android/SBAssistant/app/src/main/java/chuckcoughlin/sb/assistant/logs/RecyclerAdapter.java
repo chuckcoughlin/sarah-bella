@@ -25,7 +25,7 @@ import chuckcoughlin.sb.assistant.R;
  */
 
 public class RecyclerAdapter extends RecyclerView.Adapter<LogViewHolder> {
-    private static final String TAG = RecyclerAdapter.class.getSimpleName();
+    private static final String CLSS = RecyclerAdapter.class.getSimpleName();
     private int nItems;
     private List<String> data = Collections.emptyList();
 

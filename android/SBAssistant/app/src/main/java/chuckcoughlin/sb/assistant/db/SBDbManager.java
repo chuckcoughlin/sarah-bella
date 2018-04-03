@@ -45,7 +45,7 @@ public class SBDbManager extends SQLiteOpenHelper {
             instance = new SBDbManager(context.getApplicationContext());
         }
         else {
-            throw new IllegalStateException("Attempt to initialize old copy of SDBManager");
+            throw new IllegalStateException("Attempt to initialize old copy of SBDbManager");
         }
         return instance;
     }
@@ -57,7 +57,7 @@ public class SBDbManager extends SQLiteOpenHelper {
      */
     public static synchronized SBDbManager getInstance() {
         if (instance == null) {
-            throw new IllegalStateException("Attempt to return uninitialized copy of SDBManager");
+            throw new IllegalStateException("Attempt to return uninitialized copy of SBDbManager");
         }
         return instance;
     }

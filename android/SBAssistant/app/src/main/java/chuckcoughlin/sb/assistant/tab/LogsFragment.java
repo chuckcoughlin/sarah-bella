@@ -14,15 +14,16 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import chuckcoughlin.sb.assistant.R;
+import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.logs.RecyclerAdapter;
 
 /**
- * This fragment allows preusal of the robot's activity log.
+ * This fragment allows perusal of the robot's activity log.
  */
 
 public class LogsFragment extends BasicAssistantFragment {
 
-    private static final int NUM_LOG_MESSAGES = 100;  // Number of list items to display/scroll
+
     private RecyclerView.LayoutManager layoutManager;
     private RecyclerAdapter adapter;
     private RecyclerView logMessageView;
@@ -41,7 +42,7 @@ public class LogsFragment extends BasicAssistantFragment {
         LinearLayoutManager layoutManager = new LinearLayoutManager(rootView.getContext());
         logMessageView.setLayoutManager(layoutManager);
         logMessageView.setHasFixedSize(true);   // For now
-        adapter = new RecyclerAdapter(NUM_LOG_MESSAGES);
+        adapter = new RecyclerAdapter(SBConstants.NUM_LOG_MESSAGES);
         logMessageView.setAdapter(adapter);
 
         return rootView;

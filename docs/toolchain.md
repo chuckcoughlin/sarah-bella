@@ -339,6 +339,18 @@ automatically connect if found. It may not be available during the first login, 
 
 We would like to have *ROSPi* start with a fixed IP address. We have been unsuccessful at creating such a configuration. Howeverm in practice, we find that the address is always the same. To see what that address, execute ```ifconfig``` once a network configuration has been established.
 
+*ssh* is used to remotely switch applications on the robot. It is disabled by default. To enable,
+```
+  sudo rospi-config
+```
+Under "Interfacing Options", navigate to SSH, select "Yes".
+
+At the bottom of configuration files ```/etc/ssh/ssh_config``` and ```/etc/ssh/sshd_config``` append the text:
+```
+   IPQoS 0x00
+```
+This fix is described at [Fix SSH Hanging](https://expresshosting.net/ssh-hanging-authentication). Many thanks.
+
 #### ROS Development Setup <a id="ros-development-setup-pi"></a>
 
 Make *~/robotic* the root of our *git* repository. We will use *git* as the integrating mechanism with our development machine and for this we replicate the same directory

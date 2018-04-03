@@ -1,52 +1,67 @@
 package chuckcoughlin.sb.assistant.logs;
 
-import android.content.Context;
-import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
+import android.app.Activity;
 import android.util.Log;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.ros.node.ConnectedNode;
 
-import chuckcoughlin.sb.assistant.common.NameValue;
+import java.util.LinkedList;
+
+import chuckcoughlin.sb.assistant.common.AbstractMessageListener;
+import chuckcoughlin.sb.assistant.common.FixedSizeList;
 import chuckcoughlin.sb.assistant.common.SBConstants;
+import chuckcoughlin.sb.assistant.ros.SBApplicationStatusListener;
+import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
 
 /**
  * The log manager subscribes to log messages whenever any application is active.
- * The instance is created and shutdown in the MainActivity. The instance must be initialized as its first operation.
+ * The instance is created and shutdown in the MainActivity. The instance must be
+ * initialized as its first operation.
  */
-public class SBLogManager {
+public class SBLogManager implements SBApplicationStatusListener {
     private final static String CLSS = "SBLogManager";
     private static volatile SBLogManager instance = null;
-    private volatile Context context = null;
+    private final LogListener logListener;
+    private final FixedSizeList<rosgraph_msgs.Log> logList;
 
     /**
      * Constructor is private per Singleton pattern. This forces use of the single instance.
-     * @param context main activity
+     * On start, create subscriptions to the applications.
      */
-    private SBLogManager(Context context) {
-        this.context = context.getApplicationContext();
+    private SBLogManager() {
+        SBRosApplicationManager.getInstance().addListener(this);
+        logList = new FixedSizeList<rosgraph_msgs.Log>(SBConstants.NUM_LOG_MESSAGES);
+        logListener = new LogListener();
     }
 
     /**
      * Use this method in the initial activity. We need to assign the context.
-     * @param context main activity
      * @return the Singleton instance
      */
-    public static synchronized SBLogManager initialize(Context context) {
+    public static synchronized SBLogManager initialize() {
         // Use the application context, which will ensure that you
         // don't accidentally leak an Activity's context.
         if (instance == null) {
-            instance = new SBLogManager(context.getApplicationContext());
+            instance = new SBLogManager();
         }
         else {
-            throw new IllegalStateException("Attempt to initialize old copy of SDBManager");
+            throw new IllegalStateException("Attempt to initialize old copy of SBLogManager");
         }
         return instance;
     }
 
+    /**
+     * Called when main activity is destroyed. Clean up any resources.
+     * To use again requires re-initialization.
+     */
+    public static void destroy() {
+        if (instance != null) {
+            synchronized (SBRosApplicationManager.class) {
+                instance.shutdown();
+                instance = null;
+            }
+        }
+    }
     /**
      * Use this method for all subsequent calls. We often don't have
      * a convenient context.
@@ -54,21 +69,46 @@ public class SBLogManager {
      */
     public static synchronized SBLogManager getInstance() {
         if (instance == null) {
-            throw new IllegalStateException("Attempt to return uninitialized copy of SDBManager");
+            throw new IllegalStateException("Attempt to return uninitialized copy of SBLogManager");
         }
         return instance;
     }
 
+    public FixedSizeList<rosgraph_msgs.Log> getLogs() { return logList; }
 
+    private void shutdown() {
+        if( SBRosApplicationManager.getInstance()!=null) {
+            SBRosApplicationManager.getInstance().removeListener(this);
+        }
+    }
 
+    // =================================== SBApplicationStatusListener ============================
+    // We don't care what the application is, subscribe to the logs.
+    @Override
+    public void applicationStarted(String appName) {
+        ConnectedNode node = SBRosApplicationManager.getInstance().getApplication().getConnectedNode();
+        if (node != null) {
+            logListener.subscribe(node, "/rosout_agg");  // Aggregated feed
+        }
+    }
 
+    @Override
+    public void applicationShutdown() {
 
+        logListener.shutdown();
+        shutdown();
+    }
 
-    /**
-     * Called when main activity is destroyed. Clean up any resources.
-     * To use again requires re-initialization.
-     */
-    public static void destroy() {
-        instance = null;
+    // =================================== Message Listener ============================
+    private class LogListener extends AbstractMessageListener<rosgraph_msgs.Log> {
+        public LogListener() {
+            super(rosgraph_msgs.Log._TYPE);
+        }
+
+        @Override
+        public void onNewMessage(rosgraph_msgs.Log msg) {
+            android.util.Log.i(CLSS, String.format("Got a log message - %s", msg.getMsg()));
+            logList.add(msg);
+        }
     }
 }
