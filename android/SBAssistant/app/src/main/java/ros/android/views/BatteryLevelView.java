@@ -51,7 +51,7 @@ public class BatteryLevelView extends View {
   private Paint red;
   private Paint gray;
 
-  private float levelPercent;
+  private double levelPercent;
   private boolean pluggedIn;
 
   public BatteryLevelView(Context ctx) {

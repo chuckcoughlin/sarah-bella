@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.db.SBDbManager;
+import chuckcoughlin.sb.assistant.logs.SBLogManager;
 import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
 import chuckcoughlin.sb.assistant.ros.SBRosManager;
 
@@ -79,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         SBDbManager.destroy();
+        SBLogManager.destroy();
         SBRosManager.destroy();
         SBRosApplicationManager.destroy();
     }
