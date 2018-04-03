@@ -113,6 +113,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         command = new RemoteCommand(dbManager.getSetting(SBConstants.ROS_HOST),
                                     dbManager.getSetting(SBConstants.ROS_USER),
                                     dbManager.getSetting(SBConstants.ROS_USER_PASSWORD),this);
+        configureListView();
     }
 
     // The host activity has been created.
@@ -120,22 +121,25 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         Log.i(CLSS, "DiscoveryFragment.onActivityCreated");
-
         // We populate the list whether or not there is a robot connection. We simply hide it as appropriate.
-        List<RobotApplication> applicationList = SBRosApplicationManager.getInstance().getApplications();
-        Log.i(CLSS, String.format("onActivityCreated: will display %d applications for all robots", applicationList.size()));
-        RobotApplicationsAdapter adapter = new RobotApplicationsAdapter(getContext(), new ArrayList<>());
-        setListAdapter(adapter);
+        configureListView();
+        updateUI();
+    }
+
+    private void configureListView() {
         ListView listView = getListView();
         listView.setItemsCanFocus(true);
         listView.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
         listView.setVisibility(View.INVISIBLE);
         listView.setEnabled(false);
-        listView.setOnItemClickListener(this);
+        //listView.setOnItemClickListener(this);
         listView.setClickable(true);
+        RobotApplicationsAdapter adapter = new RobotApplicationsAdapter(getContext(), new ArrayList<>());
+        setListAdapter(adapter);
         adapter.clear();
+        List<RobotApplication> applicationList = SBRosApplicationManager.getInstance().getApplications();
+        Log.i(CLSS, String.format("configureListView: will display %d applications for all robots", applicationList.size()));
         adapter.addAll(applicationList);
-        updateUI();
     }
 
     // The fragment is visible
@@ -194,6 +198,8 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
             return getItem(position).hashCode();
         }
 
+        // The view here is the row containing app name, description and on/off button. It appears that
+        // clickable elements within the layout make the entire row unclickable. So we re-add the listener.
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             //Log.i(CLSS, String.format("RobotApplicationsAdapter.getView position =  %d", position));
@@ -204,6 +210,12 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
                 //Log.i(CLSS, String.format("RobotApplicationsAdapter.getView convertView was null"));
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.discovery_application_item, parent, false);
             }
+
+            convertView.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View view) {
+                    onItemClick(getListView(),view,position,position);
+                }
+            });
 
             // Lookup view for data population
             TextView nameView = (TextView) convertView.findViewById(R.id.application_name);
@@ -347,9 +359,13 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     // If there has been no change to the list selection, do nothing. Otherwise,
     // disable the view to prevent clicks until we've heard from the robot.
     // Start the master checker to obtain robot characteristics - in particular the new application.
+    // NOTE: We have circumvented the direct listener, via a click handler in the adapter class.
+    //       Android has difficulty with the embedded button.
     @Override
     public void onItemClick(AdapterView<?> adapter, View v, int position,long rowId) {
         Log.i(CLSS, String.format("onItemClick: row %d",position));
+        ListView listView = getListView();
+        listView.setSelection(position);
         RobotApplication app = (RobotApplication)adapter.getItemAtPosition(position);
         if( applicationManager.getApplication()==null ||
                ! app.getApplicationName().equalsIgnoreCase(applicationManager.getApplication().getApplicationName() )) {

@@ -46,7 +46,7 @@ On the host system:
  * Android Studio is used to create the Android application 'SBAssistant' which executes on the tablet and is used as the user interface to command the robot.
  * The Linux VM is a Virtual Box virtual machine with the Robot Operating System (ROS) libraries. It is used to create and test-compile the robot code. When done, the code is checked into ''git'' and subsequently checked out and built on the robot.
 
-This drawing and others is constructed using **InkScape** from https://inkscape.org/en/release/0.92.2.
+This drawing and others is constructed using **InkScape** from https://inkscape.org/en/release/0.92.2. 3D CAD drawings are constructed using OpenSCAD from http://www.openscad.org/downloads.html.
 *********************************************************
 ## Android Control Application <a id="android-header"></a>
 [toc](#table-of-contents)
