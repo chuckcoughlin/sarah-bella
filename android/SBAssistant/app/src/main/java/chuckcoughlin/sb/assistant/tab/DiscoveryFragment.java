@@ -38,6 +38,7 @@ import chuckcoughlin.sb.assistant.ros.SBRosManager;
 import ros.android.appmanager.BluetoothChecker;
 import ros.android.appmanager.MasterChecker;
 import ros.android.appmanager.RemoteCommand;
+import ros.android.appmanager.SBRemoteCommandListener;
 import ros.android.appmanager.SBRobotConnectionHandler;
 import ros.android.appmanager.WifiChecker;
 import ros.android.util.RobotApplication;
@@ -54,8 +55,10 @@ import static chuckcoughlin.sb.assistant.common.SBConstants.DIALOG_TRANSACTION_K
  * instance to preserve connection state whenever the fragment is not displayed.
  */
 public class DiscoveryFragment extends BasicAssistantListFragment implements SBRobotConnectionHandler,
+                                                SBRemoteCommandListener,
                                                 AdapterView.OnItemClickListener {
     private final static String CLSS = "DiscoveryFragment";
+    private final static String IGNORE_KEY = "IGNORE";
     private final static String SET_APP_COMMAND = "~/robotics/robot/bin/set_ros_application %s";
     private final static String START_APP_COMMAND = "~/robotics/robot/bin/restart_ros";
     private View contentView = null;
@@ -186,6 +189,8 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         super.onDetach();
     }
 
+
+
     //======================================== Array Adapter ======================================
     public class RobotApplicationsAdapter extends ArrayAdapter<RobotApplication> implements ListAdapter {
 
@@ -314,7 +319,6 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     @Override
     public void receiveApplication(String appName) {
         Log.w(CLSS, "receiveApplication: " + appName);
-        List<RobotApplication> applicationList = applicationManager.getApplications();
         applicationManager.setApplication(appName);
         getActivity().runOnUiThread(new Runnable() {
             @Override
@@ -322,15 +326,6 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
                 RobotApplicationsAdapter adapter = (RobotApplicationsAdapter)getListAdapter();
                 ListView listView = getListView();
                 listView.setEnabled(true);
-                int index = 0;
-                for(RobotApplication app:applicationList) {
-                    if(app.getApplicationName().equalsIgnoreCase(appName)) {
-                        app.setExecutionStatus(RobotApplication.APP_STATUS_NOT_RUNNING);
-                        listView.setItemChecked(index,true);
-                        Log.i(CLSS, String.format("receiveApplication: selected application %s (%d)",appName,index));
-                    }
-                    index=index+1;
-                }
                 updateUI();
             }
         });
@@ -364,15 +359,14 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     @Override
     public void onItemClick(AdapterView<?> adapter, View v, int position,long rowId) {
         Log.i(CLSS, String.format("onItemClick: row %d",position));
-        ListView listView = getListView();
-        listView.setSelection(position);
         RobotApplication app = (RobotApplication)adapter.getItemAtPosition(position);
         if( applicationManager.getApplication()==null ||
                ! app.getApplicationName().equalsIgnoreCase(applicationManager.getApplication().getApplicationName() )) {
 
             applicationManager.setApplication(app.getApplicationName());
-            command.execute(String.format(SET_APP_COMMAND,app.getApplicationName()));
-            command.sudo(START_APP_COMMAND);
+            command.execute(IGNORE_KEY,String.format(SET_APP_COMMAND,app.getApplicationName()));
+            command.sudo(app.getApplicationName(),START_APP_COMMAND);
+            updateUI();
         }
     }
     //======================================== Button Callbacks ======================================
@@ -516,16 +510,46 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         }
         else {
             listView.setVisibility(View.VISIBLE);
-            updateStatusOfCurrentApplication();
+            // Select the current application in the list.
+            int index = 0;
+            int selectedPosition = applicationManager.indexOfCurrentApplication();
+            List<RobotApplication> applicationList = applicationManager.getApplications();
+            for(RobotApplication app:applicationList) {
+                if(index == selectedPosition) {
+                    listView.setItemChecked(index,true);
+                    listView.setSelection(index);
+                    Log.i(CLSS, String.format("receiveApplication: selected application %s (%d)",applicationManager.getApplication().getApplicationName(),index));
+                }
+                else {
+                    listView.setItemChecked(index,false);
+                }
+                index=index+1;
+            }
         }
     }
 
-    private void updateStatusOfCurrentApplication() {
-        int position = applicationManager.indexOfCurrentApplication();
-        Log.i(CLSS, String.format("updateStatusForApplication %d",position));
-        if( position<0 ) return;
-        // Update the view
-        View view = getListAdapter().getView(position,null,viewGroup);
-        view.invalidate(0,0,view.getWidth(), view.getHeight());
+
+    // ==================================== Remote Command Listener ================================
+    @Override
+    public void handleCommandError(String key,String command,String reason) {
+        Log.i(CLSS, String.format("handleCommandError: %s=>%s (%s)",command,reason,key));
+        rosManager.setConnectionStatus(SBRosManager.CONNECTION_STATUS_UNCONNECTED);
+        if(getActivity()!=null) {
+            SBWarningDialog warning = SBWarningDialog.newInstance(String.format("Error executing: %s",command), reason);
+            warning.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
+        }
+    }
+
+    @Override
+    public void handleCommandCompletion(String key,String command,String returnValue) {
+        Log.i(CLSS, String.format("handleCommandCompletion: %s=>%s (%s)",command,returnValue,key));
+        if( !key.equalsIgnoreCase(IGNORE_KEY) ) {
+            applicationManager.setApplication(key);  // Key is the newly selected application
+            getActivity().runOnUiThread(new Runnable() {
+                public void run() {
+                    updateUI();
+                }
+            });
+        }
     }
 }

@@ -9,6 +9,7 @@ the collection as needed.
 ***************************************************************
 ## Table of Contents <a id="table-of-contents"></a>
   * [Discovery](#discovery)
+  * [Logging](#logging)
   * [System Check](#systemcheck)
   * [Headlamp](#headlamp)
   * [Teleop](#teleop)
@@ -16,7 +17,7 @@ the collection as needed.
   * [Park](#park)
 
 *********************************************************
-### 00 - Discovery <a id="discovery"></a>
+### a - Discovery <a id="discovery"></a>
 Discovery makes use of the following robot parameters. These are
  expected to be defined/published in every robot launch script:
 
@@ -31,6 +32,25 @@ Application selection and restart of the robot depends on a *ssh* login as super
   /etc/init.d/ros restart
 ```
 
+*********************************************************
+### b - Logging <a id="logging"></a>
+The logging panel subscribes to the ROS topic ```/rosout_agg``` no matter what application is running. This is an
+aggregated stream of all log messages generated in the system.
+
+The log message is contained in *rosgraph_msgs*.
+```
+Log
+      Header header
+      byte level            # severity level (1-DEBUG,2-INFO,4-WARN,8-ERROR)
+      string name           # name of the node
+      string msg            # text message
+      string file           # name of originating source file
+      string function       # originating function
+      uint32 line           # line number
+      string[] topics       # topics published by this node
+```
+
+
 
 ### 01 - System Check <a id="systemcheck"></a>
 
@@ -43,29 +63,29 @@ Raspberry Pi. For a complete description see [here](https://psutil.readthedocs.i
 
 ```
 System
-      String hostname
-      String ip_address
-      Float32 cpu_percent
-      Float32 memory_percent_used
-      Uint32 free_memory_bytes
-      Float32 swap_memory_percent_used
-      Float32 disk_percent_used
-      Uint32 packets_sent
-      Uint32 packets_received
-      Uint32 in_packets_dropped
-      Uint32 out_packets_dropped
+      string hostname
+      string ip_address
+      float32 cpu_percent
+      float32 memory_percent_used
+      uint32 free_memory_bytes
+      float32 swap_memory_percent_used
+      float32 disk_percent_used
+      uint32 packets_sent
+      uint32 packets_received
+      uint32 in_packets_dropped
+      uint32 out_packets_dropped
 ```
 The *SensorState* message from turtlebot3_msgs is built into the Turtlebot3 firmware (updated 1/17/2018). For a full description, see [here]( http://docs.ros.org/hydro/api/kobuki_msgs/html/msg/SensorState.html). The tablet subscribes to a throttled stream. Not all properties are displayed.
 
 ```
 SensorState
   Header header
-  Uint16 time_stamp    # milliseconds from start (rollover at 65536)
-  Uint8  bumper        # bumper state
-  Uint8  cliff         # cliff sensor state
-  Uint16 left_encoder  # accumulated ticks left wheel (max. 65535)
-  Uint16 right_encoder # accumulated ticks right wheel (max. 65535)
-  Uint8  battery       # battery voltage in 0.1V (ex. 16.1V -> 161)
+  uint16 time_stamp    # milliseconds from start (rollover at 65536)
+  uint8  bumper        # bumper state
+  uint8  cliff         # cliff sensor state
+  uint16 left_encoder  # accumulated ticks left wheel (max. 65535)
+  uint16 right_encoder # accumulated ticks right wheel (max. 65535)
+  uint8  battery       # battery voltage in 0.1V (ex. 16.1V -> 161)
 ```
 
 The *GPIOState* message is a custom message that provides the current state and configuration of the GPIO header.
@@ -80,10 +100,10 @@ Each GPIOPin sub-message consists of:
 
 ```
 GPIOPin
-  String name
-  Uint32 channel
-  Bool value
-  String mode              # IN, OUT, GND, PWR
+  string name
+  uint32 channel
+  bool value
+  string mode              # IN, OUT, GND, PWR
 ```
 The panel subscribes to the following topics:
  * /gpio_msgs/GPIOState

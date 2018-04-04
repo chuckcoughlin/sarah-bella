@@ -1,31 +1,20 @@
 /**
  * Copyright 2017 Charles Coughlin. All rights reserved.
  * (MIT License)
+ *
+ * @See: http://www.jcraft.com/jsch/examples/Exec.java.html
+ * @See: http://www.jcraft.com/jsch/examples/Sudo.java.html
  */
 package ros.android.appmanager;
-
-import android.util.Log;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
-import com.jcraft.jsch.UserInfo;
 
-import org.ros.internal.node.client.ParameterClient;
-import org.ros.internal.node.server.NodeIdentifier;
-import org.ros.internal.node.xmlrpc.XmlRpcTimeoutException;
-import org.ros.namespace.GraphName;
-
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Date;
-import java.util.List;
-
-import ros.android.util.RobotDescription;
-import ros.android.util.RobotId;
 
 /**
  * Use ssh vis Java Secure Channel to execute a commands on the
@@ -34,20 +23,21 @@ import ros.android.util.RobotId;
  */
 public class RemoteCommand {
     private final static String CLSS = "RemoteCommand";
+    private static final int CONNECTION_TIMEOUT = 10000;  // msecs
     private final String username;
     private final String password;
     private final String hostname;  // Robot IP
-    private final SBRobotConnectionErrorListener errorListener;
+    private final SBRemoteCommandListener commandListener;
     private final JSch jsch;
 
     /**
      * Constructor. Should not take any time.
      */
-    public RemoteCommand(String host, String user, String pw, SBRobotConnectionErrorListener listener) {
+    public RemoteCommand(String host, String user, String pw, SBRemoteCommandListener listener) {
         this.hostname = host;
         this.username = user;
         this.password = pw;
-        this.errorListener = listener;
+        this.commandListener = listener;
         this.jsch = new JSch();
     }
 
@@ -55,17 +45,20 @@ public class RemoteCommand {
     /**
      * Execute a command in a separate thread
      *
+     * @param key a user-defined value returned in the callback to be used
+     *            to identify the specific command which succeeded or failed
      * @param command to execute
      */
 
-    public void execute(String command) {
+    public void execute(String key,String command) {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     Session session = jsch.getSession(username, hostname, 22);
                     session.setPassword(password);
-                    session.connect();
+                    session.setConfig("StrictHostKeyChecking", "no");
+                    session.connect(CONNECTION_TIMEOUT);
                     Channel channel = session.openChannel("exec");
                     ((ChannelExec) channel).setCommand(command);
                     InputStream in = channel.getInputStream();
@@ -92,8 +85,10 @@ public class RemoteCommand {
                     }
                     channel.disconnect();
                     session.disconnect();
-                } catch (Exception ex) {
-                    errorListener.handleConnectionError(String.format("Error executing: %s (%s)", command, ex.getLocalizedMessage()));
+                    commandListener.handleCommandCompletion(key,command,new String(tmp));
+                }
+                catch (Exception ex) {
+                    commandListener.handleCommandError(key,command,ex.getLocalizedMessage());
                 }
             }
         });
@@ -104,9 +99,11 @@ public class RemoteCommand {
      * Execute a 'sudo' command in a separate thread. The supplied
      * username and password must belong to a 'sudoer'.
      *
+     * @param key a user-defined value returned in the callback to be used
+     *            to identify the specific command which succeeded or failed
      * @param command to execute
      */
-    public void sudo(String command) {
+    public void sudo(String key,String command) {
         // from man sudo
         //   -S  The -S (stdin) option causes sudo to read the password from the
         //       standard input instead of the terminal device.
@@ -118,7 +115,8 @@ public class RemoteCommand {
                 try {
                     Session session = jsch.getSession(username, hostname, 22);
                     session.setPassword(password);
-                    session.connect();
+                    session.setConfig("StrictHostKeyChecking", "no");
+                    session.connect(CONNECTION_TIMEOUT);
                     Channel channel = session.openChannel("exec");
                     ((ChannelExec)channel).setCommand("sudo -S -p '' "+command);
                     InputStream in = channel.getInputStream();
@@ -129,26 +127,30 @@ public class RemoteCommand {
                     out.write((password+"\n").getBytes());
                     out.flush();
 
-                    byte[] tmp = new byte[1024];
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[1024];
                     while (true) {
-                        while (in.available() > 0) {
-                            int i = in.read(tmp, 0, 1024);
-                            if (i < 0) break;
-                            System.out.print(new String(tmp, 0, i));
+                        int read = 0;
+                        while ((read = in.read(buffer, 0, buffer.length)) != -1) {
+                            baos.write(buffer, 0, read);
                         }
+                        baos.flush();
+
                         if (channel.isClosed()) {
                             System.out.println("exit-status: " + channel.getExitStatus());
                             break;
                         }
                         try {
-                            Thread.sleep(1000);
-                        } catch (Exception ee) {
+                            Thread.sleep(500);
                         }
+                        catch (InterruptedException ie) { }
                     }
                     channel.disconnect();
                     session.disconnect();
-                } catch (Exception ex) {
-                    errorListener.handleConnectionError(String.format("Error executing: %s (%s)", command, ex.getLocalizedMessage()));
+                    commandListener.handleCommandCompletion(key,command,new String(baos.toByteArray(), "UTF-8"));
+                }
+                catch (Exception ex) {
+                    commandListener.handleCommandError(key,command,ex.getLocalizedMessage());
                 }
             }
         });

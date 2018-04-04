@@ -14,11 +14,12 @@ The Android assistant contains command and monitoring code for all applications 
 ***************************************************************
 ## Table of Contents <a id="table-of-contents"></a>
   * [Discovery](#discovery)
+  * [Logging](#logging)
   * [System Check](#systemcheck)
   * [Headlamp](#headlamp)
 
 *********************************************************
-### 00 - Discovery <a id="discovery"></a>
+### a - Discovery <a id="discovery"></a>
 ![SB Assistant](/images/sb-discovery.png)
 ```                        SB Assistant - Discovery Page ```</br>
 [toc](#table-of-contents)
@@ -27,6 +28,13 @@ The **discovery** panel allows connection to a single running robot based on a M
 
 A SQLite database on the tablet contains a list of applications expected to be supported by the robot. This panel provides an opportunity to select and start applications from this list. The robot is configured for the desired application via a *ssh* connection where a script is run to set the application and restart *rosCore*. This operation requires that a hostname, *sudoer* username and password for the robot be entered in the *Settings* panel on the tablet.
 
+******************************************************
+### b - Logging <a id="logging"></a>
+[toc](#table-of-contents)
+
+The **logging** panel is a general-purpose feature that supports all applications.
+It displays the most recent 100 log messages from the robot. All of the standard
+applications have been scrubbed to incorporate standard ROS log messages.
 
 ******************************************************
 ### 01 - System Check <a id="systemcheck"></a>
@@ -34,7 +42,7 @@ A SQLite database on the tablet contains a list of applications expected to be s
 ```                        SB Assistant - System Page ```</br>
 [toc](#table-of-contents)
 
-The **system** panel is designed to read system parameters and interactively exercise devices on the robot. It displays system CPU and memory performance metrics; It also sports a table that displays status of GPIO outputs and provides control actions for GPIO inputs.
+The **system** panel is designed to read system parameters and interactively exercise devices on the robot. It displays system CPU and memory performance metrics; it also sports a table that displays status of GPIO outputs and provides control actions for GPIO inputs.
 
 ******************************************************
 ### 02 - Headlamp <a id="headlamp"></a>
