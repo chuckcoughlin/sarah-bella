@@ -1,17 +1,19 @@
 package chuckcoughlin.sb.assistant.logs;
 
 import android.app.Activity;
-import android.util.Log;
 
 import org.ros.node.ConnectedNode;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 import chuckcoughlin.sb.assistant.common.AbstractMessageListener;
 import chuckcoughlin.sb.assistant.common.FixedSizeList;
 import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.ros.SBApplicationStatusListener;
 import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
+import rosgraph_msgs.Log;
 
 /**
  * The log manager subscribes to log messages whenever any application is active.
@@ -23,6 +25,7 @@ public class SBLogManager implements SBApplicationStatusListener {
     private static volatile SBLogManager instance = null;
     private final LogListener logListener;
     private final FixedSizeList<rosgraph_msgs.Log> logList;
+    private final List<LogListObserver> observers;
 
     /**
      * Constructor is private per Singleton pattern. This forces use of the single instance.
@@ -32,6 +35,7 @@ public class SBLogManager implements SBApplicationStatusListener {
         SBRosApplicationManager.getInstance().addListener(this);
         logList = new FixedSizeList<rosgraph_msgs.Log>(SBConstants.NUM_LOG_MESSAGES);
         logListener = new LogListener();
+        observers = new ArrayList<>();
     }
 
     /**
@@ -75,6 +79,11 @@ public class SBLogManager implements SBApplicationStatusListener {
     }
 
     public FixedSizeList<rosgraph_msgs.Log> getLogs() { return logList; }
+    public Log getLogAtPosition(int pos) {
+        Log result = null;
+        if(pos>=0 && pos<logList.size()) { result = logList.get(pos); }
+        return result;
+    }
 
     private void shutdown() {
         if( SBRosApplicationManager.getInstance()!=null) {
@@ -94,9 +103,27 @@ public class SBLogManager implements SBApplicationStatusListener {
 
     @Override
     public void applicationShutdown() {
-
         logListener.shutdown();
         shutdown();
+    }
+
+
+    public void addObserver(LogListObserver observer) {
+        observers.add(observer);
+    }
+    public void removeObserver(LogListObserver observer) {
+        observers.remove(observer);
+    }
+
+    /**
+     * Notify all observers regarding a new message
+     * @param full true if the list was at capacity before getting the current new message
+     */
+    private void notifyObservers(boolean full) {
+        for(LogListObserver observer:observers) {
+            if(full) observer.notifyLogRemoved();
+            observer.notifyLogAppended();
+        }
     }
 
     // =================================== Message Listener ============================
@@ -108,7 +135,9 @@ public class SBLogManager implements SBApplicationStatusListener {
         @Override
         public void onNewMessage(rosgraph_msgs.Log msg) {
             android.util.Log.i(CLSS, String.format("Got a log message - %s", msg.getMsg()));
+            boolean full = logList.isFull();
             logList.add(msg);
+            notifyObservers(full);
         }
     }
 }

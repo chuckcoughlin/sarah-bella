@@ -6,17 +6,14 @@ package chuckcoughlin.sb.assistant.logs;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.text.Layout;
-import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.util.Collections;
-import java.util.List;
-
 import chuckcoughlin.sb.assistant.R;
+import rosgraph_msgs.Log;
 
 
 /**
@@ -24,18 +21,17 @@ import chuckcoughlin.sb.assistant.R;
  * Each element in the list is a string, a log message.
  */
 
-public class RecyclerAdapter extends RecyclerView.Adapter<LogViewHolder> {
-    private static final String CLSS = RecyclerAdapter.class.getSimpleName();
-    private int nItems;
-    private List<String> data = Collections.emptyList();
+public class LogRecyclerAdapter extends RecyclerView.Adapter<LogViewHolder> implements LogListObserver {
+    private static final String CLSS = LogRecyclerAdapter.class.getSimpleName();
+    private final SBLogManager logManager;
 
     /**
      * Adapter between the recycler and data source for log messages
-     * @param count the initial number of items
      */
-    public RecyclerAdapter(int count) {
+    public LogRecyclerAdapter() {
+        logManager = SBLogManager.getInstance();
+        logManager.addObserver(this);
 
-        this.nItems = count;
     }
 
     @Override
@@ -46,7 +42,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<LogViewHolder> {
 
         // create a new view
         LinearLayout layout = (LinearLayout)inflater.inflate(R.layout.log_item,parent,shouldAttachToParent);
-
         LogViewHolder holder = new LogViewHolder(layout);
         return holder;
     }
@@ -58,13 +53,32 @@ public class RecyclerAdapter extends RecyclerView.Adapter<LogViewHolder> {
      */
     @Override
     public void onBindViewHolder(LogViewHolder holder, int position) {
-        //String message = data.get(position);
-        LinearLayout layout = (LinearLayout)holder.itemView;
-        //((TextView)layout.getChildAt(position)).setText("");
+        Log msg = logManager.getLogAtPosition(position);
+        TextView timestampView  = holder.getTimestampView();
+        timestampView.setText(msg.getHeader().getStamp().toString());
+        TextView sourceView  = holder.getSourceView();
+        sourceView.setText(msg.getName());
+        TextView messageView  = holder.getMessageView();
+        messageView.setText(msg.getMsg());
     }
 
     @Override
     public int getItemCount() {
-        return nItems;
+        return logManager.getLogs().size();
+    }
+
+    // ============================= LogListObserver ===========================
+    @Override
+    public void notifyLogAppended() {
+        this.notifyItemInserted(getItemCount()-1);
+    }
+
+    /**
+     * It will always be the first log in the list
+     * that is removed.
+     */
+    @Override
+    public void notifyLogRemoved() {
+        this.notifyItemRangeRemoved(0,1);
     }
 }

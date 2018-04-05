@@ -204,7 +204,7 @@ Add the followng environment variables to ~/.bashrc
 ```
 
 #### Source Repository <a id="source-repository"></a>
-Make *robotics* the root of our *git* repository. We use *git* as the integrating mechanism with both our development machine and the robot itself.
+Make *robotics* the root of our *git* repository. We use *git* as the integrating mechanism between our development machine and the robot itself.
 ```
   cd
   git clone http://github.com/chuckcoughlin/sarah-bella robotics

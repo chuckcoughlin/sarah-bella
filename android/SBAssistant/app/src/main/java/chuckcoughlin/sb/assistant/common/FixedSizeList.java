@@ -28,6 +28,9 @@ public class FixedSizeList<E> extends LinkedList<E> {
         }
         bufferSize = size;
     }
+    public boolean isFull() {
+        return size()>=bufferSize;
+    }
 
     @Override
     public synchronized boolean add(E o) {

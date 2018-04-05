@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 
 /**
- * This is a base class for all the page fragments that aare lists.
+ * This is a base class for all the page fragments that are lists.
  */
 
 public class BasicAssistantListFragment extends ListFragment implements AssistantFragment {
