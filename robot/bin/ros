@@ -27,6 +27,7 @@ case "$1" in
   start)
 #       Uncomment for debugging, execute as: sudo bin/ros start
 #        set -x
+	rm -rf ${HOME}/.ros/logs/*
 	. /opt/ros/kinetic/setup.sh
 	. ${HOME}/robotics/robot/config/launch.conf
 	# This is important. You must wait until the IP address of the machine

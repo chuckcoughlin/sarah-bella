@@ -47,7 +47,7 @@ then
 elif [ ${APP} = "park" ]
 then
     echo "LAUNCH_PKG=turtlebot3_automatic_parking" > ${CONFIG}
-    echo "LAUNCH_FILE=turtlebot3_automatic_parking.launch" >> ${CONFIG}
+    echo "LAUNCH_FILE=automatic_parking.launch" >> ${CONFIG}
 elif [ ${APP} = "sensor" ]
 then
     echo "LAUNCH_PKG=sensor_msgs" > ${CONFIG}
@@ -56,6 +56,10 @@ elif [ ${APP} = "system" ]
 then
     echo "LAUNCH_PKG=system_check" > ${CONFIG}
     echo "LAUNCH_FILE=system.launch" >> ${CONFIG}
+elif [ ${APP} = "teleop" ]
+then
+    echo "LAUNCH_PKG=teleop" > ${CONFIG}
+    echo "LAUNCH_FILE=teleop.launch" >> ${CONFIG}
 else
 	echo "Unknown application ${APP}"
 	exit 2

@@ -58,7 +58,7 @@ while not rospy.is_shutdown():
 		state = GPIOState()
 		state.pins = pins
 		pub.publish(state)
-		rospy.loginfo("Published %d GPIO pin values"%(len(pins))
+		rospy.loginfo("Published %d GPIO pin values"%(len(pins)))
 
 	rate.sleep()
 
