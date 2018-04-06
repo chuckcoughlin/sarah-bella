@@ -4,7 +4,7 @@
 <launch>
   <param name="robot/name" value="SarahBella" type="str"/>
   <param name="robot/type" value="turtlebot3" type="str"/>
-  <param name="robot/application" value="follower" type="str"/>
+  <param name="robot/application" value="follow" type="str"/>
   <param name="robot/platform" value="RaspberryPi" type="str"/>
   <arg name="simulation" default="false"/>
   <group unless="$(arg simulation)"> <!-- Real robot -->
@@ -31,7 +31,7 @@
 
   <!-- Make a slower camera feed available; only required if we use android client -->
   <node pkg="topic_tools" type="throttle" name="camera_throttle"
-        args="messages camera/rgb/image_color/compressed 5 output="log"/>
+        args="messages camera/rgb/image_color/compressed 5" output="log"/>
 
   <include file="$(find follower)/launch/includes/safety_controller.launch.xml"/>
 
