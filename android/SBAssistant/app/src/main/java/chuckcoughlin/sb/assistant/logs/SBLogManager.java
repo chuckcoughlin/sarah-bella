@@ -97,7 +97,7 @@ public class SBLogManager implements SBApplicationStatusListener {
     public void applicationStarted(String appName) {
         ConnectedNode node = SBRosApplicationManager.getInstance().getApplication().getConnectedNode();
         if (node != null) {
-            logListener.subscribe(node, "/rosout_agg");  // Aggregated feed
+            logListener.subscribe(node, "/rosout");  // Aggregated feed
         }
     }
 

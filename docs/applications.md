@@ -26,7 +26,13 @@ The Android assistant contains command and monitoring code for all applications 
 
 The **discovery** panel allows connection to a single running robot based on a MasterURI configured in the *Settings*. It reads values published from the robot through its ParameterServer to validate the device.  
 
-A SQLite database on the tablet contains a list of applications expected to be supported by the robot. This panel provides an opportunity to select and start applications from this list. The robot is configured for the desired application via a *ssh* connection where a script is run to set the application and restart *rosCore*. This operation requires that a hostname, *sudoer* username and password for the robot be entered in the *Settings* panel on the tablet.
+Selecting an application is accomplished by clicking the applicable line in
+the displayed list.  This operation connects to the robot and configures it for the desired operation. This interaction requires that hostname, *sudoer* username
+and password for the robot have been entered in the *Settings* panel on the tablet.
+
+The ON/OFF button the appears in the application row starts and stops
+subscriptions on the 
+tablet. It has no effect on the robot itself.
 
 ******************************************************
 ### b - Logging <a id="logging"></a>

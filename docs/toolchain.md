@@ -251,7 +251,6 @@ http://wiki.ros.org/catkin/Tutorials. Make sure that the following lines have be
 ```
   source /opt/ros/kinetic/setup.bash
   source ~/robotics/catkin_ws/devel/setup.bash
-  rm -rf ~/.ros/log/*
 ```
 Note that the standard ROS packages are installed in /opt/ros/kinetic/share. These can be browsed to determine
 message contents and other details.
