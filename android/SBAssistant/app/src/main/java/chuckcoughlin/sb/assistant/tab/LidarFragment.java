@@ -36,7 +36,7 @@ import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
 import chuckcoughlin.sb.assistant.ros.SBRosManager;
 import gpio_msgs.GPIOSet;
 import sensor_msgs.LaserScan;
-import tf2_msgs.TFMessage;
+import tf.tfMessage;
 
 
 /**
@@ -58,7 +58,7 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
 
         View view = inflater.inflate(R.layout.fragment_lidar, container, false);
         TextView label = view.findViewById(R.id.fragmentLidarText);
-        label.setText("@string/fragmentLidarLabel");
+        label.setText(R.string.lidar_title);
 
         vizView = view.findViewById(R.id.fragmentLidarImage);
         List<Layer> layers = new ArrayList<>();
@@ -66,7 +66,7 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
         vizView.onCreate(layers);
         vizView.init();
 
-
+        transformListener = new TransformListener();
         laserListener = new LaserListener();
         applicationManager.addListener(this);
         return view;
@@ -84,26 +84,28 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
     // This may be called immediately on establishment of the listener.
     // We only react to specific applications.
     public void applicationStarted(String appName) {
-        Log.i(CLSS, String.format("applicationStarted: %s ...", appName));
+
         if(     !appName.equalsIgnoreCase(SBConstants.APPLICATION_FOLLOW) &&
                 !appName.equalsIgnoreCase(SBConstants.APPLICATION_PARK) &&
                 !appName.equalsIgnoreCase(SBConstants.APPLICATION_TELEOP))   return;
 
-        if (appName.equalsIgnoreCase(SBConstants.APPLICATION_SYSTEM)) {
-            ConnectedNode node = applicationManager.getApplication().getConnectedNode();
-            if (node != null) {
-                transformListener.subscribe(node, "/tf");
-                laserListener.subscribe(node,"/scan");
-            }
-            else {
-                Log.i(CLSS, String.format("applicationStarted: %s has no connected node", appName));
-            }
+        Log.i(CLSS, String.format("applicationStarted: %s ...", appName));
+
+        ConnectedNode node = applicationManager.getApplication().getConnectedNode();
+        if (node != null) {
+            transformListener.subscribe(node, "/tf");
+            laserListener.subscribe(node,"/scan");
         }
+        else {
+            Log.i(CLSS, String.format("applicationStarted: %s has no connected node", appName));
+        }
+
     }
 
     public void applicationShutdown() {
         Log.i(CLSS, String.format("applicationShutdown"));
         transformListener.shutdown();
+        laserListener.shutdown();
     }
 
     // ====================================== MessageListeners ================================================
@@ -112,10 +114,10 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
 
         @Override
         public void onNewMessage(LaserScan scan) {
-            Log.i(CLSS, String.format("Got a scan Message"));
+            Log.i(CLSS, String.format("Got a scan Message %s=%s",LaserScan._TYPE,scan.getClass().getCanonicalName()));
             Activity mainActivity = getActivity();
             if (mainActivity == null) {
-                Log.i(CLSS, String.format("TransformListener: Main Activity no longer available"));
+                Log.i(CLSS, String.format("LaserListener: Main Activity no longer available"));
                 return;
             }
             mainActivity.runOnUiThread(new Runnable() {
@@ -127,13 +129,13 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
         }
     }
 
-    public class TransformListener extends AbstractMessageListener<TFMessage> {
+    public class TransformListener extends AbstractMessageListener<tfMessage> {
         public TransformListener() {
-            super(TFMessage._TYPE);
+            super(tfMessage._TYPE);
         }
 
         @Override
-        public void onNewMessage(TFMessage tf) {
+        public void onNewMessage(tfMessage tf) {
             Log.i(CLSS, String.format("Got a Transform Message"));
             Activity mainActivity = getActivity();
             if (mainActivity == null) {

@@ -38,7 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import tf2_msgs.TFMessage;
+import tf.tfMessage;
 
 /**
  * @author damonkohler@google.com (Damon Kohler)
@@ -128,9 +128,9 @@ public class VisualizationView extends GLSurfaceView  {
 
     public void onNewMessage(Message message) {
         Log.i(CLSS,String.format("onNewMessage: Received %s",message.getClass().getCanonicalName()));
-        if(message instanceof tf2_msgs.TFMessage ) {
+        if(message instanceof tf.tfMessage ) {
             synchronized (this) {
-                TFMessage tmessage = (TFMessage)message;
+                tfMessage tmessage = (tfMessage)message;
                 for (geometry_msgs.TransformStamped transform : tmessage.getTransforms()) {
                     frameTransformTree.update(transform);
                 }

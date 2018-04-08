@@ -65,6 +65,5 @@ dependencies {
     implementation files('libs/nav_msgs-1.12.5.jar')
     implementation files('libs/gpio_msgs-0.0.1.jar')
     implementation files('libs/turtlebot3_msgs-0.1.5.jar')
-    implementation files('libs/rosjava_geometry-0.3.5.jar')
-    implementation files('libs/tf2_msgs-0.5.15.jar')
+    implementation files('libs/tf-1.11.8.jar')
 }

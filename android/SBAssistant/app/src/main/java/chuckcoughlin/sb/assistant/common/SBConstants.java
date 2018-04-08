@@ -11,7 +11,7 @@ package chuckcoughlin.sb.assistant.common;
 public class SBConstants {
     // Database configuration
     public static final String DB_NAME = "SBAssistant.db";
-    public static final int DB_VERSION = 4;
+    public static final int DB_VERSION = 5;
     // These are the Settings table columns
     public static final String SETTINGS_NAME  = "name";
     public static final String SETTINGS_VALUE = "value";

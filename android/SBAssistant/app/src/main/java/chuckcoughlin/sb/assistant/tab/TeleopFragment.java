@@ -15,18 +15,17 @@ import android.widget.TextView;
 import chuckcoughlin.sb.assistant.R;
 
 /**
- * This fragment handles robot control during its SLAM
- * mapping sequence.
+ * This fragment handles manual robot control
  */
 
 public class TeleopFragment extends BasicAssistantFragment {
 
-    // Inflate the view. It holds a the camera live image
+    // Inflate the view. It displays a virtual joystick
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_teleops, container, false);
         TextView label = view.findViewById(R.id.fragmentTeleopsText);
-        label.setText("@string/fragmentTeleopLabel");
+        label.setText(R.string.teleops_title);
 
         return view;
     }

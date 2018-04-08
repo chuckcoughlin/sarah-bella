@@ -76,7 +76,8 @@ Create libraries in a similar way from the following:<br/>
 * https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_messages/geometry_msgs/1.12.5 geometry_msgs-1.12.5.jar
 * https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_messages/nav_msgs/1.12.5 nav_msgs-1.12.5.jar
 * https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_bootstrap/message_generation/0.3.0 message_generation-0.3.0.jar (org.ros.internal.message)
-* https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_core/rosjava_geometry/0.3.5 rosjava_geometry-0.3.5.jar 
+* https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_core/rosjava_geometry/0.3.5 rosjava_geometry-0.3.5.jar
+* https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_messages/tf/1.11.8 tf-1.11.8.jar
 * https://github.com/rosjava/rosjava_mvn_repo/tree/master/org/ros/rosjava_messages/rosgraph_msgs/1.11.2/rosgraph_msgs-1.11.2.jar rosgraph_msgs-1.11.2.jar
 * http://repo1.maven.org/maven2/org/jboss/netty/netty/3.2.9.Final netty.3.2.9.Final.jar (org.jboss.netty)
 * http://www.jcraft.com/jsch/ jsch-0.1.54.jar
