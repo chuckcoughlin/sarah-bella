@@ -39,8 +39,12 @@ public class SBConstants {
     // Number of log messages to store/display
     public static final int NUM_LOG_MESSAGES = 100;
 
-    // Application Names
-    public static final String APPLICATION_SYSTEM="System";
+    // Application Names - these must match parameters set in robot launch files
+    public static final String APPLICATION_FOLLOW="follow";
+    public static final String APPLICATION_HEADLAMP="headlamp";
+    public static final String APPLICATION_PARK="park";
+    public static final String APPLICATION_SYSTEM="system";
+    public static final String APPLICATION_TELEOP="teleop";
     // Network Types
     public static final String NETWORK_BLUETOOTH="BLUETOOTH";
     public static final String NETWORK_WIFI="WIFI";

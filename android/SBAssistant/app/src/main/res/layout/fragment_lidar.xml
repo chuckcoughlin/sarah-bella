@@ -4,15 +4,15 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="chuckcoughlin.sb.assistant.tab.SLAMFragment">
+    tools:context="chuckcoughlin.sb.assistant.tab.LidarFragment">
 
     <TextView
-        android:id="@+id/fragmentSLAMText"
+        android:id="@+id/fragmentLidarText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <ImageView
-        android:id="@+id/fragmentSLAMImage"
+    <org.ros.android.view.visualization.VisualizationView
+        android:id="@+id/fragmentLidarImage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 

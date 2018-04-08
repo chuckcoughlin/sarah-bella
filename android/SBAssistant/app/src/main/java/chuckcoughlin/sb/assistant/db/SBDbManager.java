@@ -116,15 +116,15 @@ public class SBDbManager extends SQLiteOpenHelper {
         Log.i(CLSS,String.format("onCreate: Created %s at %s",SBConstants.DB_NAME,context.getDatabasePath(SBConstants.DB_NAME)));
 
         // Define the various applications. This is a fixed list and must correspondd to robot contents.
-        statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('follow','Robot follows the closest object')";
+        statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('"+SBConstants.APPLICATION_FOLLOW+"','Robot follows the closest object')";
         execLenient(sqLiteDatabase,statement);
-        statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('headlamp','Turn the robot headlamp on/off')";
+        statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('"+SBConstants.APPLICATION_HEADLAMP+"','Turn the robot headlamp on/off')";
         execLenient(sqLiteDatabase,statement);
-        statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('park','Auto-park robot under positioning banner')";
+        statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('"+SBConstants.APPLICATION_PARK+"','Auto-park robot under positioning banner')";
         execLenient(sqLiteDatabase,statement);
-        statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('system','Monitor robot system status')";
+        statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('"+SBConstants.APPLICATION_SYSTEM+"','Monitor robot system status')";
         execLenient(sqLiteDatabase,statement);
-        statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('teleop','Control the robot from the tablet')";
+        statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('"+SBConstants.APPLICATION_TELEOP+"','Control the robot from the tablet')";
         execLenient(sqLiteDatabase,statement);
     }
 

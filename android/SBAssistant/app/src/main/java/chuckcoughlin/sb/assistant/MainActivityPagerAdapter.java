@@ -13,12 +13,11 @@ import android.util.Log;
 
 import chuckcoughlin.sb.assistant.tab.AssistantFragment;
 import chuckcoughlin.sb.assistant.tab.AudioFragment;
-import chuckcoughlin.sb.assistant.tab.BasicAssistantFragment;
 import chuckcoughlin.sb.assistant.tab.CameraFragment;
 import chuckcoughlin.sb.assistant.tab.CoverFragment;
 import chuckcoughlin.sb.assistant.tab.DiscoveryFragment;
 import chuckcoughlin.sb.assistant.tab.LogsFragment;
-import chuckcoughlin.sb.assistant.tab.SLAMFragment;
+import chuckcoughlin.sb.assistant.tab.LidarFragment;
 import chuckcoughlin.sb.assistant.tab.SettingsFragment;
 import chuckcoughlin.sb.assistant.tab.SystemFragment;
 import chuckcoughlin.sb.assistant.tab.TeleopFragment;
@@ -38,7 +37,7 @@ public class MainActivityPagerAdapter extends FragmentStatePagerAdapter {
 
         tabTitles = new String[] {
                 ctx.getString(R.string.cover_title), ctx.getString(R.string.discovery_title), ctx.getString(R.string.settings_title),ctx.getString(R.string.system_title),
-                ctx.getString(R.string.SLAM_title),ctx.getString(R.string.audio_title),
+                ctx.getString(R.string.lidar_title),ctx.getString(R.string.audio_title),
                 ctx.getString(R.string.camera_title),ctx.getString(R.string.teleops_title),ctx.getString(R.string.log_title)};
         Log.i(CLSS,"Constructor ...");
     }
@@ -66,7 +65,7 @@ public class MainActivityPagerAdapter extends FragmentStatePagerAdapter {
                 frag =  new SystemFragment();
                 break;
             case 4:
-                frag = new SLAMFragment();
+                frag = new LidarFragment();
                 break;
             case 5:
                 frag = new AudioFragment();

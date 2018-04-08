@@ -15,6 +15,7 @@ The Android assistant contains command and monitoring code for all applications 
 ## Table of Contents <a id="table-of-contents"></a>
   * [Discovery](#discovery)
   * [Logging](#logging)
+  * [Lidar](#Lidar)
   * [System Check](#systemcheck)
   * [Headlamp](#headlamp)
 
@@ -30,8 +31,8 @@ Selecting an application is accomplished by clicking the applicable line in
 the displayed list.  This operation connects to the robot and configures it for the desired operation. This interaction requires that hostname, *sudoer* username
 and password for the robot have been entered in the *Settings* panel on the tablet.
 
-The ON/OFF button the appears in the application row starts and stops
-subscriptions on the 
+The ON/OFF button that appears in the application row starts and stops
+subscriptions on the
 tablet. It has no effect on the robot itself.
 
 ******************************************************
@@ -41,6 +42,12 @@ tablet. It has no effect on the robot itself.
 The **logging** panel is a general-purpose feature that supports all applications.
 It displays the most recent 100 log messages from the robot. All of the standard
 applications have been scrubbed to incorporate standard ROS log messages.
+
+******************************************************
+### c - Lidar <a id="lidar"></a>
+[toc](#table-of-contents)
+
+The **lidar** panel supports several applications that make use of the Lidar device.
 
 ******************************************************
 ### 01 - System Check <a id="systemcheck"></a>
@@ -56,9 +63,13 @@ The **headlamp** application has no separate control panel. Instead, the *system
 lamp on and off.
 
 ******************************************************
-### 03 - Follow <a id="follow"></a>
+### 03 - Teleop <a id="teleop"></a>
+The **teleop** application ...
+
+******************************************************
+### 04 - Follow <a id="follow"></a>
 With the *follow* application running, walk in front of the TurtleBot3. Then, slowly walk away from the TurtleBot. The robot should move forward. Moving close to the TurtleBot will cause it to back away. Moving slowly to the left or right will cause the TurtleBot to turn. To stop the robot from following, walk quickly away from the robot.
 
 ******************************************************
-### 04 - Auto-park <a id="follow"></a>
+### 05 - Auto-park <a id="follow"></a>
 When this application is running, the robot will search for a white tag that marks its intended parking space.

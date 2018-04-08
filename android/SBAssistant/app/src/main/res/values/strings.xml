@@ -6,10 +6,9 @@
     <string name="fragmentCameraLabel">View from Robot Camera</string>
     <string name="fragmentCoverLabel">Turtlebot3 \"Sarah-Bella\"</string>
     <string name="fragmentDiscoveryLabel">Robot Discovery</string>
-    <string name="fragmentHeadlampLabel">Headlamp Control</string>
+    <string name="fragmentLidarLabel">Lidar</string>
     <string name="fragmentLogsLabel">Logfile Entries</string>
     <string name="fragmentSettingsLabel">Configuration Settings</string>
-    <string name="fragmentSLAMLabel">Simultaneous Localization and Mapping (SLAM)</string>
     <string name="fragmentSystemLabel">Robot Systems Parameters</string>
     <string name="fragmentTeleopLabel">Teleop - Remote Operation</string>
     <string name="name_label">Name:</string>
@@ -33,8 +32,7 @@
     <!-- Labels as they appear in the central tab bar -->
     <string name="cover_title">Cover</string>
     <string name="discovery_title">Discovery</string>
-    <string name="headlamp_title">Headlamp</string>
-    <string name="SLAM_title">SLAM</string>
+    <string name="lidar_title">Lidar</string>
     <string name="audio_title">Audio</string>
     <string name="camera_title">Camera</string>
     <string name="log_title">Log</string>

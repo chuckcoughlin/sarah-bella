@@ -1,15 +1,16 @@
 # Extensions to Core Configuration
 
-This document summarizes hardware, software and configuration extensions to support specific applications on the Sarah-Bella application.
-Refer to [applications](http://github.com/chuckcoughlin/sarah-bella/tree/master/docs/applications.md) for general descriptions.
+This document summarizes hardware, software and configuration extensions to support specific operations within the Sarah-Bella application.
+Refer to [applications](http://github.com/chuckcoughlin/sarah-bella/tree/master/docs/applications.md) for general usage descriptions.
 
-We have drawn heavily from common message definitions that are available from the repository: https://github.com/ros/common_msgs. We pick and choose from
+In addition to our own custom messages, we have drawn heavily from common message definitions that are available from the repository: https://github.com/ros/common_msgs. We pick and choose from
 the collection as needed.
 
 ***************************************************************
 ## Table of Contents <a id="table-of-contents"></a>
   * [Discovery](#discovery)
   * [Logging](#logging)
+  * [Lidar](#lidar)
   * [System Check](#systemcheck)
   * [Headlamp](#headlamp)
   * [Teleop](#teleop)
@@ -52,7 +53,8 @@ Log
       uint32 line           # line number
       string[] topics       # topics published by this node
 ```
-
+## c - Lidar <a id="lidar"></a>
+The lidar panel displays output from the Lidar device. The *VisualizationView* is based on code found [here](https://github.com/rosjava/android_core/tree/kinetic/android_15/src/org/ros/android/view/visualization).
 
 
 ### 01 - System Check <a id="systemcheck"></a>
@@ -93,10 +95,10 @@ SensorState
 
 The *GPIOState* message is a custom message that provides the current state and configuration of the GPIO header.
 It consists of a list of *GPIOPin* messages. Normally the pin messages represent only
-those output channels that have changed. However, the the ROS parameter
-```/gpio_msgs/publish_all``` is set to "True", then the message will contain the
+those output channels that have changed. However, when the ROS parameter
+```/gpio_msgs/publish_all``` is set to "True", then the robot will return messages for the
 entire list of 40 pins. This parameter is handled like a semaphore, and is immediately
-reset to "False" by the robot. The GPIOState message is designed to have a response
+reset to "False" by the robot. The GPIOState topic is designed to have a response
 time on the order of 0.1 seconds.
 
 Each GPIOPin sub-message consists of:

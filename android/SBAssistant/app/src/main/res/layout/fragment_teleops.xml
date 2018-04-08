@@ -4,7 +4,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="chuckcoughlin.sb.assistant.tab.SLAMFragment">
+    tools:context="chuckcoughlin.sb.assistant.tab.LidarFragment">
 
     <TextView
         android:id="@+id/fragmentTeleopsText"
