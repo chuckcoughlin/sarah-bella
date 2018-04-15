@@ -74,7 +74,7 @@ public class VisualizationView extends GLSurfaceView  {
         this.layers = layers;
         layerMap = new HashMap<>();
         for(Layer layer:layers) {
-            layerMap.put(layer.getMessageType(),layer);
+            layerMap.put(layer.getKey(),layer);
         }
 
         setDebugFlags(DEBUG_CHECK_GL_ERROR);
@@ -126,7 +126,11 @@ public class VisualizationView extends GLSurfaceView  {
         return Collections.unmodifiableList(layers);
     }
 
-    public void onNewMessage(Message message) {
+    /**
+     * Use the key to lookup the proper layer. Forward the message to it.
+     * @param message
+     */
+    public void onNewMessage(String key,Message message) {
         Log.i(CLSS,String.format("onNewMessage: Received %s",message.getClass().getCanonicalName()));
         if(message instanceof tf.tfMessage ) {
             synchronized (this) {

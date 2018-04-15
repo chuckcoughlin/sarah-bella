@@ -40,24 +40,17 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class CompressedOccupancyGridLayer extends AbstractLayer implements TfLayer {
     private static final String CLSS = "CompressedOccupancyGridLayer";
-    private static final String MESSAGE_TYPE = "nav_msgs/OccupancyGrid";
     private static final int COLOR_OCCUPIED = 0xdfffffff;     // Color of occupied cells in the map.
     private static final int COLOR_FREE = 0xff8d8d8d;         // Color of free cells in the map.
     private static final int COLOR_UNKNOWN = 0xff000000;      // Color of unknown cells in the map.
-
-
-
     private final TextureBitmap textureBitmap;
-
     private GraphName frame;
-    public CompressedOccupancyGridLayer() {
-        super();
+
+    public CompressedOccupancyGridLayer(String key) {
+        super(key);
         this.frame = GraphName.of(CLSS);  // temporary
         textureBitmap = new TextureBitmap();
     }
-
-    @Override
-    public String getMessageType() { return MESSAGE_TYPE; }
 
     public void onNewMessage(nav_msgs.OccupancyGrid message) {
         frame = GraphName.of(message.getHeader().getFrameId());

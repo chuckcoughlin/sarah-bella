@@ -16,15 +16,8 @@ import android.widget.TextView;
 import org.ros.android.view.visualization.VisualizationView;
 import org.ros.android.view.visualization.layer.LaserScanLayer;
 import org.ros.android.view.visualization.layer.Layer;
-import org.ros.exception.ServiceNotFoundException;
-import org.ros.internal.node.client.ParameterClient;
-import org.ros.internal.node.server.NodeIdentifier;
-import org.ros.internal.node.xmlrpc.XmlRpcTimeoutException;
-import org.ros.namespace.GraphName;
 import org.ros.node.ConnectedNode;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,8 +26,6 @@ import chuckcoughlin.sb.assistant.common.AbstractMessageListener;
 import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.ros.SBApplicationStatusListener;
 import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
-import chuckcoughlin.sb.assistant.ros.SBRosManager;
-import gpio_msgs.GPIOSet;
 import sensor_msgs.LaserScan;
 import tf.tfMessage;
 
@@ -46,6 +37,7 @@ import tf.tfMessage;
 
 public class LidarFragment extends BasicAssistantFragment implements SBApplicationStatusListener {
     private final static String CLSS = "LidarFragment";
+    private static final String LASER_SCAN_LAYER = "LASER_SCAN_LAYER";
     private LaserListener laserListener = null;
     private TransformListener transformListener = null;
     private SBRosApplicationManager applicationManager;
@@ -62,7 +54,7 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
 
         vizView = view.findViewById(R.id.fragmentLidarImage);
         List<Layer> layers = new ArrayList<>();
-        layers.add(new LaserScanLayer());
+        layers.add(new LaserScanLayer(LASER_SCAN_LAYER));
         vizView.onCreate(layers);
         vizView.init();
 
@@ -123,7 +115,7 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
             mainActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    vizView.onNewMessage(scan);
+                    vizView.onNewMessage(LASER_SCAN_LAYER,scan);
                 }
             });
         }
@@ -143,9 +135,10 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
                 return;
             }
             mainActivity.runOnUiThread(new Runnable() {
+                // Message is destined for main visualizer only
                 @Override
                 public void run() {
-                    vizView.onNewMessage(tf);
+                    vizView.onNewMessage(Layer.NO_LAYER,tf);
                 }
             });
         }

@@ -138,6 +138,14 @@ The initial construction of the package files was accomplished using:
  The current limit for the GPIO board is about 2ma, thus a lamp must controlled through
  a relay or some other isolating mechanism.
 
+ Parts list:</br>
+ ```
+   lamp - 1157 6V LED motorcycle tail light, 51 mA
+   battery - LIPO 11.1V 1000mA LB-010 (ROBOTIS)
+   breadboard - 60x170 mm
+   relay module - Ivoldar Labs 5V
+ ```
+
  ### 03- Teleop <a id="teleop"></a>
 http://wiki.ros.org/joy/Tutorials/WritingTeleopNode
  ### 04- Follow <a id="follow"></a>

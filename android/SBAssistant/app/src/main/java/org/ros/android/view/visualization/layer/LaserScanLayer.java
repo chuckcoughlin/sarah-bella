@@ -38,7 +38,6 @@ import sensor_msgs.LaserScan;
  */
 public class LaserScanLayer extends AbstractLayer implements TfLayer {
   private static final String CLSS = "LaserScanLayer";
-  private static final String MESSAGE_TYPE = "sensor_msgs/LaserScan";
   private static final Color FREE_SPACE_COLOR = Color.fromHexAndAlpha("377dfa", 0.1f);
   private static final Color OCCUPIED_SPACE_COLOR = Color.fromHexAndAlpha("377dfa", 0.3f);
   private static final float LASER_SCAN_POINT_SIZE = 10.f;
@@ -48,13 +47,11 @@ public class LaserScanLayer extends AbstractLayer implements TfLayer {
   private FloatBuffer vertexFrontBuffer;
   private FloatBuffer vertexBackBuffer;
 
-  public LaserScanLayer() {
-    super();
+  public LaserScanLayer(String key) {
+    super(key);
     this.frame = GraphName.of(CLSS);  // temporary
   }
 
-  @Override
-  public String getMessageType() { return MESSAGE_TYPE; }
 
   public void onNewMessage(LaserScan laserScan) {
     frame = GraphName.of(laserScan.getHeader().getFrameId());

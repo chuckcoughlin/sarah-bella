@@ -52,15 +52,10 @@ public class OccupancyGridLayer extends AbstractLayer implements TfLayer {
     private static final int COLOR_TRANSPARENT = 0x00000000;  // Color of transparent cells in the map.
 
 
-    public OccupancyGridLayer() {
-        super();
+    public OccupancyGridLayer(String key) {
+        super(key);
         this.frame = GraphName.of(CLSS);
         tiles = Lists.newCopyOnWriteArrayList();
-    }
-
-    @Override
-    public String getMessageType() {
-        return MESSAGE_TYPE;
     }
 
     public void onNewMessage(nav_msgs.OccupancyGrid message) {

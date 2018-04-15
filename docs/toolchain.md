@@ -338,6 +338,11 @@ On startup *ROSPi* will connect automatically to the wireless network without us
 To configure simply select the desired network from the pull-down and mark it to
 automatically connect if found. It may not be available during the first login, but will connect on subsequent system restarts.
 
+To mitigate problems of wifi adapter drop outs:
+```
+   sudo iw dev wlan0 set power_save off
+```
+
 We would like to have *ROSPi* start with a fixed IP address. We have been unsuccessful at creating such a configuration. Howeverm in practice, we find that the address is always the same. To see what that address, execute ```ifconfig``` once a network configuration has been established.
 
 We use **ssh** to remotely switch applications on the robot. It is disabled by default. To enable,

@@ -32,15 +32,21 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public abstract class AbstractLayer implements Layer {
     private static final String CLSS = "AbstractLayer";
+    protected final String key;
     protected boolean visible = false;
     protected VisualizationView view = null;
 
-    public AbstractLayer() {
+    /**
+     * Constructor
+     * @param id identifier set by the user on layer creation
+     */
+    public AbstractLayer(String id) {
+        this.key = id;
         this.visible = false;
     }
 
     @Override
-    public abstract String getMessageType();
+    public String getKey() { return this.key; }
 
     @Override
     public abstract void draw(VisualizationView view, GL10 gl);
@@ -61,7 +67,8 @@ public abstract class AbstractLayer implements Layer {
      */
     @Override
     public void onNewMessage(Message message) {
-        Log.i(CLSS,String.format("WARNING: Incorrect onNewMessage class %s called with %s",getClass().getCanonicalName(),message.getClass().getCanonicalName()));
+        Log.i(CLSS,String.format("WARNING: %s.onNewMessage called with unhandled class %s",getClass().getCanonicalName(),
+                message.getClass().getCanonicalName()));
     }
 
     /**

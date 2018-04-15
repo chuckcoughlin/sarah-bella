@@ -33,7 +33,6 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class GridCellsLayer extends AbstractLayer implements TfLayer {
     private static final String CLSS = "GridCellsLayer";
-    private static final String MESSAGE_TYPE = "nav_msgs/GridCells";
     private Color color;
     private final Lock lock;
 
@@ -43,14 +42,12 @@ public class GridCellsLayer extends AbstractLayer implements TfLayer {
 
 
     // The creator is expected to set a reasonable color.
-    public GridCellsLayer() {
-        super();
+    public GridCellsLayer(String key) {
+        super(key);
         this.frame = GraphName.of(CLSS);  // temporary
         this.color = new Color(255f,0f,0f,255f);
         lock = new ReentrantLock();
     }
-    @Override
-    public String getMessageType() { return MESSAGE_TYPE; }
 
     public void onNewMessage(nav_msgs.GridCells data) {
         frame = GraphName.of(message.getHeader().getFrameId());

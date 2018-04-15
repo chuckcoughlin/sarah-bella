@@ -38,7 +38,6 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class PathLayer extends AbstractLayer implements TfLayer {
     private static final String CLSS = "PathLayer";
-    private static final String MESSAGE_TYPE = "nav_msgs/Path";
     private static final Color COLOR = Color.fromHexAndAlpha("03dfc9", 0.3f);
     private static final float LINE_WIDTH = 4.0f;
 
@@ -46,14 +45,12 @@ public class PathLayer extends AbstractLayer implements TfLayer {
     private int numPoints;
     private GraphName frame;
 
-    public PathLayer() {
-        super();
+    public PathLayer(String key) {
+        super(key);
         this.frame = GraphName.of(CLSS);  // temporary
         numPoints = 0;
     }
 
-    @Override
-    public String getMessageType() { return MESSAGE_TYPE; }
 
     public void onNewMessage(nav_msgs.Path message) {
         frame = GraphName.of(message.getHeader().getFrameId());

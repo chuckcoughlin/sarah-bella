@@ -42,7 +42,6 @@ import sensor_msgs.PointField;
  */
 public class PointCloud2DLayer extends AbstractLayer implements TfLayer {
   private static final String CLSS = "PointCloud2DLayer";
-  private static final String MESSAGE_TYPE = "sensor_msgs/PointCloud2";
   private static final Color FREE_SPACE_COLOR = Color.fromHexAndAlpha("377dfa", 0.1f);
   private static final Color OCCUPIED_SPACE_COLOR = Color.fromHexAndAlpha("377dfa", 0.3f);
   private static final float POINT_SIZE = 10.f;
@@ -52,12 +51,11 @@ public class PointCloud2DLayer extends AbstractLayer implements TfLayer {
   private FloatBuffer vertexBackBuffer;
 
 
-  public PointCloud2DLayer() {
-    super();
+  public PointCloud2DLayer(String key) {
+    super(key);
     this.frame = GraphName.of(CLSS);
   }
-  @Override
-  public String getMessageType() { return MESSAGE_TYPE; }
+
 
   public void onNewMessage(sensor_msgs.PointCloud2 message) {
     frame = GraphName.of(message.getHeader().getFrameId());

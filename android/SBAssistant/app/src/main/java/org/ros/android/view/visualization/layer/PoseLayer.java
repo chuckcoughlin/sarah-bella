@@ -36,17 +36,15 @@ import nav_msgs.Path;
  */
 public class PoseLayer extends AbstractLayer implements TfLayer {
   private static final String CLSS = "PoseLayer";
-  private static final String MESSAGE_TYPE = "geometry_msgs/PoseStamped";
   private final GraphName frame;
 
   private Shape shape;
 
-  public PoseLayer() {
-    super();
+  public PoseLayer(String key) {
+    super(key);
     this.frame = GraphName.of(CLSS);
   }
-  @Override
-  public String getMessageType() { return MESSAGE_TYPE; }
+
 
   public void onNewMessage(geometry_msgs.PoseStamped message) {
       GraphName source = GraphName.of(message.getHeader().getFrameId());

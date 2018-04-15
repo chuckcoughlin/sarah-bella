@@ -36,15 +36,15 @@ import javax.microedition.khronos.opengles.GL10;
  * @author moesenle@google.com (Lorenz Moesenlechner)
  */
 public interface Layer extends OpenGlDrawable {
-
+    public static final String NO_LAYER = "NO_LAYER";
     /**
      */
     public void init(VisualizationView view);
 
     /**
-     * @return the message type handled by this layer
+     * @return a key which identifies this layer.
      */
-    public String getMessageType();
+    public String getKey();
 
     /**
      * @return true if the layer is currently displayed and
