@@ -56,7 +56,7 @@ elif [ ${APP} = "system" ]
 then
     echo "LAUNCH_PKG=system_check" > ${CONFIG}
     echo "LAUNCH_FILE=system.launch" >> ${CONFIG}
-elif [ ${APP} = "teleop" ]
+elif [ ${APP} = "teleop" -o ${APP} = "teleops" ]
 then
     echo "LAUNCH_PKG=teleop" > ${CONFIG}
     echo "LAUNCH_FILE=teleop.launch" >> ${CONFIG}

@@ -1,0 +1,5 @@
+#!/bin/sh
+# Shutdown ros_code
+# run as super-user
+export HOME=/home/chuckc
+/etc/init.d/ros stop
