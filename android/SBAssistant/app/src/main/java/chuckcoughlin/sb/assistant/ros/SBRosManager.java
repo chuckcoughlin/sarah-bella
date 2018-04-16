@@ -34,7 +34,7 @@ import ros.android.util.RobotId;
 // From rosjava
 
 /**
- * Encapsulate the description of the robot to which we are connected. his class is designed to
+ * Encapsulate the description of the robot to which we are connected. This class is designed to
  * accommodate the existence of only a single robot. Maintain the connection state.
  * Since we access from multiple fragments, make this a singleton class to avoid repeated
  * allocations. It is created and shutdown in the MainActivity.

@@ -22,5 +22,6 @@ package chuckcoughlin.sb.assistant.logs;
  */
 public interface LogListObserver {
   public void notifyLogAppended();
+  public void notifyLogChanged();
   public void notifyLogRemoved();
 }

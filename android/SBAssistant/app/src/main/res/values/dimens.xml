@@ -15,4 +15,5 @@
     <dimen name="gpio_image_padding">4dp</dimen>
     <dimen name="gpio_text_field_width">120dp</dimen>
     <dimen name="gpio_text_field_margin">5dp</dimen>
+    <dimen name="log_field_padding">1dp</dimen>
 </resources>

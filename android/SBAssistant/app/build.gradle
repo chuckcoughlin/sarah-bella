@@ -57,7 +57,7 @@ dependencies {
     implementation files('libs/commons-logging-1.1.jar')
     implementation files('libs/commons-httpclient-3.0.1.jar')
     implementation files('libs/std_msgs-0.5.11.jar')
-    implementation files('libs/system_check-0.0.1.jar')
+    implementation files('libs/system_check-0.0.4.jar')
     implementation files('libs/commons-codec-1.11a.jar')
     implementation files('libs/commons-pool-1.6.jar')
     implementation files('libs/jsch-0.1.54.jar')

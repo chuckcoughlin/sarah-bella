@@ -48,7 +48,7 @@ import ros.android.util.RobotDescription;
 /**
  * Encapsulate the current application running on the tablet. It must match the application
  * running on the robot to which we are connected.
- * Since we access from multiple fragments, make this a singleton class to avoid repeated
+ * Since we access this from multiple fragments, make this a singleton class to avoid repeated
  * allocations. It is created and shutdown in the MainActivity.
  *
  * This class also encapsulates the node connected to the robot. Individual panels
@@ -190,7 +190,6 @@ public class SBRosApplicationManager {
                         nodeConfiguration = NodeConfiguration.newPublic(localhost, masterURI);
                         nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
                         nodeMainExecutor.execute(application,nodeConfiguration);
-                        signalApplicationStart(application.getApplicationName());
                     }
                     catch (Exception ex) {
                         signalError(String.format("%s.startApplication: Unable to start (restart?) core (%s), continuing",CLSS,ex.getLocalizedMessage()));
@@ -262,9 +261,11 @@ public class SBRosApplicationManager {
     }
     /**
      * Inform all listeners that the named application has started. It is up to the
-     * individual listeners to create subscriptions as appropriate.
+     * individual listeners to create subscriptions as appropriate. This is called
+     * by the RobotApplication node when informed by the ROS framework. We also
+     * call it directly here (it may be called twice).
      */
-    private void signalApplicationStart(String appName) {
+    public void signalApplicationStart(String appName) {
         Log.i(CLSS, String.format("signalApplicationStart: %s",appName));
         this.applicationListeners.signal(new SignalRunnable<SBApplicationStatusListener>() {
             public void run(SBApplicationStatusListener listener) {
@@ -276,7 +277,7 @@ public class SBRosApplicationManager {
      * Inform all listeners that the application has stopped. It is up to the
      * individual listeners to terminate all active subscriptions.
      */
-    private void signalApplicationStop() {
+    public void signalApplicationStop() {
         this.applicationListeners.signal(new SignalRunnable<SBApplicationStatusListener>() {
             public void run(SBApplicationStatusListener listener) {
                 listener.applicationShutdown();

@@ -7,7 +7,7 @@
     <string name="fragmentCoverLabel">Turtlebot3 \"Sarah-Bella\"</string>
     <string name="fragmentDiscoveryLabel">Robot Discovery</string>
     <string name="fragmentLidarLabel">Lidar</string>
-    <string name="fragmentLogsLabel">Logfile Entries</string>
+    <string name="fragmentLogsLabel">Log Messages</string>
     <string name="fragmentSettingsLabel">Configuration Settings</string>
     <string name="fragmentSystemLabel">Robot Systems Parameters</string>
     <string name="fragmentTeleopLabel">Teleop - Remote Operation</string>

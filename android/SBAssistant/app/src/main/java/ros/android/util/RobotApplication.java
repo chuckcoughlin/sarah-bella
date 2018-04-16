@@ -44,6 +44,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
+import chuckcoughlin.sb.assistant.ros.SBRosManager;
 import ros.android.msgs.Topic;
 
 /**
@@ -98,12 +100,20 @@ public class RobotApplication extends AbstractNodeMain implements java.io.Serial
     @Override
     public void onShutdown(final Node node) {
         Log.i(CLSS,String.format("%s.onShutdown: connectedNode has been shutdown",getApplicationName()));
+        SBRosApplicationManager.getInstance().signalApplicationStop();
         this.connectedNode = null;
     }
+
+    /**
+     * We receive this asynchronously from ROS internals once the node is actually started.
+     * Notify the application manager.
+     * @param node the ROS node that is
+     */
     @Override
     public void onStart(final ConnectedNode node) {
         Log.i(CLSS,String.format("%s.onStart: Received connectedNode!",getApplicationName()));
         this.connectedNode = node;
+        SBRosApplicationManager.getInstance().signalApplicationStart(this.applicationName);
     }
 	@Override
 	public boolean equals(Object o) {

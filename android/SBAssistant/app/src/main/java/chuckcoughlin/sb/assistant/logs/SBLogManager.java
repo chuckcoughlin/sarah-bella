@@ -96,14 +96,17 @@ public class SBLogManager implements SBApplicationStatusListener {
     @Override
     public void applicationStarted(String appName) {
         ConnectedNode node = SBRosApplicationManager.getInstance().getApplication().getConnectedNode();
+        android.util.Log.i(CLSS, String.format("application started - %s", appName));
         if (node != null) {
             logListener.subscribe(node, "/rosout");  // Aggregated feed
+            android.util.Log.i(CLSS, String.format("subscription started - /rosout"));
         }
     }
 
     @Override
     public void applicationShutdown() {
         logListener.shutdown();
+        android.util.Log.i(CLSS, String.format("application stopped"));
         shutdown();
     }
 
@@ -121,8 +124,14 @@ public class SBLogManager implements SBApplicationStatusListener {
      */
     private void notifyObservers(boolean full) {
         for(LogListObserver observer:observers) {
-            if(full) observer.notifyLogRemoved();
-            observer.notifyLogAppended();
+            if( observer!=null ) {
+                if(full) observer.notifyLogRemoved();
+                observer.notifyLogAppended();
+                //observer.notifyLogChanged();
+            }
+            else {
+                android.util.Log.i(CLSS, String.format("WARNING: Attempt to notify null observer"));
+            }
         }
     }
 

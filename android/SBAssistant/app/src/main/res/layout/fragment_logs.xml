@@ -1,10 +1,13 @@
 <!-- Handle the listing of a large number of log messages by using a RecyclerView -->
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context="chuckcoughlin.sb.assistant.tab.LogsFragment">
 
     <TextView
-        android:id="@+id/logs_title_label"
+        android:id="@+id/fragmentLogsText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="32dp"
@@ -18,6 +21,7 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/logs_recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="800dp"
+        android:animateLayoutChanges="true"
         android:scrollbars="vertical" />
-</FrameLayout>
+</LinearLayout>

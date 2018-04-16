@@ -21,6 +21,7 @@ public class LogViewHolder extends RecyclerView.ViewHolder {
     /**
      * The ViewGroup is actually a LinearLayout holding text
      * views:
+     *    - level  (not shown by default)
      *    - timestamp
      *    - source
      *    - message
@@ -30,9 +31,9 @@ public class LogViewHolder extends RecyclerView.ViewHolder {
         super(v);
         this.setIsRecyclable(true);
     }
-
-    public TextView getTimestampView() { return (TextView) ((ViewGroup)itemView).getChildAt(0); }
-    public TextView getSourceView() { return (TextView) ((ViewGroup)itemView).getChildAt(1); }
-    public TextView getMessageView() { return (TextView) ((ViewGroup)itemView).getChildAt(2); }
+    public TextView getLevelView() { return (TextView) ((ViewGroup)itemView).getChildAt(0); }
+    public TextView getTimestampView() { return (TextView) ((ViewGroup)itemView).getChildAt(1); }
+    public TextView getSourceView() { return (TextView) ((ViewGroup)itemView).getChildAt(2); }
+    public TextView getMessageView() { return (TextView) ((ViewGroup)itemView).getChildAt(3); }
 
 }

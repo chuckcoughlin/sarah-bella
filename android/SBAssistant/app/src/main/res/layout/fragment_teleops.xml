@@ -9,30 +9,15 @@
     <TextView
         android:id="@+id/fragmentTeleopsText"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_weight="0"
+        android:gravity="center"
+        android:textAppearance="@style/TabTitle" />
 
-    <LinearLayout
-        android:id="@+id/top_view"
-        android:layout_width="fill_parent"
-        android:layout_height="50dip"
-        android:background="#ff404040"
-        android:orientation="horizontal" >
-
-        <Button
-            android:id="@+id/back_button"
-            android:layout_width="wrap_content"
-            android:layout_height="50dip"
-            android:onClick="back"
-            android:text="Back" />
-
-        <LinearLayout
-            android:id="@+id/top_bar"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:background="#ff404040"
-            android:gravity="right"
-            android:orientation="horizontal" />
-    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/main_layout"
