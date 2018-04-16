@@ -37,6 +37,8 @@ tablet. It has no effect on the robot itself.
 
 ******************************************************
 ### b - Logging <a id="logging"></a>
+![SB Assistant](/images/sb-logging.png)
+```                        SB Assistant - Log Message Page ```</br>
 [toc](#table-of-contents)
 
 The **logging** panel is a general-purpose feature that supports all applications.
