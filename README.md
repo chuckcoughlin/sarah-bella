@@ -14,6 +14,7 @@ debugged and added to the repository on the development system.  From there the 
  As of April, 2018 this project is under active development. In general, documentation precedes completed features. The following major features can be considered "done":
   * SBAssistant: android controller, panel navigation, robot WiFi connection, select/change active robot application.
   * system: display robot status - CPU, memory, battery.
+  * logging: display ROS log messages generated on the robot.
 
 
  For further details see [applications](http://github.com/chuckcoughlin/sarah-bella/tree/master/docs/applications.md), [toolchain](https://github.com/chuckcoughlin/sarah-bella/tree/master/docs/toolchain.md) and [extensions](https://github.com/chuckcoughlin/sarah-bella/tree/master/docs/extensions.md).

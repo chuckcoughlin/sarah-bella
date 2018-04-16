@@ -17,11 +17,10 @@ import chuckcoughlin.sb.assistant.R;
  */
 
 public class LogViewHolder extends RecyclerView.ViewHolder {
-
+    private final ViewGroup rowParent;
     /**
-     * The ViewGroup is actually a LinearLayout holding text
-     * views:
-     *    - level  (not shown by default)
+     * The ViewGroup is actually a nested LinearLayout holding text
+     * views. See log_item.xml
      *    - timestamp
      *    - source
      *    - message
@@ -29,11 +28,11 @@ public class LogViewHolder extends RecyclerView.ViewHolder {
      */
     public LogViewHolder(ViewGroup v) {
         super(v);
-        this.setIsRecyclable(true);
+        this.setIsRecyclable(false);
+        this.rowParent = (ViewGroup) ((ViewGroup)itemView).getChildAt(0);
     }
-    public TextView getLevelView() { return (TextView) ((ViewGroup)itemView).getChildAt(0); }
-    public TextView getTimestampView() { return (TextView) ((ViewGroup)itemView).getChildAt(1); }
-    public TextView getSourceView() { return (TextView) ((ViewGroup)itemView).getChildAt(2); }
-    public TextView getMessageView() { return (TextView) ((ViewGroup)itemView).getChildAt(3); }
-
+    public TextView getTimestampView(){ return (TextView) ((ViewGroup)rowParent).getChildAt(0); }
+    public TextView getSourceView()   { return (TextView) ((ViewGroup)rowParent).getChildAt(1); }
+    public TextView getMessageView()  { return (TextView) ((ViewGroup)rowParent).getChildAt(2); }
+    public TextView getDetailView()   { return (TextView) ((ViewGroup)itemView).getChildAt(1);  }
 }

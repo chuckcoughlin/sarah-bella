@@ -130,7 +130,7 @@ public class SBLogManager implements SBApplicationStatusListener {
                 //observer.notifyLogChanged();
             }
             else {
-                android.util.Log.i(CLSS, String.format("WARNING: Attempt to notify null observer"));
+                //android.util.Log.i(CLSS, String.format("WARNING: Attempt to notify null observer"));
             }
         }
     }

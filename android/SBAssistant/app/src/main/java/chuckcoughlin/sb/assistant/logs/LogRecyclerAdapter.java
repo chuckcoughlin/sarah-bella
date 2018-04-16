@@ -7,6 +7,7 @@ package chuckcoughlin.sb.assistant.logs;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.support.transition.TransitionManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,10 +35,13 @@ public class LogRecyclerAdapter extends RecyclerView.Adapter<LogViewHolder> impl
     private static final String LEVEL_8 = "ERROR";
     private static final int MESSAGE_LEN = 45;
     private static final int SOURCE_LEN = 15;
+    private static final int LOG_MSG_HEIGHT = 75;
+    private static final int LOG_MSG_HEIGHT_EXPANDED = 225;
     private final SBLogManager logManager;
     private SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm:ss.SSS");
     private int expandedPosition = -1;
     private Activity mainActivity = null;
+    private RecyclerView recyclerView = null;
     private Context context = null;
 
     /**
@@ -49,6 +53,10 @@ public class LogRecyclerAdapter extends RecyclerView.Adapter<LogViewHolder> impl
     }
 
     @Override
+    public void onAttachedToRecyclerView(RecyclerView view) {
+        this.recyclerView = view;
+    }
+    @Override
     public LogViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -56,50 +64,80 @@ public class LogRecyclerAdapter extends RecyclerView.Adapter<LogViewHolder> impl
 
         // create a new view - set the item height.
         LinearLayout layout = (LinearLayout)inflater.inflate(R.layout.log_item,parent,shouldAttachToParent);
-        ViewGroup.LayoutParams params = layout.getLayoutParams();
-        params.height = 75;
-        layout.setLayoutParams(params);
         LogViewHolder holder = new LogViewHolder(layout);
         return holder;
     }
 
     /**
      * Change the views depending on whether or not the item is selected.
-     * In an expanded each element gets its own line (TBD).
+     * In an expanded view some elements get re-used. The message is on its own line.
      * @param holder the viewholder that should be updated at the given position
      * @param position row that should be updated
      */
     @Override
     public void onBindViewHolder(LogViewHolder holder, int position) {
+        boolean expand = (position==expandedPosition);
         Log msg = logManager.getLogAtPosition(position);
-        TextView levelView  = holder.getLevelView();
-        if(msg.getLevel()==1) levelView.setText(LEVEL_1);
-        else if(msg.getLevel()==1) levelView.setText(LEVEL_2);
-        else if(msg.getLevel()==1) levelView.setText(LEVEL_4);
-        else levelView.setText(LEVEL_8);
-        levelView.setVisibility(View.INVISIBLE);  // Don't display for now
-
+        // The timestamp is always the same
         TextView timestampView  = holder.getTimestampView();
         int secsFromEpoch = msg.getHeader().getStamp().secs;
         int msecs = msg.getHeader().getStamp().nsecs/1000;
         Date tstamp = new Date(secsFromEpoch*1000+msecs);
         String dt = dateFormatter.format(tstamp);
         timestampView.setText(dt);
-        // Truncate source to 16 chars
+
+        // In expanded mode the source is the level
         TextView sourceView  = holder.getSourceView();
         String source = msg.getName();
-        if( source.length()>SOURCE_LEN) source = source.substring(0,SOURCE_LEN);
-        sourceView.setText(source);
-        // May be multiple lines
+        if( expand ) {
+            if(msg.getLevel()==1) sourceView.setText(LEVEL_1);
+            else if(msg.getLevel()==2) sourceView.setText(LEVEL_2);
+            else if(msg.getLevel()==4) sourceView.setText(LEVEL_4);
+            else sourceView.setText(LEVEL_8);
+        }
+        else {
+            // Truncate source to 16 char
+            if( source.length()>SOURCE_LEN) source = source.substring(0,SOURCE_LEN);
+            sourceView.setText(source);
+        }
+
+        // In expanded mode, the message is the source (node-name).
         TextView messageView  = holder.getMessageView();
         String msgText = msg.getMsg().trim();
-        if( msgText.length()>SOURCE_LEN) msgText = msgText.substring(0,MESSAGE_LEN);
-        messageView.setText(msgText);
+        if( expand ) {
+            messageView.setText(source);
+        }
+        else {
+            if( msgText.length()>MESSAGE_LEN) msgText = msgText.substring(0,MESSAGE_LEN);
+            messageView.setText(msgText);
+        }
 
-        //final boolean isExpanded = (position==expandedPosition);
-        //holder.details.setVisibility(isExpanded?View.VISIBLE:View.GONE);
-        //holder.itemView.setActivated(isExpanded);
+
+        TextView detailView = holder.getDetailView();
+        ViewGroup.LayoutParams params = holder.itemView.getLayoutParams();
+        if( expand ) {
+            detailView.setText(msgText);
+            detailView.setVisibility(View.VISIBLE);
+            holder.itemView.setActivated(false);
+            params.height=LOG_MSG_HEIGHT_EXPANDED;
+        }
+        else {
+            detailView.setVisibility(View.GONE);
+            holder.itemView.setActivated(true);
+            params.height=LOG_MSG_HEIGHT;
+        }
+        holder.itemView.setLayoutParams(params);
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                expandedPosition = expand ? -1:position;
+                TransitionManager.beginDelayedTransition(recyclerView);
+                notifyDataSetChanged();
+            }
+        });
     }
+
+
 
     @Override
     public int getItemCount() {
@@ -108,8 +146,10 @@ public class LogRecyclerAdapter extends RecyclerView.Adapter<LogViewHolder> impl
 
     @Override
     public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
+        this.recyclerView = null;
         this.context = null;
     }
+
 
     // ============================= LogListObserver ===========================
     @Override

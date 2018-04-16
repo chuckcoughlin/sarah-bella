@@ -142,7 +142,7 @@ The initial construction of the package files was accomplished using:
  ```
    lamp - 1157 6V LED motorcycle tail light, 51 mA
    battery - LIPO 11.1V 1000mA LB-010 (ROBOTIS)
-   breadboard - 60x170 mm
+   breadboard - 60x170 mm, solder-less
    relay module - Ivoldar Labs 5V
  ```
 

@@ -419,6 +419,7 @@ Follow the steps below to install updates from the *git* repository:
     cd ~/robotics
     git pull
     cd ~/catkin_ws
+    bin/clear_stubs
     catkin_make
 ```
 The package to be started is set by editing ```catkin_ws/config/launch.conf```, setting the desired package and launch file. Then restart the robot:

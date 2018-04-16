@@ -40,7 +40,9 @@ tablet. It has no effect on the robot itself.
 [toc](#table-of-contents)
 
 The **logging** panel is a general-purpose feature that supports all applications.
-It displays the most recent 100 log messages from the robot. All of the standard
+It displays the most recent 100 log messages from the robot, collecting messages
+whether or not the panel is showing. Clicking on a message displays more detail.
+All of the standard
 applications have been scrubbed to incorporate standard ROS log messages.
 
 ******************************************************
