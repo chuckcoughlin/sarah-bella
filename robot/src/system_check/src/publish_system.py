@@ -40,8 +40,9 @@ while not rospy.is_shutdown():
 	msg.out_packets_dropped = net[7]
 	pub.publish(msg)
 	# NOTE: publishing sets the header sequence
-	if msg.header.seq % 30 == 0:
-		rospy.loginfo("System: cpu: %f, mem: %f, packets: %d/%d" % (msg.cpu_percent,msg.free_memory_bytes,msg.packets_sent,msg.packets_received))
+	#       Log every nth message
+	if msg.header.seq % 5 == 0:
+		rospy.loginfo("System: cpu: %2f.2, mem: %f.0, packets: %d/%d" % (msg.cpu_percent,msg.free_memory_bytes,msg.packets_sent,msg.packets_received))
 	rate.sleep()
 
 rospy.loginfo("complete")
