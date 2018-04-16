@@ -28,9 +28,9 @@ import static android.content.Context.BLUETOOTH_SERVICE;
  */
 public class BluetoothChecker {
     private final static String CLSS = "BluetoothChecker";
-    private CheckerThread checkerThread;
+    private CheckerThread checkerThread = null;
     private SBRobotConnectionHandler handler;
-    private static String bluetoothError = "";
+    private String bluetoothError = "";
 
 
     public BluetoothChecker(SBRobotConnectionHandler handler) {
@@ -39,10 +39,13 @@ public class BluetoothChecker {
 
     // An empty string returned implies success, else an error message.
     // For now we always return an error
-    public static boolean bluetoothValid(BluetoothAdapter adapter) {
+    public boolean bluetoothValid(BluetoothAdapter adapter,String device) {
         boolean result = false;
         if( adapter==null ) {
             bluetoothError = "No bluetooth network";
+        }
+        else if( device==null || device.isEmpty() ) {
+            bluetoothError = "No bluetooth device specified";
         }
         else {
             if( !adapter.isEnabled() ) adapter.enable();
@@ -57,10 +60,14 @@ public class BluetoothChecker {
         return result;
     }
 
-    public void beginChecking(RobotId robotId, BluetoothManager manager,String device) {
-        stopChecking();
-        checkerThread = new CheckerThread(robotId, manager,device);
-        checkerThread.start();
+    public void beginChecking(RobotId robotId, BluetoothManager bmgr,String device) {
+        if(bluetoothValid(bmgr.getAdapter(),device)) {
+            checkerThread = new CheckerThread(robotId, bmgr,device);
+            checkerThread.start();
+        }
+        else {
+            handler.handleNetworkError(SBConstants.NETWORK_BLUETOOTH,bluetoothError);
+        }
     }
 
     public void stopChecking() {
@@ -91,45 +98,40 @@ public class BluetoothChecker {
             });
         }
 
-        private boolean bluetoothValid() {
-            return  BluetoothChecker.bluetoothValid(adapter);
-        }
 
         @Override
         public void run() {
             boolean success = false;
             try {
-                if (bluetoothValid()) {
-                    adapter.startDiscovery();
-                    int cycle = 0;
-                    while( cycle<10 ) {
-                        pairedDevices = adapter.getBondedDevices();
-                        for( BluetoothDevice device:pairedDevices ) {
-                            Log.i(CLSS,String.format("BluetoothChecker: Found %s %s %s",device.getName(),device.getType(),device.getAddress()));
+                adapter.startDiscovery();
+                int cycle = 0;
+                while (cycle < 10 && !success) {
+                    pairedDevices = adapter.getBondedDevices();
+                    for (BluetoothDevice device : pairedDevices) {
+                        Log.i(CLSS, String.format("BluetoothChecker: Found %s %s %s", device.getName(), device.getType(), device.getAddress()));
+                        if( device.getName().equalsIgnoreCase(deviceName) ) {
+                            success = true;
+                            break;
                         }
-                        Thread.sleep(1000);
-                        cycle++;
                     }
-                    adapter.cancelDiscovery();
-                    adapter.disable();
+                    Thread.sleep(1000);
+                    cycle++;
                 }
+                adapter.cancelDiscovery();
             }
             catch (Throwable ex) {
-
                 Log.e("RosAndroid", "Exception while searching for Bluetooth for "
                         + robotId.getDeviceName(), ex);
-                bluetoothError =  ex.getLocalizedMessage();
+                bluetoothError = ex.getLocalizedMessage();
             }
 
-            if( success ) {
+            if (success) {
                 SBRosManager.getInstance().setDeviceName(deviceName);
                 handler.receiveNetworkConnection();
             }
             else {
-                handler.handleNetworkError(SBConstants.NETWORK_BLUETOOTH,bluetoothError);
+                handler.handleNetworkError(SBConstants.NETWORK_BLUETOOTH, bluetoothError);
             }
         }
     }
 }
-
-

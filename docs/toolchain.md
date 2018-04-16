@@ -14,6 +14,7 @@ We use the kinetic version of ROS. This is the current version used by ROBOTIS f
   * [Android Control Application](#android-header)
     * [External Libraries](#external-libraries)
     * [Jar Conversions](#jar-conversions)
+    * [Network Configuration](#network)
     * [SB Assistant](#sb-assistant)
     * [Emulator](#emulator)
     * [Persistent Storage](#persistent-storage)
@@ -98,6 +99,11 @@ Process:
 * *message_generation-0.3.0.jar* as *message_generation-0.3.0a.jar*
 
 Insert these replacements into the *libs* directory of the project.
+
+#### Network Configuration <a id="network"></a>
+On the tablet's settings "Connections" page, make sure that at least one of bluetooth or wifi systems are enabled. For bluetooth, under "More Connection Settings", enable "Nearby device scanning". Network or device pairing selections are made from menus accessed from the main screen.
+
+For bluetooth, pairing with the robot must be completed before the SB Assistant application is started. Pairing may be initiated either from the robot or the tablet.
 
 #### SB-Assistant <a id="sb-assistant"></a>
 This notepad application is designed to command the robot, perform compute-intensive analyses and display results. The SBAssistant project is contained in the overall project
@@ -329,10 +335,11 @@ Use "unxz" to de-compress the image.
 Using Etcher, flash the decompressed image onto the SD card. On my system, this is /dev/disk7. Flash time is approximately 5 minutes.
 
 #### Network Configuration <a id="network-configuration"></a>
-When a network connection to the robot is requested, the tablet first tries to connect through Bluetooth, and, failing that, through wi-fi.
+When a network connection to the robot is requested, the tablet first tries to connect through Bluetooth, and, failing that, through wifi.
 
 Configure Bluetooth using the robot's pull-down menu. Configure the adapter so that it is always visible (discoverable) and give it a "friendly"
-name of "SarahBella". The Android tablet will pair based on the friendly name.
+name of "SarahBella". Pairing is based on the friendly name and can be initiated
+either from the robot or the tablet.
 
 On startup *ROSPi* will connect automatically to the wireless network without user intervention based on some previous manual configuration.
 To configure simply select the desired network from the pull-down and mark it to
