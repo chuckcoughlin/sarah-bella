@@ -7,5 +7,11 @@
   <param name="robot/application" value="park" type="str"/>
   <param name="robot/platform" value="RaspberryPi" type="str"/>
 
+  <!-- Make a slower lidar feed available; only required if we use android client -->
+  <node pkg="topic_tools" type="throttle" name="scan_throttle"
+        args="messages /scan 0.2" output="log"/>
+  <node pkg="topic_tools" type="throttle" name="tf_throttle"
+        args="messages /tf 0.1" output="log"/>
+
   <node name="automatic_parking" pkg="automatic_parking" type="automatic_parking.py" output="log"/>
 </launch>
