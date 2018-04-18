@@ -3,12 +3,14 @@
 thickness = 4;
 lampholder_thickness = 3; // Must be smaller than distance between nubs
 bulb_width = 25;
-porch_center_y = 30;  // The length of the rectangular portion
+porch_center_y = 36;  // The length of the rectangular portion
 porch_x  = 90;
 rivet_radius = 2.5;   // Hole radius for rivet attachment
-round_radius=2;       // Radius of the corner arcs
-tab_x = 66;           // center-to-center
+round_radius = 2;     // Radius of the corner arcs
+tab_x = 66;           // center-center
 tab_y = 9;            // edge to center of holes
+tabr_x = 22.25;       // center-to-center of relay board
+tabr_y = -17;         // center to center of relay board
 rim = 3;              // Width of rim
 hex_offset = 12;      // Center-to-center of hex connection
 post_offset = 24;     // Center-to-center of post cutout
@@ -86,8 +88,8 @@ module holes(x,y,z) {
 // y - center of board
 // z - thickness
 module relay_holes(x,y,z) {
-    dx = 10;   // center of board to center of hole
-    dy = 12;   // center of board to center of hole
+    dx = 14;   // center of board to center of hole
+    dy = 10;   // center of board to center of hole
     // These are rivet holes for the relay board
     for(i=[[x+dx,y+dy],[x-dx,y-dy],
            [x+dx,y-dy],[x-dx,y+dy]]) {
@@ -145,14 +147,14 @@ difference() {
     base(porch_x,porch_center_y,thickness);
     translate([0,-porch_center_y,0])
         holes(tab_x/2,tab_y,thickness);
-        relay_holes(20,0,thickness);
-    translate([-hex_offset,-porch_center_y,thickness/2])
+        relay_holes(tabr_x,tabr_y,thickness);
+    translate([-hex_offset,-porch_center_y-(round_radius/2),thickness/2])
         connector_housing(2*thickness);
-    translate([hex_offset,-porch_center_y,thickness/2])
+    translate([hex_offset,-porch_center_y-(round_radius/2),thickness/2])
         connector_housing(2*thickness);
-     translate([post_offset,-porch_center_y,thickness/2])
+    translate([post_offset,-porch_center_y-(round_radius/2),thickness/2])
         connector_housing(2*thickness);
-      translate([-post_offset,-porch_center_y,thickness])
+     translate([-post_offset,-porch_center_y-(round_radius/2),thickness])
          connector_housing(2*thickness);
 }
 // Rim
@@ -160,13 +162,13 @@ translate([0,0,-thickness/2]) {
     difference() {
         base(porch_x,porch_center_y,thickness);
         base_cutout(porch_x,porch_center_y,thickness,rim);
-        translate([hex_offset,-porch_center_y,thickness/2])
+        translate([hex_offset,-porch_center_y-(round_radius/2),thickness/2])
             connector_housing(2*thickness);
-        translate([-hex_offset,-porch_center_y,thickness/2])
+        translate([-hex_offset,-porch_center_y-(round_radius/2),thickness/2])
             connector_housing(2*thickness);
-        translate([post_offset,-porch_center_y,thickness/2])
+        translate([post_offset,-porch_center_y-(round_radius/2),thickness/2])
             connector_housing(2*thickness);
-        translate([-post_offset,-porch_center_y,thickness])
+        translate([-post_offset,-porch_center_y-(round_radius/2),thickness])
             connector_housing(2*thickness);
     }
 }
