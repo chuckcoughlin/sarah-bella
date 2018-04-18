@@ -14,7 +14,7 @@ fi
 #
 # ===========================================================================================
 # Options:
-#   diagnostics, follower, follow3, gpio, system
+#   diagnostics, follow, gpio, park, `system, teleop
 # ===========================================================================================
 #
 APP=$1
@@ -46,7 +46,7 @@ then
     echo "LAUNCH_FILE=system.launch" >> ${CONFIG}
 elif [ ${APP} = "park" ]
 then
-    echo "LAUNCH_PKG=turtlebot3_automatic_parking" > ${CONFIG}
+    echo "LAUNCH_PKG=automatic_parking" > ${CONFIG}
     echo "LAUNCH_FILE=automatic_parking.launch" >> ${CONFIG}
 elif [ ${APP} = "sensor" ]
 then

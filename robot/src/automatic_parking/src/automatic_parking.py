@@ -114,8 +114,8 @@ def finding_spot_position():
     end_angle_distance = get_angle_distance(spot_angle.data_3)
 
     if start_angle_distance[1] != 0 and center_angle_distance[1] != 0 and end_angle_distance[1] != 0:
-        rospy.loginfo(("calibration......")
-        start_point =get_point(start_angle_distance)
+        rospy.loginfo("calibration......")
+        start_point = get_point(start_angle_distance)
         center_point = get_point(center_angle_distance)
         end_point = get_point(end_angle_distance)
         stats = True

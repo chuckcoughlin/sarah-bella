@@ -7,5 +7,5 @@
   <param name="robot/application" value="park" type="str"/>
   <param name="robot/platform" value="RaspberryPi" type="str"/>
 
-  <node name="automatic_parking" pkg="turtlebot3_automatic_parking" type="automatic_parking.py" output="log"/>
+  <node name="automatic_parking" pkg="automatic_parking" type="automatic_parking.py" output="log"/>
 </launch>
