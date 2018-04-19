@@ -35,36 +35,43 @@ import nav_msgs.Path;
  * @author moesenle@google.com (Lorenz Moesenlechner)
  */
 public class PoseLayer extends AbstractLayer implements TfLayer {
-  private static final String CLSS = "PoseLayer";
-  private final GraphName frame;
+    private static final String CLSS = "PoseLayer";
+    private final GraphName frame;
 
-  private Shape shape;
+    private Shape shape;
 
-  public PoseLayer(String key) {
-    super(key);
-    this.frame = GraphName.of(CLSS);
-  }
-
-
-  public void onNewMessage(geometry_msgs.PoseStamped message) {
-      GraphName source = GraphName.of(message.getHeader().getFrameId());
-      FrameTransform frameTransform = view.getFrameTransformTree().transform(source, frame);
-      if (frameTransform != null) {
-          Transform poseTransform = Transform.fromPoseMessage(message.getPose());
-          shape.setTransform(frameTransform.getTransform().multiply(poseTransform));
-          visible = true;
-      }
-    visible= true;
-  }
-  @Override
-  public void draw(VisualizationView view, GL10 gl) {
-    if (visible) {
-      shape.draw(view, gl);
+    public PoseLayer(String key) {
+        super(key);
+        this.frame = GraphName.of(CLSS);
     }
-  }
 
-  @Override
-  public GraphName getFrame() {
-    return frame;
-  }
+    /**
+     * We count on the Visualization view to properly disseminate by class
+     *
+     * @param m a PoseStamped message
+     */
+    @Override
+    public void onNewMessage(Message m) {
+        PoseStamped message = (PoseStamped) m;
+        GraphName source = GraphName.of(message.getHeader().getFrameId());
+        FrameTransform frameTransform = view.getFrameTransformTree().transform(source, frame);
+        if (frameTransform != null) {
+            Transform poseTransform = Transform.fromPoseMessage(message.getPose());
+            shape.setTransform(frameTransform.getTransform().multiply(poseTransform));
+            visible = true;
+        }
+        visible = true;
+    }
+
+    @Override
+    public void draw(VisualizationView view, GL10 gl) {
+        if (visible) {
+            shape.draw(view, gl);
+        }
+    }
+
+    @Override
+    public GraphName getFrame() {
+        return frame;
+    }
 }

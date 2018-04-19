@@ -17,6 +17,7 @@
 package org.ros.android.view.visualization;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
@@ -86,6 +87,7 @@ public class VisualizationView extends GLSurfaceView  {
         getHolder().setFormat(PixelFormat.TRANSLUCENT);
         renderer = new XYOrthographicRenderer(this);
         setRenderer(renderer);
+        setRenderMode(RENDERMODE_WHEN_DIRTY);
     }
 
     /**
@@ -99,6 +101,11 @@ public class VisualizationView extends GLSurfaceView  {
         }
     }
 
+    @Override
+    public void draw(Canvas canvas) {
+        super.draw(canvas);
+        Log.i(CLSS,"Drawing view !!!!!!!!!!!!!!");
+    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -131,7 +138,6 @@ public class VisualizationView extends GLSurfaceView  {
      * @param message
      */
     public void onNewMessage(String key,Message message) {
-        Log.i(CLSS,String.format("onNewMessage: Received %s",message.getClass().getCanonicalName()));
         if(message instanceof tf.tfMessage ) {
             synchronized (this) {
                 tfMessage tmessage = (tfMessage)message;
@@ -140,8 +146,12 @@ public class VisualizationView extends GLSurfaceView  {
                 }
             }
         }
-        Layer layer = layerMap.get(message.toRawMessage().getType());
-        if( layer!=null ) layer.onNewMessage(message);
+        Layer layer = layerMap.get(key);
+        if( layer!=null ) {
+            //Log.i(CLSS,String.format("Sending message to layer (%s). ",layer.getClass().getCanonicalName()));
+            layer.onNewMessage(message);
+        }
+        requestRender();  // Update the layers
     }
 
     public void onShutdown() {

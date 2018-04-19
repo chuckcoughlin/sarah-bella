@@ -66,10 +66,7 @@ public abstract class AbstractLayer implements Layer {
      * If we get here then some layer was called with the wrong message type.
      */
     @Override
-    public void onNewMessage(Message message) {
-        Log.i(CLSS,String.format("WARNING: %s.onNewMessage called with unhandled class %s",getClass().getCanonicalName(),
-                message.getClass().getCanonicalName()));
-    }
+    public abstract void onNewMessage(Message message);
 
     /**
      * Only the camera layer responds to this. For the remaining layers, do nothing.

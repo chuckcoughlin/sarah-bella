@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.ros.android.view.visualization.TextureBitmap;
 import org.ros.android.view.visualization.VisualizationView;
+import org.ros.internal.message.Message;
 import org.ros.internal.message.MessageBuffers;
 import org.ros.message.MessageListener;
 import org.ros.namespace.GraphName;
@@ -33,6 +34,8 @@ import org.ros.rosjava_geometry.Vector3;
 import java.util.List;
 
 import javax.microedition.khronos.opengles.GL10;
+
+import nav_msgs.OccupancyGrid;
 
 /**
  * NOTE: Because we have assumed a 1:1 relationship between message types and
@@ -58,7 +61,13 @@ public class OccupancyGridLayer extends AbstractLayer implements TfLayer {
         tiles = Lists.newCopyOnWriteArrayList();
     }
 
-    public void onNewMessage(nav_msgs.OccupancyGrid message) {
+    /**
+     * We count on the Visualization view to properly disseminate by class
+     * @param m a OccupancyGrid message
+     */
+    @Override
+    public void onNewMessage(Message m) {
+        OccupancyGrid message = (OccupancyGrid)m;
         frame = GraphName.of(message.getHeader().getFrameId());
         update(message);
         visible= true;

@@ -23,12 +23,15 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.ros.android.view.visualization.TextureBitmap;
+import org.ros.internal.message.Message;
 import org.ros.message.MessageListener;
 import org.ros.namespace.GraphName;
 import org.ros.node.ConnectedNode;
 import org.ros.rosjava_geometry.Transform;
 
 import javax.microedition.khronos.opengles.GL10;
+
+import nav_msgs.OccupancyGrid;
 
 /**
  * NOTE: Because we have assumed a 1:1 relationship between message types and
@@ -52,7 +55,13 @@ public class CompressedOccupancyGridLayer extends AbstractLayer implements TfLay
         textureBitmap = new TextureBitmap();
     }
 
-    public void onNewMessage(nav_msgs.OccupancyGrid message) {
+    /**
+     * We count on the Visualization view to properly disseminate by class
+     * @param m a OccupancyGrid message
+     */
+    @Override
+    public void onNewMessage(Message m) {
+        OccupancyGrid message = (OccupancyGrid)m;
         frame = GraphName.of(message.getHeader().getFrameId());
         update(message);
         visible= true;

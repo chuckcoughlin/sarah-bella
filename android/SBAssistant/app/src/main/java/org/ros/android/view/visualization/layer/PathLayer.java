@@ -16,11 +16,8 @@
 
 package org.ros.android.view.visualization.layer;
 
-import org.ros.android.view.visualization.VisualizationView;
 import org.ros.android.view.visualization.Color;
-import geometry_msgs.PoseStamped;
-import nav_msgs.Path;
-
+import org.ros.android.view.visualization.VisualizationView;
 import org.ros.internal.message.Message;
 import org.ros.namespace.GraphName;
 
@@ -29,6 +26,9 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import javax.microedition.khronos.opengles.GL10;
+
+import geometry_msgs.PoseStamped;
+import nav_msgs.Path;
 
 /**
  * Renders a nav_msgs/Path as a solid line.
@@ -51,8 +51,13 @@ public class PathLayer extends AbstractLayer implements TfLayer {
         numPoints = 0;
     }
 
-
-    public void onNewMessage(nav_msgs.Path message) {
+    /**
+     * We count on the Visualization view to properly disseminate by class
+     * @param m a Path message
+     */
+    @Override
+    public void onNewMessage(Message m) {
+        Path message = (Path)m;
         frame = GraphName.of(message.getHeader().getFrameId());
         updateVertexBuffer(message);
         visible= true;

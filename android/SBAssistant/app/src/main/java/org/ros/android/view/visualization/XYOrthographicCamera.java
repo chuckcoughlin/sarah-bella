@@ -94,10 +94,10 @@ public class XYOrthographicCamera {
     }
   }
 
-  public boolean applyFrameTransform(GL10 gl, GraphName frame) {
-    Preconditions.checkNotNull(frame);
+  public boolean applyFrameTransform(GL10 gl, GraphName graphName) {
+    Preconditions.checkNotNull(graphName);
     if (this.frame != null) {
-      FrameTransform frameTransform = frameTransformTree.transform(frame, this.frame);
+      FrameTransform frameTransform = frameTransformTree.transform(graphName, this.frame);
       if (frameTransform != null) {
         OpenGlTransform.apply(gl, frameTransform.getTransform());
         return true;

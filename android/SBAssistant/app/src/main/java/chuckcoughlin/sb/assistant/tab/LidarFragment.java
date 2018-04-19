@@ -11,8 +11,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
+import org.ros.android.view.VerticalSeekBar;
 import org.ros.android.view.visualization.VisualizationView;
 import org.ros.android.view.visualization.layer.LaserScanLayer;
 import org.ros.android.view.visualization.layer.Layer;
@@ -29,13 +31,12 @@ import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
 import sensor_msgs.LaserScan;
 import tf.tfMessage;
 
-
 /**
  * This fragment handles robot control during its SLAM
  * mapping sequence.
  */
 
-public class LidarFragment extends BasicAssistantFragment implements SBApplicationStatusListener {
+public class LidarFragment extends BasicAssistantFragment implements SBApplicationStatusListener, SeekBar.OnSeekBarChangeListener {
     private final static String CLSS = "LidarFragment";
     private static final String LASER_SCAN_LAYER = "LASER_SCAN_LAYER";
     private LaserListener laserListener = null;
@@ -51,6 +52,10 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
         View view = inflater.inflate(R.layout.fragment_lidar, container, false);
         TextView label = view.findViewById(R.id.fragmentLidarText);
         label.setText(R.string.lidar_title);
+
+        VerticalSeekBar seekBar = view.findViewById(R.id.verticalSeekbar);
+        seekBar.setMax(100);
+        seekBar.setOnSeekBarChangeListener(this);
 
         vizView = view.findViewById(R.id.fragmentLidarImage);
         List<Layer> layers = new ArrayList<>();
@@ -85,8 +90,8 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
 
         ConnectedNode node = applicationManager.getApplication().getConnectedNode();
         if (node != null) {
-            transformListener.subscribe(node, "/tf");
-            laserListener.subscribe(node,"/scan");
+            transformListener.subscribe(node, "/tf_throttle");
+            laserListener.subscribe(node,"/scan_throttle");
         }
         else {
             Log.i(CLSS, String.format("applicationStarted: %s has no connected node", appName));
@@ -115,7 +120,7 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
             mainActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    vizView.onNewMessage(LASER_SCAN_LAYER,scan);
+                    vizView.onNewMessage(LASER_SCAN_LAYER,(LaserScan)scan);
                 }
             });
         }
@@ -138,9 +143,21 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
                 // Message is destined for main visualizer only
                 @Override
                 public void run() {
-                    vizView.onNewMessage(Layer.NO_LAYER,tf);
+                    vizView.onNewMessage(Layer.NO_LAYER,(tfMessage)tf);
                 }
             });
         }
+    }
+
+    //===================================== OnSeekBarChangeListener ================================
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {}
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {}
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        Log.i(CLSS, String.format("progress changed %d",progress));
     }
 }

@@ -22,6 +22,7 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.ros.android.view.visualization.Color;
 import org.ros.android.view.visualization.Vertices;
 import org.ros.android.view.visualization.VisualizationView;
+import org.ros.internal.message.Message;
 import org.ros.message.MessageListener;
 import org.ros.namespace.GraphName;
 import org.ros.node.ConnectedNode;
@@ -56,8 +57,13 @@ public class PointCloud2DLayer extends AbstractLayer implements TfLayer {
     this.frame = GraphName.of(CLSS);
   }
 
-
-  public void onNewMessage(sensor_msgs.PointCloud2 message) {
+  /**
+   * We count on the Visualization view to properly disseminate by class
+   * @param m a PointCloud2 message
+   */
+  @Override
+  public void onNewMessage(Message m) {
+    PointCloud2 message = (PointCloud2)m;
     frame = GraphName.of(message.getHeader().getFrameId());
     updateVertexBuffer(message);
     visible= true;

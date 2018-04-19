@@ -20,6 +20,7 @@ import org.ros.android.view.visualization.Color;
 import org.ros.android.view.visualization.Vertices;
 import org.ros.android.view.visualization.VisualizationView;
 import org.ros.android.view.visualization.XYOrthographicCamera;
+import org.ros.internal.message.Message;
 import org.ros.message.MessageListener;
 import org.ros.namespace.GraphName;
 
@@ -27,6 +28,9 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.microedition.khronos.opengles.GL10;
+
+import nav_msgs.GridCells;
+import sensor_msgs.PointCloud2;
 
 /**
  * @author damonkohler@google.com (Damon Kohler)
@@ -49,11 +53,17 @@ public class GridCellsLayer extends AbstractLayer implements TfLayer {
         lock = new ReentrantLock();
     }
 
-    public void onNewMessage(nav_msgs.GridCells data) {
-        frame = GraphName.of(message.getHeader().getFrameId());
+    /**
+     * We count on the Visualization view to properly disseminate by class
+     * @param m a GridCells message
+     */
+    @Override
+    public void onNewMessage(Message m) {
+        GridCells msg = (GridCells)m;
+        frame = GraphName.of(msg.getHeader().getFrameId());
         if (view.getFrameTransformTree().lookUp(frame) != null) {
             if (lock.tryLock()) {
-                message = data;
+                message = msg;
                 visible = true;
                 lock.unlock();
             }
