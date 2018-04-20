@@ -14,7 +14,7 @@
  * the License.
  */
 
-package org.ros.android.view.visualization.layer;
+package org.ros.android.view.visualization;
 
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;

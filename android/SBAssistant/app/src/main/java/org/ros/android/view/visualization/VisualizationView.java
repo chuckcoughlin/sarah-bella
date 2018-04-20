@@ -25,14 +25,10 @@ import android.util.Log;
 import android.view.MotionEvent;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
-import org.ros.android.view.visualization.layer.LayerViewController;
 import org.ros.android.view.visualization.layer.Layer;
-import org.ros.android.view.visualization.layer.RobotViewController;
 import org.ros.internal.message.Message;
 
-import org.ros.namespace.GraphName;
 import org.ros.rosjava_geometry.FrameTransformTree;
 
 import java.util.Collections;
@@ -110,7 +106,7 @@ public class VisualizationView extends GLSurfaceView  {
     }
 
     /**
-     * The long-press is the only event that we've been able to observe.
+     * The ACTION_DOWN is the only event that we've been able to observe.
      * (which is fine). We use this to signal a translation of our robot
      * marker to the place pressed on the screen.
      * @param event
@@ -118,9 +114,8 @@ public class VisualizationView extends GLSurfaceView  {
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.i(CLSS,String.format("onTouchEvent %d",event.getAction()));
-        layerController.onTouchEvent(this,event);
         robotController.onTouchEvent(this,event);
+        layerController.onTouchEvent(this,event);
         return super.onTouchEvent(event);
     }
 

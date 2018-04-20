@@ -17,6 +17,7 @@
 package org.ros.android.view.visualization;
 
 import android.opengl.GLSurfaceView;
+import android.util.Log;
 
 import org.ros.android.view.visualization.layer.Layer;
 import org.ros.namespace.GraphName;
@@ -31,7 +32,7 @@ import javax.microedition.khronos.opengles.GL10;
  * @author moesenle@google.com (Lorenz Moesenlechner)
  */
 public class XYOrthographicRenderer implements GLSurfaceView.Renderer {
-
+    private final static String CLSS = "XYOrthographicRenderer";
     private static final Color BACKGROUND_COLOR = new Color(0.87f, 0.87f, 0.87f, 1.f);
     private final VisualizationView view;
 
@@ -41,6 +42,7 @@ public class XYOrthographicRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
+        Log.i(CLSS,"ON SURFACE-CHANGED");
         Viewport viewport = new Viewport(width, height);
         viewport.apply(gl);
         view.getCamera().setViewport(viewport);
@@ -50,6 +52,7 @@ public class XYOrthographicRenderer implements GLSurfaceView.Renderer {
         gl.glDisable(GL10.GL_DEPTH_TEST);
         gl.glClearColor(BACKGROUND_COLOR.getRed(), BACKGROUND_COLOR.getGreen(),
                 BACKGROUND_COLOR.getBlue(), BACKGROUND_COLOR.getAlpha());
+        view.requestRender();
     }
 
     @Override

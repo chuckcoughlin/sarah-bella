@@ -16,7 +16,7 @@
  * Translate our origin on the screen in response to a LongPress.
  */
 
-package org.ros.android.view.visualization.layer;
+package org.ros.android.view.visualization;
 
 import android.util.Log;
 import android.view.GestureDetector;
@@ -37,27 +37,28 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class RobotViewController {
     private static final String CLSS = "RobotViewController";
+    private final VisualizationView view;
+    private boolean initialized = false;
     private Shape shape;
-    private Transform pose;
+    private Transform pose = null;
     private boolean visible;
-    private GestureDetector gestureDetector;
 
     public RobotViewController(VisualizationView view) {
-        this.shape = new PixelSpacePoseShape();
+        Log.i(CLSS,"setting inital transform");
+        this.view = view;
         this.visible = false;
-        gestureDetector =
-                new GestureDetector(view.getContext(), new GestureDetector.SimpleOnGestureListener() {
-                    @Override
-                    public void onLongPress(MotionEvent e) {
-                        Log.i(CLSS,"GestureDetector: LongPress: translating");
-                        pose = Transform.translation(view.getCamera().toCameraFrame((int) e.getX(),
-                                        (int) e.getY()));
-                        shape.setTransform(pose);
-                        visible = true;
-                    }
-                });
     }
 
+    // Place the first "pose" in the center of the screen.
+    private void init() {
+        int initialX = view.getWidth()/2;
+        int initialY = view.getHeight()/2;
+        this.shape = new PixelSpacePoseShape();
+        this.pose = Transform.translation(view.getCamera().toCameraFrame(initialX,initialY));
+        shape.setTransform(pose);
+        visible = true;
+        initialized = true;
+    }
 
     public void draw(VisualizationView view, GL10 gl) {
         if (shape != null) {
@@ -78,23 +79,29 @@ public class RobotViewController {
      * @return
      */
     public boolean onTouchEvent(VisualizationView view, MotionEvent event) {
-        if (visible) {
-            Preconditions.checkNotNull(pose);
-
-            if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                Vector3 poseVector = pose.apply(Vector3.zero());
-                Vector3 pointerVector =
-                        view.getCamera().toCameraFrame((int) event.getX(), (int) event.getY());
-                double angle =
-                        angle(pointerVector.getX(), pointerVector.getY(), poseVector.getX(), poseVector.getY());
-                pose = Transform.translation(poseVector).multiply(Transform.zRotation(angle));
-                shape.setTransform(pose);
-                return true;
-            }
+        boolean result = false;
+        if (!initialized) init();
+        Preconditions.checkNotNull(pose);
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            Log.i(CLSS, String.format("ACTION_DOWN at %d,%d", (int) event.getX(), (int) event.getY()));
+            pose = Transform.translation(view.getCamera().toCameraFrame((int) event.getX(), (int) event.getY()));
+            shape.setTransform(pose);
+            result = true;
         }
-        gestureDetector.onTouchEvent(event);
+        // This is never invoked, but the code acts to aim the pointer at the touch point
+        else if (event.getAction() == MotionEvent.ACTION_MOVE) {
+            Log.i(CLSS, "ACTION_MOVE");
+            Vector3 poseVector = pose.apply(Vector3.zero());
+            Vector3 pointerVector =
+                    view.getCamera().toCameraFrame((int) event.getX(), (int) event.getY());
+            double angle =
+                    angle(pointerVector.getX(), pointerVector.getY(), poseVector.getX(), poseVector.getY());
+            pose = Transform.translation(poseVector).multiply(Transform.zRotation(angle));
+            shape.setTransform(pose);
+            result = true;
+        }
         view.requestRender();  // Redraw
-        return false;
+        return result;
     }
 
 }

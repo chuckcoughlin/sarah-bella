@@ -60,7 +60,6 @@ public class XYOrthographicCamera {
 
   private final FrameTransformTree frameTransformTree;
   private final Object mutex;
-
   private Viewport viewport;
 
   /**
