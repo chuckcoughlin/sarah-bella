@@ -156,8 +156,22 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {}
 
+    /**
+     * The seek bar goes from 0-100. Scale so that:
+     *   0 = .25
+     *   50=  1.0
+     *   100= 4.
+     * @param seekBar
+     * @param progress
+     * @param fromUser
+     */
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         Log.i(CLSS, String.format("progress changed %d",progress));
+        if( vizView!=null ) {
+            progress = progress - 50;
+            double scale = 2^(progress/25);
+            vizView.setScale(scale);
+        }
     }
 }

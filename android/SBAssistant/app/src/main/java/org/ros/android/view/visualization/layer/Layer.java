@@ -26,6 +26,7 @@ import android.view.MotionEvent;
 import org.ros.android.view.visualization.OpenGlDrawable;
 import org.ros.android.view.visualization.VisualizationView;
 import org.ros.internal.message.Message;
+import org.ros.namespace.GraphName;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -42,9 +43,15 @@ public interface Layer extends OpenGlDrawable {
     public void init(VisualizationView view);
 
     /**
+     * Translate coordinates with respect to new origin
+     */
+    public void translate(VisualizationView vizView,int x,int y);
+    /**
      * @return a key which identifies this layer.
      */
     public String getKey();
+
+    public void setScale(double s);
 
     /**
      * @return true if the layer is currently displayed and
@@ -64,16 +71,10 @@ public interface Layer extends OpenGlDrawable {
      */
     public void onNewMessage(Message message);
 
-
-    // ======================================== ?? ================================================
     /**
-     * Event handler for touch events.
-     *
-     * @param view the view generating the event
-     * @param event the touch event
-     * @return true if the event has been handled
+     * For layers that are positioned by using Tf.
+     * The graph name is simply a string.
+     * @return the {@link Layer}'s reference frame
      */
-    boolean onTouchEvent(VisualizationView view, MotionEvent event);
-
-
+    public GraphName getFrame();
 }

@@ -27,11 +27,12 @@ import android.view.MotionEvent;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
-import org.ros.android.view.visualization.layer.CameraViewController;
+import org.ros.android.view.visualization.layer.LayerViewController;
 import org.ros.android.view.visualization.layer.Layer;
 import org.ros.android.view.visualization.layer.RobotViewController;
 import org.ros.internal.message.Message;
 
+import org.ros.namespace.GraphName;
 import org.ros.rosjava_geometry.FrameTransformTree;
 
 import java.util.Collections;
@@ -47,6 +48,7 @@ import tf.tfMessage;
  */
 public class VisualizationView extends GLSurfaceView  {
     private static final String CLSS = "VisualizationView";
+    private static final String INITIAL_FRAME = "root";
     private static final boolean DEBUG = false;
 
     private final FrameTransformTree frameTransformTree = new FrameTransformTree();
@@ -55,7 +57,7 @@ public class VisualizationView extends GLSurfaceView  {
     private List<Layer> layers;
     private Map<String,Layer> layerMap ;
     private XYOrthographicRenderer renderer;
-    private CameraViewController cameraController;
+    private LayerViewController layerController;
     private RobotViewController robotController;
 
     public VisualizationView(Context context) {
@@ -70,7 +72,7 @@ public class VisualizationView extends GLSurfaceView  {
      * @param layers
      */
     public void onCreate(List<Layer> layers) {
-        this.cameraController = new CameraViewController();
+        this.layerController = new LayerViewController();
         this.robotController = new RobotViewController(this);
         this.layers = layers;
         layerMap = new HashMap<>();
@@ -107,14 +109,16 @@ public class VisualizationView extends GLSurfaceView  {
         Log.i(CLSS,"Drawing view !!!!!!!!!!!!!!");
     }
 
+    /**
+     * The long-press is the only event that we've been able to observe.
+     * (which is fine). We use this to signal a translation of our robot
+     * marker to the place pressed on the screen.
+     * @param event
+     * @return
+     */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        for (Layer layer : Lists.reverse(layers)) {
-            if (layer.onTouchEvent(this, event)) {
-                return true;
-            }
-        }
-        cameraController.onTouchEvent(this,event);
+        layerController.onTouchEvent(this,event);
         robotController.onTouchEvent(this,event);
         return super.onTouchEvent(event);
     }
@@ -133,6 +137,24 @@ public class VisualizationView extends GLSurfaceView  {
         return Collections.unmodifiableList(layers);
     }
 
+    /**
+     * Translate each layer to new x,y origin.
+     */
+    public void translate(int x,int y) {
+        for (Layer layer : layers) {
+            layer.translate(this,x,y);
+        }
+        requestRender();
+    }
+    /**
+     * Scale the drawing, then re-render.
+     */
+    public void setScale(double scale) {
+        for (Layer layer : layers) {
+            layer.setScale(scale);
+        }
+        requestRender();
+    }
     /**
      * Use the key to lookup the proper layer. Forward the message to it.
      * @param message

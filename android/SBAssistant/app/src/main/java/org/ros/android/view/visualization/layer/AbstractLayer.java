@@ -21,6 +21,7 @@ import android.view.MotionEvent;
 
 import org.ros.android.view.visualization.VisualizationView;
 import org.ros.internal.message.Message;
+import org.ros.namespace.GraphName;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -33,8 +34,10 @@ import javax.microedition.khronos.opengles.GL10;
 public abstract class AbstractLayer implements Layer {
     private static final String CLSS = "AbstractLayer";
     protected final String key;
+    protected double scale    = 1.0;
     protected boolean visible = false;
     protected VisualizationView view = null;
+    protected GraphName frame = null;
 
     /**
      * Constructor
@@ -43,6 +46,7 @@ public abstract class AbstractLayer implements Layer {
     public AbstractLayer(String id) {
         this.key = id;
         this.visible = false;
+        this.frame = null;
     }
 
     @Override
@@ -57,6 +61,10 @@ public abstract class AbstractLayer implements Layer {
     @Override
     public boolean isVisible() { return visible; }
 
+    protected double getScale() { return this.scale; }
+    @Override
+    public void setScale(double s) { this.scale = s; }
+
     @Override
     public void setVisible(boolean flag) { this.visible = flag; }
 
@@ -69,14 +77,18 @@ public abstract class AbstractLayer implements Layer {
     public abstract void onNewMessage(Message message);
 
     /**
-     * Only the camera layer responds to this. For the remaining layers, do nothing.
-     * @param view the view generating the event
-     * @param event the touch event
-     * @return success or failure
+     * For layers that are positioned by using Tf.
+     * The graph name is simply a string.
+     * @return the {@link Layer}'s reference frame
      */
-    @Override
-    public boolean onTouchEvent(VisualizationView view, MotionEvent event) {
-        return false;
+    public GraphName getFrame() { return this.frame; }
+
+    /**
+     * Translate coordinates with respect to new origin. By default
+     * we do nothing.
+     */
+    public void translate(VisualizationView vizView,int x,int y) {
+
     }
 
 }
