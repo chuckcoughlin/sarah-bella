@@ -24,7 +24,7 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <!-- bar is rotated 270deg when drawn -->
+        <!-- bar is rotated 270deg when drawn. Does not show on device with scaleX>2.  -->
         <org.ros.android.view.VerticalSeekBar
             android:id="@+id/verticalSeekbar"
             android:layout_width="80dp"
@@ -34,6 +34,7 @@
             android:paddingLeft="200dp"
             android:paddingBottom="10dp"
             android:thumb="@drawable/thumb"
+            android:scaleX="2"
             android:progress="50" />
         <org.ros.android.view.visualization.VisualizationView
             android:id="@+id/fragmentLidarImage"
