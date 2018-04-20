@@ -34,7 +34,7 @@ import nav_msgs.Path;
 /**
  * @author moesenle@google.com (Lorenz Moesenlechner)
  */
-public class PoseLayer extends AbstractLayer implements TfLayer {
+public class PoseLayer extends AbstractLayer {
     private static final String CLSS = "PoseLayer";
     private final GraphName frame;
 

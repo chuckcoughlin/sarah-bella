@@ -41,7 +41,7 @@ import sensor_msgs.PointField;
  *
  * @author damonkohler@google.com (Damon Kohler)
  */
-public class PointCloud2DLayer extends AbstractLayer implements TfLayer {
+public class PointCloud2DLayer extends AbstractLayer {
   private static final String CLSS = "PointCloud2DLayer";
   private static final Color FREE_SPACE_COLOR = Color.fromHexAndAlpha("377dfa", 0.1f);
   private static final Color OCCUPIED_SPACE_COLOR = Color.fromHexAndAlpha("377dfa", 0.3f);

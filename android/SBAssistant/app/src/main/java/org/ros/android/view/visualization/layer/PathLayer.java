@@ -36,7 +36,7 @@ import nav_msgs.Path;
  * @author moesenle@google.com (Lorenz Moesenlechner)
  * @author damonkohler@google.com (Damon Kohler)
  */
-public class PathLayer extends AbstractLayer implements TfLayer {
+public class PathLayer extends AbstractLayer  {
     private static final String CLSS = "PathLayer";
     private static final Color COLOR = Color.fromHexAndAlpha("03dfc9", 0.3f);
     private static final float LINE_WIDTH = 4.0f;

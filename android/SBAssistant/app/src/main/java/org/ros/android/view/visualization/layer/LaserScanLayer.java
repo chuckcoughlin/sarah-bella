@@ -39,7 +39,7 @@ import sensor_msgs.LaserScan;
  * @author munjaldesai@google.com (Munjal Desai)
  * @author damonkohler@google.com (Damon Kohler)
  */
-public class LaserScanLayer extends AbstractLayer implements TfLayer {
+public class LaserScanLayer extends AbstractLayer  {
     private static final String CLSS = "LaserScanLayer";
     private static final Color BORDER_COLOR = Color.fromHexAndAlpha("303f9f", 0.9f);
     private static final Color FREE_SPACE_COLOR = Color.fromHexAndAlpha("377dfa", 0.1f);

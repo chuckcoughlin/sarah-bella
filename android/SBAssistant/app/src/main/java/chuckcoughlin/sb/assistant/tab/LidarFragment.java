@@ -169,8 +169,8 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         Log.i(CLSS, String.format("progress changed %d",progress));
         if( vizView!=null ) {
-            progress = progress - 50;
-            double scale = 2^(progress/25);
+            double setting = (double)(progress - 50)/25;
+            double scale = Math.pow(2.0,setting);
             vizView.setScale(scale);
         }
     }

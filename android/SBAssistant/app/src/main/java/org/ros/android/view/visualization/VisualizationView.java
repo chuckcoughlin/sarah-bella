@@ -118,6 +118,7 @@ public class VisualizationView extends GLSurfaceView  {
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        Log.i(CLSS,String.format("onTouchEvent %d",event.getAction()));
         layerController.onTouchEvent(this,event);
         robotController.onTouchEvent(this,event);
         return super.onTouchEvent(event);

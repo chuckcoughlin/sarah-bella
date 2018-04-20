@@ -35,7 +35,7 @@ import sensor_msgs.PointCloud2;
 /**
  * @author damonkohler@google.com (Damon Kohler)
  */
-public class GridCellsLayer extends AbstractLayer implements TfLayer {
+public class GridCellsLayer extends AbstractLayer {
     private static final String CLSS = "GridCellsLayer";
     private Color color;
     private final Lock lock;

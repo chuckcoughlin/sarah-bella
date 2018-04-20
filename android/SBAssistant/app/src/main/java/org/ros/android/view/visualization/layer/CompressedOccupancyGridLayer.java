@@ -41,7 +41,7 @@ import nav_msgs.OccupancyGrid;
  * @author damonkohler@google.com (Damon Kohler)
  * @author moesenle@google.com (Lorenz Moesenlechner)
  */
-public class CompressedOccupancyGridLayer extends AbstractLayer implements TfLayer {
+public class CompressedOccupancyGridLayer extends AbstractLayer {
     private static final String CLSS = "CompressedOccupancyGridLayer";
     private static final int COLOR_OCCUPIED = 0xdfffffff;     // Color of occupied cells in the map.
     private static final int COLOR_FREE = 0xff8d8d8d;         // Color of free cells in the map.

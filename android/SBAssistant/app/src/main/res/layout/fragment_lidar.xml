@@ -34,7 +34,6 @@
             android:paddingLeft="200dp"
             android:paddingBottom="10dp"
             android:thumb="@drawable/thumb"
-            android:scaleX="4"
             android:progress="50" />
         <org.ros.android.view.visualization.VisualizationView
             android:id="@+id/fragmentLidarImage"

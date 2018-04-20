@@ -43,7 +43,7 @@ import nav_msgs.OccupancyGrid;
  * can be active at a time.
  * @author moesenle@google.com (Lorenz Moesenlechner)
  */
-public class OccupancyGridLayer extends AbstractLayer implements TfLayer {
+public class OccupancyGridLayer extends AbstractLayer {
     private static final String CLSS = "OccupancyGridLayer";
     private static final String MESSAGE_TYPE = "nav_msgs/OccupancyGrid";
     private GraphName frame;
