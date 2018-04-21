@@ -45,27 +45,27 @@ module base(x,y,z) {
 
 // This is the basic plate less a rim width all around. This is meant to
 // be subtracted from the standard plate.
-module base_cutout(x,y,z,rim) {
+module base_cutout(x,y,z,rwidth) {
     $fn=100;
     linear_extrude(height=z,center=false,convexity=10) {
         hull() {
         // place 6 circles in the corners, with the rounding radius
-        translate([(-x/2)+(round_radius/2)+rim, -y+(round_radius/2)+rim, 0])
+        translate([(-x/2)+(round_radius/2)+rwidth, -y+(round_radius/2)+rwidth, 0])
         circle(r=round_radius);
         
-        translate([(x/2)-(round_radius/2)-rim, -y+(round_radius/2)+rim, 0])
+        translate([(x/2)-(round_radius/2)-rwidth, -y+(round_radius/2)+rwidth, 0])
         circle(r=round_radius);
 
-        translate([(x/2)-(round_radius/2)-rim, 0-(round_radius/2)-rim/2, 0])
+        translate([(x/2)-(round_radius/2)-rwidth, 0-(round_radius/2)-rwidth/2, 0])
         circle(r=round_radius);
         
-        translate([x/2-y+(round_radius/2), y/2-(round_radius/2)-rim, 0])
+        translate([x/2-y+(round_radius/2), y/2-(round_radius/2)-rwidth, 0])
         circle(r=round_radius);
 
-        translate([(-x/2)+y-(round_radius/2),y/2-(round_radius/2)-rim, 0])
+        translate([(-x/2)+y-(round_radius/2),y/2-(round_radius/2)-rwidth, 0])
         circle(r=round_radius);
      
-        translate([(-x/2)+(round_radius/2)+rim, 0+(round_radius/2)-rim/2, 0])
+        translate([(-x/2)+(round_radius/2)+rwidth, 0+(round_radius/2)-rwidth/2, 0])
         circle(r=round_radius);
         }
     }
