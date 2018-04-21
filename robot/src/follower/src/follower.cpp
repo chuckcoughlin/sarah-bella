@@ -107,6 +107,7 @@ private:
     private_nh.getParam("x_scale", x_scale_);
     private_nh.getParam("enabled", enabled_);
 
+    ROS_INFO("following initialized");
     cmdpub_ = private_nh.advertise<geometry_msgs::Twist> ("cmd_vel", 1);
     markerpub_ = private_nh.advertise<visualization_msgs::Marker>("marker",1);
     bboxpub_ = private_nh.advertise<visualization_msgs::Marker>("bbox",1);
@@ -305,6 +306,7 @@ private:
     marker.color.r = 0.0;
     marker.color.g = 1.0;
     marker.color.b = 0.0;
+    ROS_INFO_THROTTLE(5, "Published box at %f %f %f", x, y, z);
     //only if using a MESH_RESOURCE marker type:
     bboxpub_.publish( marker );
   }

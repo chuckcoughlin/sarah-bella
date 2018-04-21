@@ -32,7 +32,7 @@ class ReturnValue(object):
     def __init__(self, name):
         self.name = name
 
-    def retun_val(self, stats, data_1, data_2, data_3):
+    def return_val(self, stats, data_1, data_2, data_3):
         self.stats = stats
         self.data_1 = data_1
         self.data_2 = data_2
@@ -68,7 +68,7 @@ def scan_parking_spot():
     center_angle = spot_angle_index[int(len(spot_angle_index) / 2)]
     start_angle = spot_angle_index[2]
     end_angle = spot_angle_index[-3]
-    spot_angle.retun_val(stats, center_angle, start_angle, end_angle)
+    spot_angle.return_val(stats, center_angle, start_angle, end_angle)
 
 def quaternion():
     quaternion = (
@@ -107,7 +107,7 @@ def get_point(start_angle_distance):
     return x, y
 
 def finding_spot_position():
-    print("scan parking spot done!")
+    rospy.loginfo("scan parking spot done!")
     stats = False
     start_angle_distance = get_angle_distance(spot_angle.data_1)
     center_angle_distance = get_angle_distance(spot_angle.data_2)
@@ -121,9 +121,9 @@ def finding_spot_position():
         stats = True
     else:
         stats = False
-        rospy.logwarn("wrong scan!!")
+        rospy.logwarn("Unsuccessful scan!!")
 
-    return spot_point.retun_val(stats, start_point, center_point, end_point)
+    return spot_point.return_val(stats, start_point, center_point, end_point)
 
 def rotate_origin_only(x, y, radians):
     xx = x * cos(radians) + y * sin(radians)
@@ -144,6 +144,7 @@ def scan_spot_filter(msg):
 
 if __name__=="__main__":
     rospy.init_node('AutoParking')
+    rospy.loginfo("Autoparking startup ......")
     cmd_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
     reset_pub = rospy.Publisher('/reset', Empty, queue_size=1)
     msg = LaserScan()
@@ -236,7 +237,7 @@ if __name__=="__main__":
             else:
                 twist.linear.x = 0.0
                 twist.angular.z = 0.0
-                print("Auto_parking Done.")
+                rospy.loginfo("Auto_parking Done.")
                 cmd_pub.publish(twist)
                 sys.exit()
         cmd_pub.publish(twist)

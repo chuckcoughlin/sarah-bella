@@ -30,9 +30,9 @@
 
   <!-- Make a slower lidar feed available; only required if we use android client -->
   <node pkg="topic_tools" type="throttle" name="scan_throttle"
-        args="messages /scan 0.2" output="log"/>
+        args="messages /scan 1" output="log"/>
   <node pkg="topic_tools" type="throttle" name="tf_throttle"
-        args="messages /tf 0.1" output="log"/>
+        args="messages /tf 0.2" output="log"/>
 
   <include file="$(find follower)/launch/includes/safety_controller.launch.xml"/>
 
