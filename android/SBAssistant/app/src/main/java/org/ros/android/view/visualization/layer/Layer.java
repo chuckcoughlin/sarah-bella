@@ -27,6 +27,7 @@ import org.ros.android.view.visualization.OpenGlDrawable;
 import org.ros.android.view.visualization.VisualizationView;
 import org.ros.internal.message.Message;
 import org.ros.namespace.GraphName;
+import org.ros.rosjava_geometry.Transform;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -52,7 +53,7 @@ public interface Layer extends OpenGlDrawable {
     public String getKey();
 
     public void setScale(double s);
-
+    public void setTransform(Transform trans) ;
     /**
      * @return true if the layer is currently displayed and
      * handling messages

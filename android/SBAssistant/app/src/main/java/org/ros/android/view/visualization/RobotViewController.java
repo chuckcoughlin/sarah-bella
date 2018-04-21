@@ -19,12 +19,10 @@
 package org.ros.android.view.visualization;
 
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
 
 import com.google.common.base.Preconditions;
 
-import org.ros.android.view.visualization.VisualizationView;
 import org.ros.android.view.visualization.shape.PixelSpacePoseShape;
 import org.ros.android.view.visualization.shape.Shape;
 import org.ros.rosjava_geometry.Transform;
@@ -66,6 +64,8 @@ public class RobotViewController {
         }
     }
 
+    public Transform getTransform() { return this.pose; }
+
     private double angle(double x1, double y1, double x2, double y2) {
         double deltaX = x1 - x2;
         double deltaY = y1 - y2;
@@ -83,7 +83,7 @@ public class RobotViewController {
         if (!initialized) init();
         Preconditions.checkNotNull(pose);
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            Log.i(CLSS, String.format("ACTION_DOWN at %d,%d", (int) event.getX(), (int) event.getY()));
+            //Log.i(CLSS, String.format("ACTION_DOWN at %d,%d", (int) event.getX(), (int) event.getY()));
             pose = Transform.translation(view.getCamera().toCameraFrame((int) event.getX(), (int) event.getY()));
             shape.setTransform(pose);
             result = true;

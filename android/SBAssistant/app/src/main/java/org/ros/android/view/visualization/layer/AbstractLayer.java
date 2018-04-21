@@ -22,6 +22,7 @@ import android.view.MotionEvent;
 import org.ros.android.view.visualization.VisualizationView;
 import org.ros.internal.message.Message;
 import org.ros.namespace.GraphName;
+import org.ros.rosjava_geometry.Transform;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -35,6 +36,7 @@ public abstract class AbstractLayer implements Layer {
     private static final String CLSS = "AbstractLayer";
     protected final String key;
     protected double scale    = 1.0;
+    protected Transform pose = null;
     protected boolean visible = false;
     protected VisualizationView view = null;
     protected GraphName frame = null;
@@ -64,6 +66,9 @@ public abstract class AbstractLayer implements Layer {
     protected double getScale() { return this.scale; }
     @Override
     public void setScale(double s) { this.scale = s; }
+
+    @Override
+    public void setTransform(Transform trans) { this.pose = trans; }
 
     @Override
     public void setVisible(boolean flag) { this.visible = flag; }

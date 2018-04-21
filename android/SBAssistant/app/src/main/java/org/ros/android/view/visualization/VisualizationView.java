@@ -30,6 +30,7 @@ import org.ros.android.view.visualization.layer.Layer;
 import org.ros.internal.message.Message;
 
 import org.ros.rosjava_geometry.FrameTransformTree;
+import org.ros.rosjava_geometry.Transform;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -53,7 +54,6 @@ public class VisualizationView extends GLSurfaceView  {
     private List<Layer> layers;
     private Map<String,Layer> layerMap ;
     private XYOrthographicRenderer renderer;
-    private LayerViewController layerController;
     private RobotViewController robotController;
 
     public VisualizationView(Context context) {
@@ -68,7 +68,6 @@ public class VisualizationView extends GLSurfaceView  {
      * @param layers
      */
     public void onCreate(List<Layer> layers) {
-        this.layerController = new LayerViewController();
         this.robotController = new RobotViewController(this);
         this.layers = layers;
         layerMap = new HashMap<>();
@@ -114,9 +113,13 @@ public class VisualizationView extends GLSurfaceView  {
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        robotController.onTouchEvent(this,event);
-        layerController.onTouchEvent(this,event);
-        return super.onTouchEvent(event);
+        boolean result = robotController.onTouchEvent(this,event);
+        if( result ) {
+            transformLayers(robotController.getTransform());
+        }
+        super.onTouchEvent(event);
+        requestRender();
+        return result;
     }
 
     public XYOrthographicRenderer getRenderer() {
@@ -136,11 +139,10 @@ public class VisualizationView extends GLSurfaceView  {
     /**
      * Translate each layer to new x,y origin.
      */
-    public void translate(int x,int y) {
+    public void transformLayers(Transform transform) {
         for (Layer layer : layers) {
-            layer.translate(this,x,y);
+            layer.setTransform(transform);
         }
-        requestRender();
     }
     /**
      * Scale the drawing, then re-render.

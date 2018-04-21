@@ -22,10 +22,7 @@ import org.ros.android.view.visualization.Color;
 import org.ros.android.view.visualization.Vertices;
 import org.ros.android.view.visualization.VisualizationView;
 import org.ros.internal.message.Message;
-import org.ros.message.MessageListener;
 import org.ros.namespace.GraphName;
-import org.ros.node.ConnectedNode;
-import org.ros.node.topic.Subscriber;
 
 import java.nio.FloatBuffer;
 
@@ -82,11 +79,11 @@ public class LaserScanLayer extends AbstractLayer  {
                 FloatBuffer pointVertices = vertexFrontBuffer.duplicate();
                 pointVertices.position(3);
                 Vertices.drawPoints(gl, pointVertices, OCCUPIED_SPACE_COLOR, LASER_SCAN_POINT_SIZE);
+                pointVertices.position(3);
                 Vertices.drawLines(gl, pointVertices, BORDER_COLOR, LASER_SCAN_LINE_WIDTH);
             }
         }
     }
-
 
     private void updateVertexBuffer(LaserScan laserScan, int stride) {
         int vertexCount = 0;
@@ -97,8 +94,14 @@ public class LaserScanLayer extends AbstractLayer  {
         }
         vertexBackBuffer.clear();
         // We start with the origin of the triangle fan.
-        vertexBackBuffer.put(0);
-        vertexBackBuffer.put(0);
+        float originx = 0.0f;
+        float originy = 0.0f;
+        if( pose!=null ) {
+            originx = (float)pose.getTranslation().getX();
+            originy = (float)pose.getTranslation().getY();
+        }
+        vertexBackBuffer.put(originx);
+        vertexBackBuffer.put(originy);
         vertexBackBuffer.put(0);
         vertexCount++;
         float minimumRange = laserScan.getRangeMin();
@@ -113,8 +116,8 @@ public class LaserScanLayer extends AbstractLayer  {
             // look a lot nicer.
             if (minimumRange < range && range < maximumRange) {
                 // x, y, z
-                vertexBackBuffer.put((float) (range * Math.cos(angle)));
-                vertexBackBuffer.put((float) (range * Math.sin(angle)));
+                vertexBackBuffer.put(originx + (float)(range * scale * Math.cos(angle)));
+                vertexBackBuffer.put(originy + (float)(range * scale * Math.sin(angle)));
                 vertexBackBuffer.put(0);
                 vertexCount++;
             }
