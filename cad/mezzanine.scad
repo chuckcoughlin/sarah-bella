@@ -2,7 +2,7 @@
 //           It includes a well for a breadboard and
 //           rivet holes for a battery.
 thickness = 4;
-wide_y  = 26;    // The length of the wide rectangular portion
+wide_y  = 36;    // The length of the wide rectangular portion
 fillet_side= 16;    // End of flare to narrow
 full_y  = 86;    // Greatest extent of the plate
 wide_x  = 110;   // 1/2 width of the "wings"
@@ -19,6 +19,34 @@ rivet_y      = 8;
 rivet_radius = 2.5;   // Hole radius for rivet attachment
 round_radius = 2;     // Radius of the corner arcs
 
+// This is the holder for the chopped off breadboard.
+// rwidth is the rim width
+module tub(z,rwidth) {
+    linear_extrude(height=z,center=false,convexity=10) {
+        difference() {
+            square([breadboard_x+2*rwidth,breadboard_y+2*rwidth],true);
+            square([breadboard_x,breadboard_y],true);
+        }
+    }
+}
+// Subtract this from the base platform
+// These are the posts
+module post_holes(z) {
+    for(i=[[pillar_x,-pillar_y],[-pillar_x,-pillar_y]]) {
+        translate(i)
+        cylinder(r=5,h=z,$fn=6);
+    }
+}
+
+// These are the various holes for rivets
+// z - thickness
+module rivet_holes(z) {
+    for(i=[[rivet1_x,-rivet_y],[rivet2_x,-rivet_y],
+           [-rivet1_x,-rivet_y],[-rivet2_x,-rivet_y]]) {
+        translate(i)
+        cylinder(r=rivet_radius,h=z);
+    }
+}
 // 0,0 is upper left corner
 module fillet(radius,angle) {
     rotate(angle,[0,0,1])
@@ -115,9 +143,16 @@ module base_cutout(z,rwidth) {
 // --------------------- Final Assembly ----------------------
 // Baseplate
 translate([0,0,-thickness/2])
-base(thickness);
+difference() {
+    base(thickness);
+    rivet_holes(thickness);
+    post_holes(thickness);
+}
 translate([0,0,thickness/2])
 difference() {
         base(thickness);
         base_cutout(thickness,rim);
-  }
+ }
+ translate([0,-breadboard_y/2,thickness/2])
+ tub(thickness,rim);
+     
