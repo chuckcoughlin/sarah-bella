@@ -785,7 +785,7 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
     // screen.
     publishVelocity = false;
     // Publish one last message to make sure the robot stops.
-    publisher.publish(currentVelocityCommand);
+    if(publisher!=null) publisher.publish(currentVelocityCommand);
     // Turn-in-place should not be active anymore.
     endTurnInPlaceRotation();
     // Hide the orientation tacks.
@@ -804,12 +804,14 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
    */
   private void publishVelocity(double linearVelocityX, double linearVelocityY,
                                double angularVelocityZ) {
-    currentVelocityCommand.getLinear().setX(linearVelocityX);
-    currentVelocityCommand.getLinear().setY(-linearVelocityY);
-    currentVelocityCommand.getLinear().setZ(0);
-    currentVelocityCommand.getAngular().setX(0);
-    currentVelocityCommand.getAngular().setY(0);
-    currentVelocityCommand.getAngular().setZ(-angularVelocityZ);
+    if( currentVelocityCommand!=null ) {
+        currentVelocityCommand.getLinear().setX(linearVelocityX);
+        currentVelocityCommand.getLinear().setY(-linearVelocityY);
+        currentVelocityCommand.getLinear().setZ(0);
+        currentVelocityCommand.getAngular().setX(0);
+        currentVelocityCommand.getAngular().setY(0);
+        currentVelocityCommand.getAngular().setZ(-angularVelocityZ);
+    }
   }
 
   /**

@@ -18,6 +18,7 @@ The Android assistant contains command and monitoring code for all applications 
   * [Lidar](#Lidar)
   * [System Check](#systemcheck)
   * [Headlamp](#headlamp)
+  * [Teleop](#teleop)
 
 *********************************************************
 ### a - Discovery <a id="discovery"></a>
@@ -72,6 +73,9 @@ lamp on and off.
 
 ******************************************************
 ### 03 - Teleop <a id="teleop"></a>
+![SB Assistant](/images/sb-teleop.png)
+```                        SB Assistant - Teleop Control ```</br>
+[toc](#table-of-contents)
 The **teleop** application ...
 
 ******************************************************
