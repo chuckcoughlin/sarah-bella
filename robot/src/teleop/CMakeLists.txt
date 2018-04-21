@@ -1,60 +1,48 @@
+################################################################################
+# CMake
+################################################################################
 cmake_minimum_required(VERSION 2.8.3)
 project(teleop)
 
-## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 
-## Find catkin macros and libraries
+################################################################################
+# Packages
+################################################################################
 find_package(catkin REQUIRED COMPONENTS
-  joy
   roscpp
+  joy
 )
 
-###################################
-## catkin specific configuration ##
-###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if your package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
+################################################################################
+# Catkin specific configuration
+################################################################################
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES teleop
-#  CATKIN_DEPENDS joy roscpp
-#  DEPENDS system_lib
+  CATKIN_DEPENDS roscpp joy
 )
 
-###########
-## Build ##
-###########
-
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
+################################################################################
+# Build
+################################################################################
 include_directories(
-# include
   ${catkin_INCLUDE_DIRS}
 )
 
-## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/turtle_teleop_joy.cpp
-# )
+add_executable(turtlebot3_teleop src/turtle_teleop_joy.cpp)
+add_dependencies(turtlebot3_teleop ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(turtlebot3_teleop ${catkin_LIBRARIES})
 
-## Add cmake target dependencies of the library
-## as an example, code may need to be generated before libraries
-## either from message generation or dynamic reconfigure
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-## Declare a C++ executable
-add_executable(${PROJECT_NAME}_node src/turtle_teleop_joy.cpp)
-
-## Add cmake target dependencies of the executable
-# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-## Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME}_node
-   ${catkin_LIBRARIES}
+################################################################################
+# Install
+################################################################################
+install(TARGETS turtlebot3_teleop
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+install(PROGRAMS 
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
