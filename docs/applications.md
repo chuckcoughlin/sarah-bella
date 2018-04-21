@@ -50,10 +50,10 @@ applications have been scrubbed to incorporate standard ROS log messages.
 ******************************************************
 ### c - Lidar <a id="lidar"></a>
 ![SB Assistant](/images/sb-lidar.png)
-```                        SB Assistant - Log Message Page ```</br>
+```                        SB Assistant - LIDAR Display Page ```</br>
 [toc](#table-of-contents)
 
-The **lidar** panel supports several applications that make use of the Lidar 
+The **lidar** panel supports several applications that make use of the Lidar
 scanner. The display is scalable by the slider to the right. Touching the
 screen centers the image on the touch point.
 
