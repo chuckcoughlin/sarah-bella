@@ -56,6 +56,50 @@ Log
 ### c - Lidar <a id="lidar"></a>
 The lidar panel displays output from the Lidar device. The *VisualizationView* is based on code found [here](https://github.com/rosjava/android_core/tree/kinetic/android_15/src/org/ros/android/view/visualization).
 
+```
+LaserScan
+# Single scan from a planar laser range-finder
+   Header header         # timestamp in the header is the acquisition time of
+                         # the first ray in the scan.
+                         #
+                         # in frame frame_id, angles are measured around
+                         # the positive Z axis (counterclockwise, if Z is up)
+                         # with zero angle being forward along the x axis
+
+   float32 angle_min        # start angle of the scan [radians]
+   float32 angle_max        # end angle of the scan [radians]
+   float32 angle_increment  # angular distance between measurements [radians]
+
+   float32 time_increment   # time between measurements [seconds] - if your scanner
+                            # is moving, this will be used in interpolating position
+                            # of 3d points
+   float32 scan_time        # time between scans [seconds]
+
+   float32 range_min        # minimum range value [m]
+   float32 range_max        # maximum range value [m]
+
+   float32[] ranges         # range data [m] (Note: values < range_min or >
+                            # range_max should be discarded)
+   float32[] intensities    # intensity data [device-specific units].
+```
+
+The tfMessage contains nested classes from *geometry_msgs*. In the list below we've used indentation to show the expanded definitions.
+```
+tfMessage
+   TransformStamped[] transforms
+      Header header
+      string child_frame_id
+      Transform transform
+         Vector3 translation
+            float64 x
+            float64 y
+            float64 z
+         Quaternion rotation
+            float64 x
+            float64 y
+            float64 z
+            float64 w
+```
 The panel subscribes to the following topics:
  * /tf_throttle/tfMessage
  * /scan_throttle/LaserScan
