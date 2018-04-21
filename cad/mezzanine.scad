@@ -37,7 +37,7 @@ module base(z) {
     linear_extrude(height=z,center=false,convexity=10) {
         union() {
         hull() {
-            // place 8 circles in the corners, with the rounding radius
+            // place 4 circles in the corners, with the rounding radius
             translate([-wide_x+round_radius/2, round_radius/2, 0])
             circle(r=round_radius);
             
@@ -73,38 +73,42 @@ module base(z) {
 
 // This is the basic plate less a rim width all around. This is meant to
 // be subtracted from the standard plate.
+// There should be no rim where the hulls join
 module base_cutout(z,rwidth) {
     $fn=100;
     linear_extrude(height=z,center=false,convexity=10) {
         union() {
         hull() {
-            // place 8 circles in the corners, with the rounding radius
-            translate([-wide_x+round_radius/2, round_radius/2, 0])
+            translate([-wide_x+round_radius/2+rwidth, round_radius/2-rwidth, 0])
             circle(r=round_radius);
             
-            translate([wide_x-round_radius/2, round_radius/2, 0])
+            translate([wide_x-round_radius/2-rwidth, round_radius/2-rwidth, 0])
             circle(r=round_radius);
                 
-            translate([wide_x-round_radius/2, -wide_y+round_radius/2, 0])
+            translate([wide_x-round_radius/2-rwidth, -wide_y+round_radius/2+rwidth, 0])
             circle(r=round_radius);
                 
-            translate([-wide_x+round_radius/2, -wide_y+round_radius/2, 0])
+            translate([-wide_x+round_radius/2+rwidth, -wide_y+round_radius/2+rwidth, 0])
             circle(r=round_radius);
             }
         };
         hull() {
-            translate([narrow_x-round_radius/2, -wide_y+round_radius/2, 0])
+            translate([narrow_x-round_radius/2-rwidth, -wide_y+round_radius/2, 0])
             circle(r=round_radius);
                 
-            translate([narrow_x-round_radius/2, -full_y+round_radius/2, 0])
+            translate([narrow_x-round_radius/2-rwidth, -full_y+round_radius/2+rwidth, 0])
             circle(r=round_radius);
                 
-            translate([-narrow_x+round_radius/2, -full_y+round_radius/2, 0])
+            translate([-narrow_x+round_radius/2+rwidth,-full_y+round_radius/2+rwidth, 0])
             circle(r=round_radius);
                 
-            translate([-narrow_x+round_radius/2, -wide_y+round_radius/2, 0])
+            translate([-narrow_x+round_radius/2+rwidth, -wide_y+round_radius/2, 0])
             circle(r=round_radius);
-        }   
+        } 
+        translate([narrow_x-rwidth,-wide_y+rwidth,0]) 
+        fillet(fillet_side,270); 
+        translate([-narrow_x+rwidth,-wide_y+rwidth,0]) 
+        fillet(fillet_side,180);  
     }
 }
 
