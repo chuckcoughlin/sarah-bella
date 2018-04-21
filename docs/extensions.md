@@ -56,6 +56,9 @@ Log
 ## c - Lidar <a id="lidar"></a>
 The lidar panel displays output from the Lidar device. The *VisualizationView* is based on code found [here](https://github.com/rosjava/android_core/tree/kinetic/android_15/src/org/ros/android/view/visualization).
 
+The panel subscribes to the following topics:
+ * /tf_throttle/tfMessage
+ * /scan_throttle/LaserScan
 
 ### 01 - System Check <a id="systemcheck"></a>
 

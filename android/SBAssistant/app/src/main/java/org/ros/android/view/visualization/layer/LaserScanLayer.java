@@ -23,11 +23,10 @@ import org.ros.android.view.visualization.Vertices;
 import org.ros.android.view.visualization.VisualizationView;
 import org.ros.internal.message.Message;
 import org.ros.namespace.GraphName;
+import org.ros.rosjava_geometry.Transform;
 
 import java.nio.FloatBuffer;
-
 import javax.microedition.khronos.opengles.GL10;
-
 import sensor_msgs.LaserScan;
 
 /**
@@ -46,6 +45,7 @@ public class LaserScanLayer extends AbstractLayer  {
     private static final int LASER_SCAN_STRIDE = 15;
 
     private GraphName frame;
+    private LaserScan message = null;    // Save prior message
     private FloatBuffer vertexFrontBuffer;
     private FloatBuffer vertexBackBuffer;
 
@@ -62,7 +62,7 @@ public class LaserScanLayer extends AbstractLayer  {
     @Override
     public void onNewMessage(Message m) {
         Log.i(CLSS, "LaserScan got new message ------------------------------------");
-        LaserScan message = (LaserScan) m;
+        message = (LaserScan) m;
         frame = GraphName.of(message.getHeader().getFrameId());
         updateVertexBuffer(message, LASER_SCAN_STRIDE);
         visible = true;
@@ -85,7 +85,21 @@ public class LaserScanLayer extends AbstractLayer  {
         }
     }
 
+    @Override
+    public void setScale(double s) {
+        super.setScale(s);
+        updateVertexBuffer(message,LASER_SCAN_STRIDE);
+    }
+
+    @Override
+    public void setTransform(Transform tr) {
+        super.setTransform(tr);
+        updateVertexBuffer(message,LASER_SCAN_STRIDE);
+    }
+
     private void updateVertexBuffer(LaserScan laserScan, int stride) {
+        if(laserScan==null) return;
+
         int vertexCount = 0;
         float[] ranges = laserScan.getRanges();
         int size = ((ranges.length / stride) + 2) * 3;
