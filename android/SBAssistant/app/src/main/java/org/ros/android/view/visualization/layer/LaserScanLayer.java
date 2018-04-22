@@ -70,7 +70,7 @@ public class LaserScanLayer extends AbstractLayer  {
 
     @Override
     public void draw(VisualizationView view, GL10 gl) {
-        Log.i(CLSS, "LaserScan layer draw ------------------------------------");
+        //Log.i(CLSS, "LaserScan layer draw ------------------------------------");
         if (vertexFrontBuffer != null) {
             synchronized (this) {
                 Vertices.drawTriangleFan(gl, vertexFrontBuffer, FREE_SPACE_COLOR);

@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.ros.android.view.VirtualJoystickView;
 import org.ros.exception.ServiceNotFoundException;
 import org.ros.internal.node.client.ParameterClient;
 import org.ros.internal.node.server.NodeIdentifier;
@@ -26,24 +27,30 @@ import java.net.URISyntaxException;
 import chuckcoughlin.sb.assistant.R;
 import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.ros.SBApplicationStatusListener;
+import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
 import chuckcoughlin.sb.assistant.ros.SBRosManager;
 import gpio_msgs.GPIOSet;
 
 /**
- * This fragment handles manual robot control
+ * This fragment handles manual robot control. It publishes Twist messages
+ * and listens to Odometry. The publisher and subscriber are all internal to
+ * the virtual joystick.
  */
 
 public class TeleopFragment extends BasicAssistantFragment implements SBApplicationStatusListener {
     private static final String CLSS = "TeleopFragment";
-    private TwistPublisher commandPublisher = null;
+    private SBRosApplicationManager applicationManager;
+    private VirtualJoystickView joystick = null;
 
     // Inflate the view. It displays a virtual joystick
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
+        this.applicationManager = SBRosApplicationManager.getInstance();
         View view = inflater.inflate(R.layout.fragment_teleops, container, false);
         TextView label = view.findViewById(R.id.fragmentTeleopsText);
-        label.setText(R.string.teleops_title);
-        commandPublisher = new TwistPublisher();
+        label.setText(R.string.fragmentTeleopLabel);
+        joystick = (VirtualJoystickView)view.findViewById(R.id.virtual_joystick);
+        joystick.setTopicName("/cmd_vel");   // Publishing topic
         return view;
     }
 
@@ -58,10 +65,10 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     // This may be called immediately on establishment of the listener.
     public void applicationStarted(String appName) {
         Log.i(CLSS, String.format("applicationStarted: %s ...", appName));
-        if (appName.equalsIgnoreCase(SBConstants.APPLICATION_SYSTEM)) {
+        if (appName.equalsIgnoreCase(SBConstants.APPLICATION_TELEOP)) {
             ConnectedNode node = applicationManager.getApplication().getConnectedNode();
             if (node != null) {
-                sensorStateListener.subscribe(node, "/sensor_state_throttle")
+                joystick.onStart(node);
             }
             else {
                 Log.i(CLSS, String.format("applicationStarted: %s has no connected node", appName));
@@ -71,6 +78,6 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
 
     public void applicationShutdown() {
         Log.i(CLSS, String.format("applicationShutdown"));
-        commandPublisher = null;
+        joystick.onShutdownComplete();
     }
 }

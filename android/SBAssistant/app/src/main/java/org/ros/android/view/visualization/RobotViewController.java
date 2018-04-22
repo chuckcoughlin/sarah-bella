@@ -88,7 +88,7 @@ public class RobotViewController {
             shape.setTransform(pose);
             result = true;
         }
-        // This is never invoked, but the code acts to aim the pointer at the touch point
+        // This is invoked by the trackball. The code acts to aim the pointer at the touch point
         else if (event.getAction() == MotionEvent.ACTION_MOVE) {
             Log.i(CLSS, "ACTION_MOVE");
             Vector3 poseVector = pose.apply(Vector3.zero());
