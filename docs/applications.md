@@ -76,6 +76,7 @@ lamp on and off.
 ![SB Assistant](/images/sb-teleop.png)
 ```                        SB Assistant - Teleop Control ```</br>
 [toc](#table-of-contents)
+
 The **teleop** application ...
 
 ******************************************************
