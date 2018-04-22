@@ -4,7 +4,8 @@ This document summarizes hardware, software and configuration extensions to supp
 Refer to [applications](http://github.com/chuckcoughlin/sarah-bella/tree/master/docs/applications.md) for general usage descriptions.
 
 In addition to our own custom messages, we have drawn heavily from common message definitions that are available from the repository: https://github.com/ros/common_msgs. We pick and choose from
-the collection as needed.
+the collection as needed. The publish/subscribe topics that are listed below
+do not include those topics that are included in the robot by default.
 
 ***************************************************************
 ## Table of Contents <a id="table-of-contents"></a>
@@ -100,9 +101,9 @@ tfMessage
             float64 z
             float64 w
 ```
-The panel subscribes to the following topics:
- * /tf_throttle/tfMessage
- * /scan_throttle/LaserScan
+##### ----------------------- tablet --------------------------<br/>
+**subscribe:** /tf_throttle (tfMessage)<br/>
+**subscribe:** /scan_throttle (LaserScan)<br/>
 
 ### 01 - System Check <a id="systemcheck"></a>
 
@@ -157,29 +158,21 @@ GPIOPin
   bool value
   string mode              # IN, OUT, GND, PWR
 ```
-The panel subscribes to the following topics:
- * /gpio_msgs/GPIOState
- * /sb_system/System
- * /sensor_state_throttle/SensorState
-
-The panel provides control of GPIO values with the action:
- * /gpio_msgs/GPIOPin
-
 The initial construction of the package files was accomplished using:
 ```
     catkin_create_pkg system_check rospy turtlebot3_msgs  turtlebot3_navigation
 ```
 
 ##### ----------------------- tablet --------------------------<br/>
-**node:** sb_subscribe_battery_state(sensor_msgs/BatteryState)<br/>
-**node:** sb_subscribe_gpio (gpio_msgs/GPIOState)<br/>
-**node:** sb_subscribe_system (sb_system/System)<br/>
+**subscribe:** /sensor_state_throttle (SensorState)<br/>
+**subscribe:** /gpio_msgs (GPIOState)<br/>
+**subscribe:** /sb_system (System)<br/>
+**action:**  /sb_serve_gpio_set (GPIOSet)<br/>
 
 ##### ---------------------- robot  --------------------------<br/>
-**node:** sb_publish_sensor_state (turtlebot3_msgs/SensorState)<br/>
-**node:** sb_publish_gpio_state (gpio_msgs/GPIOState)<br/>
-**node:** sb_publish_system (sb_system/System)<br/>
-**node:** sb_serve_gpio_set (GPIOSetRequest/GPIOSetResponse)<br/>
+**publish:** /gpio_msgs (GPIOState)<br/>
+**publish:** /sb_system (System)<br/>
+**service:** /sb_serve_gpio_set (GPIOSetRequest/GPIOSetResponse)<br/>
 
 ### 02 - Headlamp <a id="headlamp"></a>
  The current limit for the GPIO board is about 2ma, thus a lamp must controlled through
@@ -194,7 +187,13 @@ The initial construction of the package files was accomplished using:
  ```
 
  ### 03- Teleop <a id="teleop"></a>
-http://wiki.ros.org/joy/Tutorials/WritingTeleopNode
+The view widget came from [here](https://github.com/rosjava/android_core/tree/kinetic/android_15/src/org/ros/android/view). There is no additional code required on the robot.
+
+##### ----------------------- tablet --------------------------<br/>
+**publish:** /cmd_vel (Twist)<br/>
+**subscribe:**  /odom (Odometry)<br/>
+
+
  ### 04- Follow <a id="follow"></a>
  The *follower* application is one of the ROBOTIS demonstrations. I chose the version from: https://github.com/NVIDIA-Jetson/turtlebot3/tree/master/turtlebot_apps/turtlebot_follower. I modified references from *turtlebot_msgs* to *turtlebot3_msgs*.
 
@@ -205,6 +204,8 @@ http://wiki.ros.org/joy/Tutorials/WritingTeleopNode
  https://github.com/NVIDIA-Jetson/turtlebot3/blob/master/turtlebot_apps/turtlebot_follower/src/follower.cpp Jetson-NVIDIA. cpp, turtlebot3, switch.py. rapp
 
  https://github.com/ROBOTIS-GIT/turtlebot3_applications. Official demo. python. follow_filter
+
+
 
 
 ##### 05 - Park <a id="park"></a>

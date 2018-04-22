@@ -19,6 +19,7 @@ package org.ros.android.view;
 import android.content.Context;
 import android.graphics.Point;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -54,6 +55,7 @@ import java.util.TimerTask;
  */
 public class VirtualJoystickView extends RelativeLayout implements AnimationListener,
         MessageListener<nav_msgs.Odometry>, NodeMain {
+    private static final String CLSS = "VirtualJoystickView";
 
     /**
      * BOX_TO_CIRCLE_RATIO The dimensions of the square box that contains the
@@ -244,23 +246,21 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
      */
     private Timer publisherTimer;
     private geometry_msgs.Twist currentVelocityCommand;
-    private String topicName;
+    private String publishTopic = "~cmd_vel";
+    private String subscribeTopic = "~odom";
 
     public VirtualJoystickView(Context context) {
         super(context);
         initVirtualJoystick(context);
-        topicName = "~cmd_vel";
     }
 
     public VirtualJoystickView(Context context, AttributeSet attrs) {
         super(context, attrs);
         initVirtualJoystick(context);
-        topicName = "~cmd_vel";
     }
 
     public VirtualJoystickView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        topicName = "~cmd_vel";
     }
 
     /**
@@ -297,6 +297,7 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
         double y = message.getPose().getPose().getOrientation().getZ();
         double z = message.getPose().getPose().getOrientation().getY();
         heading = Math.atan2(2 * y * w - 2 * x * z, x * x - y * y - z * z + w * w) * 180 / Math.PI;
+        Log.i(CLSS,String.format("received Odometry pose (wxyz) %f %f %f %f",w,x,y,z));
         // Negating the orientation to make the math for rotation in
         // turn-in-place mode easy. Since the actual heading is irrelevant it does
         // no harm.
@@ -915,8 +916,12 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
         return false;
     }
 
-    public void setTopicName(String topicName) {
-        this.topicName = topicName;
+    /*
+     * Set the publish and subscribe topics
+     */
+    public void setTopicNames(String pubTopic,String subTopic) {
+        this.publishTopic = pubTopic;
+        this.subscribeTopic = subTopic;
     }
 
     @Override
@@ -926,15 +931,17 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
 
     @Override
     public void onStart(ConnectedNode connectedNode) {
-        publisher = connectedNode.newPublisher(topicName, geometry_msgs.Twist._TYPE);
+        publisher = connectedNode.newPublisher(publishTopic, geometry_msgs.Twist._TYPE);
         currentVelocityCommand = publisher.newMessage();
-        subscriber = connectedNode.newSubscriber("odom", nav_msgs.Odometry._TYPE);
+        subscriber = connectedNode.newSubscriber(subscribeTopic, nav_msgs.Odometry._TYPE);
         subscriber.addMessageListener(this);
         publisherTimer = new Timer();
         publisherTimer.schedule(new TimerTask() {
             @Override
             public void run() {
                 if (publishVelocity) {
+                    Log.i(CLSS,String.format("publish Twist(xy) %f %f",currentVelocityCommand.getLinear().getX(),
+                                                                           currentVelocityCommand.getLinear().getY()));
                     publisher.publish(currentVelocityCommand);
                 }
             }
