@@ -1,0 +1,10 @@
+<!-- The "teleop" application relies entirely on builtin functions.
+  Does not start the LIDAR.
+-->
+<launch>
+  <param name="robot/name" value="SarahBella" type="str"/>
+  <param name="robot/type" value="turtlebot3" type="str"/>
+  <param name="robot/application" value="teleop" type="str"/>
+  <param name="robot/platform" value="RaspberryPi" type="str"/>
+  <include file="$(find turtlebot3_bringup)/launch/turtlebot3_core.launch" />
+</launch>
