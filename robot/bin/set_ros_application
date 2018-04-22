@@ -58,8 +58,8 @@ then
     echo "LAUNCH_FILE=system.launch" >> ${CONFIG}
 elif [ ${APP} = "teleop" -o ${APP} = "teleops" ]
 then
-    echo "LAUNCH_PKG=turtlebot3_bringup" > ${CONFIG}
-    echo "LAUNCH_FILE=turtlebot3_core.launch" >> ${CONFIG}
+    echo "LAUNCH_PKG=teleop" > ${CONFIG}
+    echo "LAUNCH_FILE=teleop.launch" >> ${CONFIG}
 else
 	echo "Unknown application ${APP}"
 	exit 2
