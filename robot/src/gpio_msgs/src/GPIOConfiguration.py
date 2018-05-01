@@ -7,13 +7,15 @@ import rospy
 import RPi.GPIO as GPIO
 from gpio_msgs.msg import GPIOState, GPIOPin
 
-# By default all pins are configured as inputs.
+# Get warning if pins are set as outputs, but they are not.
 def configure():
 	GPIO.setmode(GPIO.BOARD)
+	GPIO.setwarnings(False)
 	chanlist = [4,11,27]
 	for channel in chanlist:
 		try:
 			GPIO.setup([channel],GPIO.OUT)
+			rospy.loginfo("Setting GPIO ",channel," to OUT")
 		except:
 			rospy.logwarn("ERROR: Setting GPIO ",channel," to OUT")
 
