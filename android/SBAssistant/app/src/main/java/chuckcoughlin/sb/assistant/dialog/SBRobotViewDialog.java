@@ -15,12 +15,12 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import chuckcoughlin.sb.assistant.R;
-import chuckcoughlin.sb.assistant.ros.SBRosManager;
+import chuckcoughlin.sb.assistant.ros.SBRobotManager;
 import ros.android.util.RobotDescription;
 
 public class SBRobotViewDialog extends SBBasicDialogFragment {
     public static final String CLSS = "SBRobotViewDialog";
-    private SBRosManager rosManager;
+    private SBRobotManager rosManager;
     private RobotDescription robot = null;
 
     public SBRobotViewDialog() {super();}
@@ -30,7 +30,7 @@ public class SBRobotViewDialog extends SBBasicDialogFragment {
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        this.rosManager= SBRosManager.getInstance();
+        this.rosManager= SBRobotManager.getInstance();
         this.robot = rosManager.getRobot();
     }
 

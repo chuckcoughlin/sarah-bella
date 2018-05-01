@@ -10,26 +10,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.ros.android.view.VirtualJoystickView;
-import org.ros.exception.ServiceNotFoundException;
-import org.ros.internal.node.client.ParameterClient;
-import org.ros.internal.node.server.NodeIdentifier;
-import org.ros.internal.node.xmlrpc.XmlRpcTimeoutException;
-import org.ros.namespace.GraphName;
 import org.ros.node.ConnectedNode;
-
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import chuckcoughlin.sb.assistant.R;
 import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.ros.SBApplicationStatusListener;
-import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
-import chuckcoughlin.sb.assistant.ros.SBRosManager;
-import gpio_msgs.GPIOSet;
+import chuckcoughlin.sb.assistant.ros.SBApplicationManager;
 
 /**
  * This fragment handles manual robot control. It publishes Twist messages
@@ -39,13 +28,13 @@ import gpio_msgs.GPIOSet;
 
 public class TeleopFragment extends BasicAssistantFragment implements SBApplicationStatusListener {
     private static final String CLSS = "TeleopFragment";
-    private SBRosApplicationManager applicationManager;
+    private SBApplicationManager applicationManager;
     private VirtualJoystickView joystick = null;
 
     // Inflate the view. It displays a virtual joystick
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
-        this.applicationManager = SBRosApplicationManager.getInstance();
+        this.applicationManager = SBApplicationManager.getInstance();
         View view = inflater.inflate(R.layout.fragment_teleops, container, false);
         TextView label = view.findViewById(R.id.fragmentTeleopsText);
         label.setText(R.string.fragmentTeleopLabel);

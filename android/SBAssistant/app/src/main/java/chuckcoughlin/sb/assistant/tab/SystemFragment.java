@@ -40,8 +40,8 @@ import chuckcoughlin.sb.assistant.R;
 import chuckcoughlin.sb.assistant.common.AbstractMessageListener;
 import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.ros.SBApplicationStatusListener;
-import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
-import chuckcoughlin.sb.assistant.ros.SBRosManager;
+import chuckcoughlin.sb.assistant.ros.SBApplicationManager;
+import chuckcoughlin.sb.assistant.ros.SBRobotManager;
 import gpio_msgs.GPIOSet;
 import gpio_msgs.GPIOSetRequest;
 import gpio_msgs.GPIOSetResponse;
@@ -58,7 +58,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
                                                                       View.OnClickListener {
     private final static String CLSS = "SystemFragment";
     private final static String PUBLISH_ALL = "/gpio_msgs/publish_all";  // Flag to complete gpio
-    private SBRosApplicationManager applicationManager;
+    private SBApplicationManager applicationManager;
     private BatteryManager batteryManager;
     private GPIOListener gpioListener = null;
     private SensorStateListener sensorStateListener = null;
@@ -71,7 +71,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.i(CLSS, "onCreateView");
-        this.applicationManager = SBRosApplicationManager.getInstance();
+        this.applicationManager = SBApplicationManager.getInstance();
 
         batteryManager = (BatteryManager) getActivity().getSystemService(Context.BATTERY_SERVICE);
         sensorStateListener = new SensorStateListener();
@@ -84,6 +84,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
         label.setText(R.string.system_title);
         return mainView;
     }
+    
 
     @Override
     public void onDestroyView() {
@@ -108,7 +109,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
                         try {
                             Log.i(CLSS, "Set parameter to trigger full message...");
                             Thread.sleep(5000);
-                            SBRosManager rosManager = SBRosManager.getInstance();
+                            SBRobotManager rosManager = SBRobotManager.getInstance();
                             String uriString = rosManager.getRobot().getRobotId().getMasterUri();
                             URI masterUri = new URI(uriString);
                             ParameterClient paramClient = new ParameterClient(new NodeIdentifier(GraphName.of("/SystemFragment"), masterUri), masterUri);
@@ -302,12 +303,14 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
         iv.setOnClickListener(null);
         if (pin.getMode().equals("IN")) {
             iv.setImageResource(R.drawable.ball_yellow);
+            Log.i(CLSS,String.format("Set click listener for pin %d",pin.getChannel()));
             iv.setOnClickListener(this);
         }
         else if (pin.getMode().equals("OUT")) {
             if (pin.getValue()) {
                 iv.setImageResource(R.drawable.ball_red);
-            } else {
+            }
+            else {
                 iv.setImageResource(R.drawable.ball_green);
             }
         }

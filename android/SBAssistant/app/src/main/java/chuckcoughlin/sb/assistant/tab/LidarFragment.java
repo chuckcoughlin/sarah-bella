@@ -27,7 +27,7 @@ import chuckcoughlin.sb.assistant.R;
 import chuckcoughlin.sb.assistant.common.AbstractMessageListener;
 import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.ros.SBApplicationStatusListener;
-import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
+import chuckcoughlin.sb.assistant.ros.SBApplicationManager;
 import sensor_msgs.LaserScan;
 import tf.tfMessage;
 
@@ -42,13 +42,13 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
     private String appName = null;
     private LaserListener laserListener = null;
     private TransformListener transformListener = null;
-    private SBRosApplicationManager applicationManager;
+    private SBApplicationManager applicationManager;
     VisualizationView vizView = null;
 
     // Inflate the view. It shows Lidar output
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
-        this.applicationManager = SBRosApplicationManager.getInstance();
+        this.applicationManager = SBApplicationManager.getInstance();
 
         View view = inflater.inflate(R.layout.fragment_lidar, container, false);
         TextView label = view.findViewById(R.id.fragmentLidarText);
@@ -82,7 +82,7 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
     // This may be called immediately on establishment of the listener.
     // We only react to specific applications.
     public void applicationStarted(String appName) {
-
+        if( appName==null) return;
         if(     !appName.equalsIgnoreCase(SBConstants.APPLICATION_FOLLOW) &&
                 !appName.equalsIgnoreCase(SBConstants.APPLICATION_PARK) &&
                 !appName.equalsIgnoreCase(SBConstants.APPLICATION_TELEOP))   return;
@@ -101,6 +101,7 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
     }
 
     public void applicationShutdown(String appName) {
+        if( appName==null ) return;
         if(     !appName.equalsIgnoreCase(SBConstants.APPLICATION_FOLLOW) &&
                 !appName.equalsIgnoreCase(SBConstants.APPLICATION_PARK) &&
                 !appName.equalsIgnoreCase(SBConstants.APPLICATION_TELEOP))   return;

@@ -5,11 +5,9 @@
  */
 package chuckcoughlin.sb.assistant.ros;
 
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
-import android.os.StrictMode;
 import android.util.Log;
 
 import org.ros.RosCore;
@@ -20,10 +18,8 @@ import org.ros.namespace.GraphName;
 import org.ros.namespace.NameResolver;
 import org.ros.node.DefaultNodeMainExecutor;
 import org.ros.node.NodeConfiguration;
-import org.ros.node.NodeMain;
 import org.ros.node.NodeMainExecutor;
 
-import java.net.BindException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -33,15 +29,12 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
 import chuckcoughlin.sb.assistant.db.SBDbManager;
 import ros.android.appmanager.SBRobotConnectionErrorListener;
-import ros.android.msgs.Topic;
-import ros.android.util.RobotApplication;
+import ros.android.util.TabletApplication;
 import ros.android.util.RobotDescription;
 
 
@@ -59,17 +52,15 @@ import ros.android.util.RobotDescription;
  *
  * We start RosCore when the application is started and stop it when the application stops.
  */
-public class SBRosApplicationManager {
-    private final static String CLSS = "SBRosManager";
+public class SBApplicationManager {
+    private final static String CLSS = "SBApplicationManager";
 
-    private static volatile SBRosApplicationManager instance = null;
-
-
+    private static volatile SBApplicationManager instance = null;
 
     private Thread nodeThread;
     private Handler uiThreadHandler = new Handler();
-    private RobotApplication application;
-    private final List<RobotApplication> apps;
+    private TabletApplication application;
+    private final List<TabletApplication> apps;
     private RosCore rosCore = null;
     private NodeConfiguration nodeConfiguration= null;
     private NodeMainExecutor nodeMainExecutor  = null;
@@ -82,7 +73,7 @@ public class SBRosApplicationManager {
     /**
      * Constructor is private per Singleton pattern. This forces use of the single instance.
      */
-    private SBRosApplicationManager() {
+    private SBApplicationManager() {
         this.application = null;
         this.applicationListeners = new ListenerGroup(Executors.newSingleThreadExecutor());
         this.apps = new ArrayList<>();
@@ -93,9 +84,9 @@ public class SBRosApplicationManager {
      * Use this method in the initial activity. We need to assign the context.
      * @return the Singleton instance
      */
-    public static SBRosApplicationManager getInstance() {
+    public static SBApplicationManager getInstance() {
         if (instance == null) {
-            synchronized(SBRosApplicationManager.class) {instance = new SBRosApplicationManager(); }
+            synchronized(SBApplicationManager.class) {instance = new SBApplicationManager(); }
         }
         return instance;
     }
@@ -107,7 +98,7 @@ public class SBRosApplicationManager {
      * @param listener
      */
     public void addListener(SBApplicationStatusListener listener) {
-        if( this.application!=null && application.getExecutionStatus().equalsIgnoreCase(RobotApplication.APP_STATUS_RUNNING)) {
+        if( this.application!=null && application.getExecutionStatus().equalsIgnoreCase(TabletApplication.STATE_ACTIVE)) {
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -122,11 +113,11 @@ public class SBRosApplicationManager {
     /**
      * @return the fixed list of applications. This list is independent of the robot instance.
      */
-    public RobotApplication getApplication() { return this.application; }
+    public TabletApplication getApplication() { return this.application; }
     /**
      * @return the list of known applications
      */
-    public List<RobotApplication> getApplications() {
+    public List<TabletApplication> getApplications() {
         if( apps.size()==0 ) createApplications();
         return this.apps;
     }
@@ -138,7 +129,7 @@ public class SBRosApplicationManager {
         int result = -1;
         if( application!=null ) {
             int index = 0;
-            for(RobotApplication app:apps) {
+            for(TabletApplication app:apps) {
                 if( app.getApplicationName().equalsIgnoreCase(application.getApplicationName())) {
                     result = index;
                     break;
@@ -163,7 +154,7 @@ public class SBRosApplicationManager {
             signalApplicationStop(application.getApplicationName());
         }
         this.application = null;
-        for (RobotApplication app : apps) {
+        for (TabletApplication app : apps) {
             if (app.getApplicationName().equalsIgnoreCase(name)) {
                 this.application = app;
                 break;
@@ -171,12 +162,12 @@ public class SBRosApplicationManager {
         }
     }
     /**
-     * Start RosCore. We need the MasterURI. The application gets the ConnectedNode,
-     * inform any subscribing panels.
+     * Start RosCore on the local machine. We need the MasterURI on the remote. The application
+     * encapsulates the ConnectedNode.
      */
     public void startApplication(RobotDescription robot) {
         if( this.application!=null ) {
-            application.setExecutionStatus(RobotApplication.APP_STATUS_STARTING);
+            application.setExecutionStatus(TabletApplication.STATE_INITIALIZING);
             Thread thread = new Thread(new Runnable(){
                 @Override
                 public void run() {
@@ -190,7 +181,7 @@ public class SBRosApplicationManager {
                         nodeConfiguration = NodeConfiguration.newPublic(localhost, masterURI);
                         nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
                         nodeMainExecutor.execute(application,nodeConfiguration);
-                        application.setExecutionStatus(RobotApplication.APP_STATUS_RUNNING);
+                        application.setExecutionStatus(TabletApplication.STATE_ACTIVE);
                     }
                     catch (Exception ex) {
                         signalError(String.format("%s.startApplication: Unable to start (restart?) core (%s), continuing",CLSS,ex.getLocalizedMessage()));
@@ -207,7 +198,7 @@ public class SBRosApplicationManager {
      */
     public void stopApplication(String appName) {
         if( application==null ) return;
-        application.setExecutionStatus(RobotApplication.APP_STATUS_NOT_RUNNING);
+        application.setExecutionStatus(TabletApplication.STATE_IDLE);
         signalApplicationStop(appName);
         if( nodeMainExecutor!=null ) nodeMainExecutor.shutdown();
         rosCore.shutdown();
@@ -224,7 +215,7 @@ public class SBRosApplicationManager {
      */
     public static void destroy() {
         if( instance!=null ) {
-            synchronized (SBRosApplicationManager.class) {
+            synchronized (SBApplicationManager.class) {
                 instance.shutdown();
                 instance = null;
             }
@@ -253,8 +244,8 @@ public class SBRosApplicationManager {
         while (!cursor.isAfterLast()) {
             //Log.i(CLSS,String.format("Add application %s:%s",cursor.getString(0),cursor.getString(1)));
 
-            RobotApplication app = new RobotApplication(cursor.getString(0),cursor.getString(1));
-            app.setExecutionStatus(RobotApplication.APP_STATUS_NOT_RUNNING);
+            TabletApplication app = new TabletApplication(cursor.getString(0),cursor.getString(1));
+            app.setExecutionStatus(TabletApplication.STATE_IDLE);
             apps.add(app);
             cursor.moveToNext();
         }
@@ -263,7 +254,7 @@ public class SBRosApplicationManager {
     /**
      * Inform all listeners that the named application has started. It is up to the
      * individual listeners to create subscriptions as appropriate. This is called
-     * by the RobotApplication node when informed by the ROS framework. We also
+     * by the TabletApplication node when informed by the ROS framework. We also
      * call it directly here (it may be called twice).
      */
     public void signalApplicationStart(String appName) {

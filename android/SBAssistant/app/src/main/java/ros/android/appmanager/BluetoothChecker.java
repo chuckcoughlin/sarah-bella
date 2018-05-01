@@ -7,20 +7,14 @@ package ros.android.appmanager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
-import android.net.wifi.SupplicantState;
-import android.net.wifi.WifiConfiguration;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.util.Log;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import chuckcoughlin.sb.assistant.common.SBConstants;
-import chuckcoughlin.sb.assistant.ros.SBRosManager;
+import chuckcoughlin.sb.assistant.ros.SBRobotManager;
 import ros.android.util.RobotId;
-
-import static android.content.Context.BLUETOOTH_SERVICE;
 
 /**
  * Attempt to create a network connection via Bluetooth.
@@ -126,7 +120,7 @@ public class BluetoothChecker {
             }
 
             if (success) {
-                SBRosManager.getInstance().setDeviceName(deviceName);
+                SBRobotManager.getInstance().setDeviceName(deviceName);
                 handler.receiveNetworkConnection();
             }
             else {

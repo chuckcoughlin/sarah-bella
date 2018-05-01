@@ -15,11 +15,10 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.db.SBDbManager;
 import chuckcoughlin.sb.assistant.logs.SBLogManager;
-import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
-import chuckcoughlin.sb.assistant.ros.SBRosManager;
+import chuckcoughlin.sb.assistant.ros.SBApplicationManager;
+import chuckcoughlin.sb.assistant.ros.SBRobotManager;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -82,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         SBDbManager.destroy();
         SBLogManager.destroy();
-        SBRosManager.destroy();
-        SBRosApplicationManager.destroy();
+        SBRobotManager.destroy();
+        SBApplicationManager.destroy();
     }
 }

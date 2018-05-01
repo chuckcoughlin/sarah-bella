@@ -42,7 +42,7 @@ import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiInfo;
 
 import chuckcoughlin.sb.assistant.common.SBConstants;
-import chuckcoughlin.sb.assistant.ros.SBRosManager;
+import chuckcoughlin.sb.assistant.ros.SBRobotManager;
 import ros.android.util.RobotId;
 
 public class WifiChecker {
@@ -119,7 +119,7 @@ public class WifiChecker {
                 if (wifiValid()) {
                     WifiInfo info = wifiManager.getConnectionInfo();
                     String ssid = info.getSSID().replaceAll("\"","");
-                    SBRosManager.getInstance().setSSID(ssid);
+                    SBRobotManager.getInstance().setSSID(ssid);
                     handler.receiveNetworkConnection();;
                 }
                 // Try to reconnect

@@ -5,31 +5,11 @@
  */
 package chuckcoughlin.sb.assistant.ros;
 
-import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteStatement;
 import android.os.Handler;
-import android.util.Log;
 
-import org.ros.exception.RosException;
-import org.ros.namespace.GraphName;
-import org.ros.namespace.NameResolver;
 import org.ros.node.NodeConfiguration;
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-
-import chuckcoughlin.sb.assistant.db.SBDbManager;
 import ros.android.util.RobotDescription;
-import ros.android.util.RobotId;
 
 // From rosjava
 
@@ -38,16 +18,19 @@ import ros.android.util.RobotId;
  * accommodate the existence of only a single robot. Maintain the connection state.
  * Since we access from multiple fragments, make this a singleton class to avoid repeated
  * allocations. It is created and shutdown in the MainActivity.
+ *
+ * Keep track of the state of the remote RosCore.
  */
-public class SBRosManager {
-    private final static String CLSS = "SBRosManager";
+public class SBRobotManager {
+    private final static String CLSS = "SBRobotManager";
     // Network Connection Status
-    public static final String CONNECTION_STATUS_UNCONNECTED="UNCONNECTED";
-    public static final String CONNECTION_STATUS_CONNECTING = "CONNECTING ...";
-    public static final String CONNECTION_STATUS_CONNECTED  = "CONNECTED";
-    public static final String CONNECTION_STATUS_UNAVAILABLE = "UNAVAILABLE";   // An error
+    public static final String STATE_UNCONNECTED="UNCONNECTED";    // We have no knowledge re internal state of robot
+    public static final String STATE_CONNECTING = "CONNECTING";    // We are attempting to establish a connection
+    public static final String STATE_STARTING   = "STARTING";      // RosCore is not "yet" available (we did a restart?)
+    public static final String STATE_RUNNING    = "RUNNING";       // RosCore is communicating
+    public static final String STATE_UNAVAILABLE= "UNAVAILABLE";   // Network error, no communication possible
 
-    private static volatile SBRosManager instance = null;
+    private static volatile SBRobotManager instance = null;
     private String bluetoothError;
     private String wifiError;
     private String connectionStatus;
@@ -60,15 +43,15 @@ public class SBRosManager {
      * Constructor is private per Singleton pattern. This forces use of the single instance.
      * Initialize instance variables.
      */
-    private SBRosManager() {
+    private SBRobotManager() {
         //Prevent form the reflection api.
         if (instance != null) {
-            throw new RuntimeException("Attempt to instantiate SBRosManager singleton via reflection");
+            throw new RuntimeException("Attempt to instantiate SBRobotManager singleton via reflection");
         }
         this.robot = null;
         this.bluetoothError = null;
         this.wifiError = null;
-        this.connectionStatus = CONNECTION_STATUS_UNCONNECTED;
+        this.connectionStatus = STATE_UNCONNECTED;
     }
 
     /**
@@ -76,12 +59,12 @@ public class SBRosManager {
      *
      * @return the Singleton instance
      */
-    public static SBRosManager getInstance() {
+    public static SBRobotManager getInstance() {
         // Use the application context, which will ensure that you
         // don't accidentally leak an Activity's context.
         if (instance == null) {
-            synchronized (SBRosManager.class) {
-                instance = new SBRosManager();
+            synchronized (SBRobotManager.class) {
+                instance = new SBRobotManager();
             }
         }
         return instance;
@@ -104,7 +87,7 @@ public class SBRosManager {
     public void setBluetoothError(String reason) {
         this.bluetoothError = reason;
         this.robot = null;
-        this.connectionStatus = CONNECTION_STATUS_UNCONNECTED;
+        this.connectionStatus = STATE_UNCONNECTED;
     }
 
     public void setConnectionStatus(String status) { this.connectionStatus = status; }
@@ -116,15 +99,16 @@ public class SBRosManager {
         }
     }
 
+    // A network connection is only the first step. We still have ROS.
     public void setNetworkConnected(boolean flag) {
         if (flag) {
             bluetoothError = null;
             wifiError = null;
-            setConnectionStatus(CONNECTION_STATUS_CONNECTED);
+            setConnectionStatus(STATE_CONNECTING);
         }
         else {
             this.robot = null;
-            setConnectionStatus(CONNECTION_STATUS_UNCONNECTED);
+            setConnectionStatus(STATE_UNCONNECTED);
         }
     }
 
@@ -138,7 +122,7 @@ public class SBRosManager {
     public void setWifiError(String reason) {
         this.wifiError = reason;
         this.robot = null;
-        setConnectionStatus(CONNECTION_STATUS_UNAVAILABLE);
+        setConnectionStatus(STATE_UNAVAILABLE);
     }
 
 
@@ -151,7 +135,7 @@ public class SBRosManager {
      */
     public static void destroy() {
         if (instance != null) {
-            synchronized (SBRosApplicationManager.class) {
+            synchronized (SBApplicationManager.class) {
                 instance.shutdown();
                 instance = null;
             }

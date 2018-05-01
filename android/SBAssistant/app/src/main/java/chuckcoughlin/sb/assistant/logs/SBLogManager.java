@@ -1,18 +1,15 @@
 package chuckcoughlin.sb.assistant.logs;
 
-import android.app.Activity;
-
 import org.ros.node.ConnectedNode;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import chuckcoughlin.sb.assistant.common.AbstractMessageListener;
 import chuckcoughlin.sb.assistant.common.FixedSizeList;
 import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.ros.SBApplicationStatusListener;
-import chuckcoughlin.sb.assistant.ros.SBRosApplicationManager;
+import chuckcoughlin.sb.assistant.ros.SBApplicationManager;
 import rosgraph_msgs.Log;
 
 /**
@@ -32,7 +29,7 @@ public class SBLogManager implements SBApplicationStatusListener {
      * On start, create subscriptions to the applications.
      */
     private SBLogManager() {
-        SBRosApplicationManager.getInstance().addListener(this);
+        SBApplicationManager.getInstance().addListener(this);
         logList = new FixedSizeList<rosgraph_msgs.Log>(SBConstants.NUM_LOG_MESSAGES);
         logListener = new LogListener();
         observers = new ArrayList<>();
@@ -60,7 +57,7 @@ public class SBLogManager implements SBApplicationStatusListener {
      */
     public static void destroy() {
         if (instance != null) {
-            synchronized (SBRosApplicationManager.class) {
+            synchronized (SBApplicationManager.class) {
                 instance.shutdown();
                 instance = null;
             }
@@ -86,8 +83,8 @@ public class SBLogManager implements SBApplicationStatusListener {
     }
 
     private void shutdown() {
-        if( SBRosApplicationManager.getInstance()!=null) {
-            SBRosApplicationManager.getInstance().removeListener(this);
+        if( SBApplicationManager.getInstance()!=null) {
+            SBApplicationManager.getInstance().removeListener(this);
         }
     }
 
@@ -95,7 +92,7 @@ public class SBLogManager implements SBApplicationStatusListener {
     // We don't care what the application is, subscribe to the logs.
     @Override
     public void applicationStarted(String appName) {
-        ConnectedNode node = SBRosApplicationManager.getInstance().getApplication().getConnectedNode();
+        ConnectedNode node = SBApplicationManager.getInstance().getApplication().getConnectedNode();
         android.util.Log.i(CLSS, String.format("application started - %s", appName));
         if (node != null) {
             logListener.subscribe(node, "/rosout");  // Aggregated feed
