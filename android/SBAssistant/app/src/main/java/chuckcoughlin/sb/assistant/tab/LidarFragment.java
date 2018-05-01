@@ -39,6 +39,7 @@ import tf.tfMessage;
 public class LidarFragment extends BasicAssistantFragment implements SBApplicationStatusListener, SeekBar.OnSeekBarChangeListener {
     private final static String CLSS = "LidarFragment";
     private static final String LASER_SCAN_LAYER = "LASER_SCAN_LAYER";
+    private String appName = null;
     private LaserListener laserListener = null;
     private TransformListener transformListener = null;
     private SBRosApplicationManager applicationManager;
@@ -73,7 +74,7 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
     public void onDestroyView() {
         Log.i(CLSS, "onDestroyView");
         applicationManager.removeListener(this);
-        applicationShutdown();
+        applicationShutdown(appName);
         vizView.onShutdown();
         super.onDestroyView();
     }
@@ -87,7 +88,7 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
                 !appName.equalsIgnoreCase(SBConstants.APPLICATION_TELEOP))   return;
 
         Log.i(CLSS, String.format("applicationStarted: %s ...", appName));
-
+        this.appName = appName;
         ConnectedNode node = applicationManager.getApplication().getConnectedNode();
         if (node != null) {
             transformListener.subscribe(node, "/tf_throttle");
@@ -99,7 +100,10 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
 
     }
 
-    public void applicationShutdown() {
+    public void applicationShutdown(String appName) {
+        if(     !appName.equalsIgnoreCase(SBConstants.APPLICATION_FOLLOW) &&
+                !appName.equalsIgnoreCase(SBConstants.APPLICATION_PARK) &&
+                !appName.equalsIgnoreCase(SBConstants.APPLICATION_TELEOP))   return;
         Log.i(CLSS, String.format("applicationShutdown"));
         transformListener.shutdown();
         laserListener.shutdown();

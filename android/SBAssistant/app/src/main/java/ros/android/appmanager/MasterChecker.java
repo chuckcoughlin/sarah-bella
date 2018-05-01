@@ -70,6 +70,7 @@ public class MasterChecker {
     private final static String CLSS = "MasterChecker";
 	private CheckerThread checkerThread;
 	private final SBRobotConnectionHandler handler;
+    private RobotDescription robot = null;
 
 	/** Constructor. Should not take any time. */
 	public MasterChecker(SBRobotConnectionHandler h) {
@@ -107,6 +108,9 @@ public class MasterChecker {
 		}
 	}
 
+	public RobotDescription getRobot() { return this.robot; }
+
+
 	private class CheckerThread extends Thread {
 
         private URI masterUri;
@@ -142,7 +146,7 @@ public class MasterChecker {
                     Log.i(CLSS, String.format("   %s = %s", name.toString(),paramClient.getParam(name).getResult().toString()));
                 }
                 RobotId robotId = new RobotId(masterUri.toASCIIString());
-                RobotDescription robot = RobotDescription.createUnknown(robotId);
+                this.robot = RobotDescription.createUnknown(robotId);
 
                 if (hasName && hasType) {
                     robot.setRobotName(paramClient.getParam(GraphName.of("robot/name")).getResult().toString());

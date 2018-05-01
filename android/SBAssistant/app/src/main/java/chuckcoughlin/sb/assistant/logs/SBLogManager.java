@@ -104,7 +104,7 @@ public class SBLogManager implements SBApplicationStatusListener {
     }
 
     @Override
-    public void applicationShutdown() {
+    public void applicationShutdown(String appName) {
         logListener.shutdown();
         android.util.Log.i(CLSS, String.format("application stopped"));
         shutdown();

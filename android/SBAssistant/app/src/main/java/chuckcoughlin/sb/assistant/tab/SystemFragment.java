@@ -89,7 +89,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     public void onDestroyView() {
         Log.i(CLSS, "onDestroyView");
         applicationManager.removeListener(this);
-        applicationShutdown();
+        applicationShutdown(SBConstants.APPLICATION_SYSTEM);
         super.onDestroyView();
     }
 
@@ -136,12 +136,14 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
         }
     }
 
-    public void applicationShutdown() {
-        Log.i(CLSS, String.format("applicationShutdown"));
-        sensorStateListener.shutdown();
-        gpioListener.shutdown();
-        systemListener.shutdown();
-        gpioServiceClient = null;
+    public void applicationShutdown(String appName) {
+        if (appName.equalsIgnoreCase(SBConstants.APPLICATION_SYSTEM)) {
+            Log.i(CLSS, String.format("applicationShutdown"));
+            sensorStateListener.shutdown();
+            gpioListener.shutdown();
+            systemListener.shutdown();
+            gpioServiceClient = null;
+        }
     }
 
     // ========================================= MessageListeners ============================

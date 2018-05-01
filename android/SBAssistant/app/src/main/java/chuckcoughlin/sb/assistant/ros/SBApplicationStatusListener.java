@@ -7,5 +7,5 @@ package chuckcoughlin.sb.assistant.ros;
 
 public interface SBApplicationStatusListener {
     public void applicationStarted(String appName);
-    public void applicationShutdown();
+    public void applicationShutdown(String appName);
 }

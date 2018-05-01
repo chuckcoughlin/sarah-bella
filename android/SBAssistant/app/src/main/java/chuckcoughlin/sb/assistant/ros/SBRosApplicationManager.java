@@ -160,7 +160,7 @@ public class SBRosApplicationManager {
     public void setApplication(String name) {
         // Inform any listeners on the old application that it has stopped.
         if( this.application!=null && !this.application.getApplicationName().equalsIgnoreCase(name)) {
-            signalApplicationStop();
+            signalApplicationStop(application.getApplicationName());
         }
         this.application = null;
         for (RobotApplication app : apps) {
@@ -204,10 +204,10 @@ public class SBRosApplicationManager {
      * Shutdown the application and all its subscribers.
      * Stop Roscore.
      */
-    public void stopApplication() {
+    public void stopApplication(String appName) {
         if( application==null ) return;
         application.setExecutionStatus(RobotApplication.APP_STATUS_NOT_RUNNING);
-        signalApplicationStop();
+        signalApplicationStop(appName);
         if( nodeMainExecutor!=null ) nodeMainExecutor.shutdown();
         rosCore.shutdown();
     }
@@ -277,10 +277,10 @@ public class SBRosApplicationManager {
      * Inform all listeners that the application has stopped. It is up to the
      * individual listeners to terminate all active subscriptions.
      */
-    public void signalApplicationStop() {
+    public void signalApplicationStop(String appName) {
         this.applicationListeners.signal(new SignalRunnable<SBApplicationStatusListener>() {
             public void run(SBApplicationStatusListener listener) {
-                listener.applicationShutdown();
+                listener.applicationShutdown(appName);
             }
         });
     }

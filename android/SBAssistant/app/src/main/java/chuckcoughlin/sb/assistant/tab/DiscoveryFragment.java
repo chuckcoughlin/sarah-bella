@@ -441,7 +441,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         if( applicationManager.getApplication()!=null ) {
             if( applicationManager.getApplication().getExecutionStatus().equals(RobotApplication.APP_STATUS_RUNNING) ) {
                 Log.i(CLSS, "Stop application clicked");
-                applicationManager.stopApplication();
+                applicationManager.stopApplication( applicationManager.getApplication().getApplicationName());
             }
             else {
                 Log.i(CLSS, "Start application clicked");

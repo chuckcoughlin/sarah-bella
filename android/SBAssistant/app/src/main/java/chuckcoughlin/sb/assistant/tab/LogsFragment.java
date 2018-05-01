@@ -73,7 +73,7 @@ public class LogsFragment extends BasicAssistantFragment implements SBApplicatio
         Log.i(CLSS, "onDestroyView");
         SBLogManager.getInstance().removeObserver(adapter);
         applicationManager.removeListener(this);
-        applicationShutdown();
+        applicationShutdown("");
         super.onDestroyView();
     }
 
@@ -84,7 +84,8 @@ public class LogsFragment extends BasicAssistantFragment implements SBApplicatio
         SBLogManager.getInstance().addObserver(adapter);
     }
 
-    public void applicationShutdown() {
+    // We don't care what the application is ...
+    public void applicationShutdown(String appName) {
         Log.i(CLSS, String.format("applicationShutdown"));
         SBLogManager.getInstance().removeObserver(adapter);
     }

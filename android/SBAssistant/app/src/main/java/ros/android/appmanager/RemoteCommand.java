@@ -7,6 +7,8 @@
  */
 package ros.android.appmanager;
 
+import android.util.Log;
+
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
@@ -57,6 +59,7 @@ public class RemoteCommand {
                 try {
                     Session session = jsch.getSession(username, hostname, 22);
                     session.setPassword(password);
+                    Log.i(CLSS,String.format(".execute: %s %s (%s)",username,hostname,password));
                     session.setConfig("StrictHostKeyChecking", "no");
                     session.connect(CONNECTION_TIMEOUT);
                     Channel channel = session.openChannel("exec");
@@ -67,25 +70,29 @@ public class RemoteCommand {
 
                     channel.connect();
 
-                    byte[] tmp = new byte[1024];
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[1024];
                     while (true) {
                         while (in.available() > 0) {
-                            int i = in.read(tmp, 0, 1024);
-                            if (i < 0) break;
-                            System.out.print(new String(tmp, 0, i));
+                            int read = 0;
+                            while ((read = in.read(buffer, 0, buffer.length)) != -1) {
+                                baos.write(buffer, 0, read);
+                            }
+                            baos.flush();
                         }
                         if (channel.isClosed()) {
                             System.out.println("exit-status: " + channel.getExitStatus());
                             break;
                         }
                         try {
-                            Thread.sleep(1000);
-                        } catch (Exception ee) {
+                            Thread.sleep(500);
+                        }
+                        catch (Exception ee) {
                         }
                     }
                     channel.disconnect();
                     session.disconnect();
-                    commandListener.handleCommandCompletion(key,command,new String(tmp));
+                    commandListener.handleCommandCompletion(key,command,new String(baos.toByteArray(), "UTF-8"));
                 }
                 catch (Exception ex) {
                     commandListener.handleCommandError(key,command,ex.getLocalizedMessage());
@@ -115,6 +122,7 @@ public class RemoteCommand {
                 try {
                     Session session = jsch.getSession(username, hostname, 22);
                     session.setPassword(password);
+                    Log.i(CLSS,String.format(".sudo: %s %s (%s)",username,hostname,password));
                     session.setConfig("StrictHostKeyChecking", "no");
                     session.connect(CONNECTION_TIMEOUT);
                     Channel channel = session.openChannel("exec");

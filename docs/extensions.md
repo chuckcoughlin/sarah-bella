@@ -191,7 +191,7 @@ The view widget came from [here](https://github.com/rosjava/android_core/tree/ki
 
 ##### ----------------------- tablet --------------------------<br/>
 **publish:** /cmd_vel (Twist)<br/>
-**subscribe:**  /odom (Odometry)<br/>
+**subscribe:**  /odom_throttle (Odometry)<br/>
 
 
  ### 04- Follow <a id="follow"></a>

@@ -350,7 +350,7 @@ To mitigate problems of wifi adapter drop outs:
    sudo iw dev wlan0 set power_save off
 ```
 
-We would like to have *ROSPi* start with a fixed IP address. We have been unsuccessful at creating such a configuration. Howeverm in practice, we find that the address is always the same. To see what that address, execute ```ifconfig``` once a network configuration has been established.
+We would like to have *ROSPi* start with a fixed IP address. We have been unsuccessful at creating such a configuration. However in practice, we find that the address is always the same. To see what that address, execute ```ifconfig``` once a network configuration has been established.
 
 We have seen the tablet or emulator reach a state where the host connection seems lost and these messages are found in *Logcat*:
 ```
@@ -361,7 +361,7 @@ The situation has been resolved by restarting the robot.
 
 We use **ssh** to remotely switch applications on the robot. It is disabled by default. To enable,
 ```
-  sudo rospi-config
+  sudo raspi-config
 ```
 Under "Interfacing Options", navigate to SSH, select "Yes".
 

@@ -58,7 +58,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     @Override
     public void onDestroyView() {
         Log.i(CLSS, "onDestroyView");
-        applicationShutdown();
+        applicationShutdown(SBConstants.APPLICATION_TELEOP);
         super.onDestroyView();
     }
 
@@ -77,8 +77,10 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         }
     }
 
-    public void applicationShutdown() {
-        Log.i(CLSS, String.format("applicationShutdown"));
-        joystick.onShutdownComplete();
+    public void applicationShutdown(String appName) {
+        if (appName.equalsIgnoreCase(SBConstants.APPLICATION_TELEOP)) {
+            Log.i(CLSS, String.format("applicationShutdown"));
+            joystick.onShutdownComplete();
+        }
     }
 }

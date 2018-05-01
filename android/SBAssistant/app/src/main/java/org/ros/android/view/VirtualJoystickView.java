@@ -958,10 +958,20 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
     }
 
     public void onShutdownComplete() {
-        publisher.shutdown();
-        subscriber.shutdown();
-        publisherTimer.cancel();
-        publisherTimer.purge();
+        if(publisher!=null)  {
+            publisher.shutdown();
+            publisher = null;
+        }
+        if(subscriber!=null) {
+            subscriber.shutdown();
+            subscriber = null;
+        }
+        if( publisherTimer!=null ) {
+            publisherTimer.cancel();
+            publisherTimer.purge();
+            publisherTimer = null;
+        }
+
     }
 
     @Override

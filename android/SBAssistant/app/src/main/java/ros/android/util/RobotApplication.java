@@ -64,8 +64,8 @@ public class RobotApplication extends AbstractNodeMain implements java.io.Serial
 	private static final String NAME_UNKNOWN = "Unknown";
 	private static final String TYPE_UNKNOWN = "Unknown";
 
-	private String applicationName;
-	private String description;
+	private final String applicationName;
+	private final String description;
 	private String executionStatus;
 	private ConnectedNode connectedNode = null;
 
@@ -99,9 +99,10 @@ public class RobotApplication extends AbstractNodeMain implements java.io.Serial
 
     @Override
     public void onShutdown(final Node node) {
-        Log.i(CLSS,String.format("%s.onShutdown: connectedNode has been shutdown",getApplicationName()));
-        SBRosApplicationManager.getInstance().signalApplicationStop();
-        this.connectedNode = null;
+		String appName = getApplicationName();
+		Log.i(CLSS,String.format("%s.onShutdown: connectedNode has been shutdown",getApplicationName()));
+		SBRosApplicationManager.getInstance().signalApplicationStop(getApplicationName());
+		this.connectedNode = null;
     }
 
     /**
