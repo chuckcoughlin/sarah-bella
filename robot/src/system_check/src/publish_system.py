@@ -42,7 +42,7 @@ while not rospy.is_shutdown():
 	# NOTE: publishing sets the header sequence
 	#       Log every nth message
 	if msg.header.seq % 5 == 0:
-		rospy.loginfo("System: cpu: %2f.2%%, packets dropped: %2f.2%%" % (msg.cpu_percent,100.*msg.in_packets_dropped/msg.packets_received))
+		rospy.loginfo("System: cpu: %.2f%%, packets dropped: %.2f%%" % (msg.cpu_percent,100.*msg.in_packets_dropped/msg.packets_received))
 	rate.sleep()
 
 rospy.loginfo("complete")
