@@ -29,7 +29,7 @@
             android:adjustViewBounds="true"
             android:src="@drawable/turtlebot" />
         <ImageView
-            android:id="@+id/error_icon"
+            android:id="@+id/ros_not_running_icon"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:paddingLeft="20dp"

@@ -261,10 +261,17 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
                 if (applicationManager.getApplication() != null && app.getApplicationName().equalsIgnoreCase(applicationManager.getApplication().getApplicationName())) {
                     RobotApplication rapp = applicationManager.getApplication();  // Make sure we get the correct instance
                     if (rapp.getExecutionStatus().equalsIgnoreCase(RobotApplication.APP_STATUS_RUNNING)) {
+                        toggle.setEnabled(true);
                         toggle.setChecked(true);
                         Log.i(CLSS, String.format("updateStatusImage: set ball GREEN for %s", app.getApplicationName()));
                     }
+                    else if(rapp.getExecutionStatus().equalsIgnoreCase(RobotApplication.APP_STATUS_STARTING)) {
+                        toggle.setEnabled(false);
+                        toggle.setChecked(false);
+                        Log.i(CLSS, String.format("updateStatusImage: set ball GRAY for %s", app.getApplicationName()));
+                    }
                     else {
+                        toggle.setEnabled(true);
                         toggle.setChecked(false);
                         Log.i(CLSS, String.format("updateStatusImage: set ball YELLOW for %s", app.getApplicationName()));
                     }
@@ -313,7 +320,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     }
 
     // The application name is a global parameter of the robot. This method is called
-    // once we've made contact with the robot. Instantiate the application object with its
+    // by the MasterChecker once we've made contact with the robot.
     //
     // Display the full list of applications and mark this one as selected.
     @Override
@@ -345,7 +352,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         Log.i(CLSS, "receiveNetworkConnection: SUCCESS!");
         MasterChecker checker = new MasterChecker(this);
         String master = dbManager.getSetting(SBConstants.ROS_MASTER_URI);
-        checker.beginChecking(master);
+        checker.beginChecking(master,1);  // Assume ROS running, only get one attempt.
         rosManager.setNetworkConnected(true);
     }
 
@@ -478,10 +485,6 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         if (robot == null) iview.setVisibility(View.INVISIBLE);
         else iview.setVisibility(View.VISIBLE);
 
-        iview = (ImageView) contentView.findViewById(R.id.error_icon);
-        if (robot == null) iview.setVisibility(View.INVISIBLE);
-        else iview.setVisibility(View.VISIBLE);
-
         ProgressBar bar = (ProgressBar) contentView.findViewById(R.id.progress_circle);
         if (!rosManager.getConnectionStatus().equalsIgnoreCase(SBRosManager.CONNECTION_STATUS_CONNECTING))
             bar.setVisibility(View.INVISIBLE);
@@ -505,11 +508,35 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
 
         ListView listView = getListView();
 
+        ImageView connectionIndicator = contentView.findViewById(R.id.ros_not_running_icon);
         if (robot == null || applicationManager.getApplication()==null) {
             listView.setVisibility(View.INVISIBLE);
+            connectionIndicator.setVisibility(View.INVISIBLE);
+        }
+        // If there is no current application, assume that we are between
+        // apps ... waiting for ROS to restart on robot,
+        else if(!applicationManager.getApplication().getExecutionStatus().equalsIgnoreCase(RobotApplication.APP_STATUS_RUNNING)) {
+            connectionIndicator.setVisibility(View.VISIBLE);
+            listView.setVisibility(View.VISIBLE);
+            // Select the current (now former) application in the list.
+            int index = 0;
+            int selectedPosition = applicationManager.indexOfCurrentApplication();
+            List<RobotApplication> applicationList = applicationManager.getApplications();
+            for(RobotApplication app:applicationList) {
+                if(index == selectedPosition) {
+                    listView.setItemChecked(index,true);
+                    listView.setSelection(index);
+                    Log.i(CLSS, String.format("receiveApplication: selected application %s (%d)",applicationManager.getApplication().getApplicationName(),index));
+                }
+                else {
+                    listView.setItemChecked(index,false);
+                }
+                index=index+1;
+            }
         }
         else {
             listView.setVisibility(View.VISIBLE);
+            connectionIndicator.setVisibility(View.INVISIBLE);
             // Select the current application in the list.
             int index = 0;
             int selectedPosition = applicationManager.indexOfCurrentApplication();

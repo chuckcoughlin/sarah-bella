@@ -7,4 +7,7 @@
     <!-- When not selected -->
     <item android:drawable="@drawable/ball_yellow"
         android:state_checked="false"/>
+    <!-- When disabled -->
+    <item android:drawable="@drawable/ball_gray"
+        android:state_enabled="true"/>
 </selector>

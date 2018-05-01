@@ -176,7 +176,7 @@ public class SBRosApplicationManager {
      */
     public void startApplication(RobotDescription robot) {
         if( this.application!=null ) {
-            application.setExecutionStatus(RobotApplication.APP_STATUS_RUNNING);
+            application.setExecutionStatus(RobotApplication.APP_STATUS_STARTING);
             Thread thread = new Thread(new Runnable(){
                 @Override
                 public void run() {
@@ -190,6 +190,7 @@ public class SBRosApplicationManager {
                         nodeConfiguration = NodeConfiguration.newPublic(localhost, masterURI);
                         nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
                         nodeMainExecutor.execute(application,nodeConfiguration);
+                        application.setExecutionStatus(RobotApplication.APP_STATUS_RUNNING);
                     }
                     catch (Exception ex) {
                         signalError(String.format("%s.startApplication: Unable to start (restart?) core (%s), continuing",CLSS,ex.getLocalizedMessage()));

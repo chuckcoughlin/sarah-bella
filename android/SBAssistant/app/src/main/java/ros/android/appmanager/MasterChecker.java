@@ -63,6 +63,9 @@ import ros.android.util.RobotId;
  * Threaded ROS-master checker. Runs a thread which checks for a valid ROS
  * master and sends back a {@link RobotDescription} (with robot name and type)
  * on success or a failure reason on failure.
+ *
+ * Note that after an application restart on the robot, it can take up to
+ * several seconds for the application to initialize.
  * 
  * @author hersh@willowgarage.com
  */
@@ -71,6 +74,7 @@ public class MasterChecker {
 	private CheckerThread checkerThread;
 	private final SBRobotConnectionHandler handler;
     private RobotDescription robot = null;
+    private int attemptLimit = 1;
 
 	/** Constructor. Should not take any time. */
 	public MasterChecker(SBRobotConnectionHandler h) {
@@ -81,7 +85,8 @@ public class MasterChecker {
 	 * Start the checker thread with the given robotId. If the thread is already
 	 * running, kill it first and then start anew. Returns immediately.
 	 */
-	public void beginChecking(String masterURI) {
+	public void beginChecking(String masterURI,int limit) {
+	    this.attemptLimit = limit;
         Log.i(CLSS, "Attempting to connect ...");
 		stopChecking();
 		if(masterURI == null) {
@@ -133,51 +138,56 @@ public class MasterChecker {
 
         @Override
         public void run() {
-            try {
-                Log.i(CLSS, "Getting parameters ......");
-                ParameterClient paramClient = new ParameterClient(new NodeIdentifier(GraphName.of("/master_checker"), masterUri), masterUri);
-                boolean hasName = ((Boolean) paramClient.hasParam(GraphName.of("robot/name")).getResult()).booleanValue();
-                boolean hasType = ((Boolean) paramClient.hasParam(GraphName.of("robot/type")).getResult()).booleanValue();
-                boolean hasApp = ((Boolean) paramClient.hasParam(GraphName.of("robot/application")).getResult()).booleanValue();
-                // Log the names
-                Log.i(CLSS, "Parameters ......");
-                List<GraphName> names = paramClient.getParamNames().getResult();
-                for (GraphName name : names) {
-                    Log.i(CLSS, String.format("   %s = %s", name.toString(),paramClient.getParam(name).getResult().toString()));
-                }
-                RobotId robotId = new RobotId(masterUri.toASCIIString());
-                this.robot = RobotDescription.createUnknown(robotId);
-
-                if (hasName && hasType) {
-                    robot.setRobotName(paramClient.getParam(GraphName.of("robot/name")).getResult().toString());
-                    robot.setRobotType(paramClient.getParam(GraphName.of("robot/type")).getResult().toString());
-                    if(((Boolean) paramClient.hasParam(GraphName.of("robot/platform")).getResult()).booleanValue() ) {
-                        robot.setPlatform((String) paramClient.getParam(GraphName.of("robot/platform")).getResult());
+            int attempt = 0;
+            while (attempt < attemptLimit) {
+                try {
+                    Log.i(CLSS, "Getting parameters ......");
+                    ParameterClient paramClient = new ParameterClient(new NodeIdentifier(GraphName.of("/master_checker"), masterUri), masterUri);
+                    boolean hasName = ((Boolean) paramClient.hasParam(GraphName.of("robot/name")).getResult()).booleanValue();
+                    boolean hasType = ((Boolean) paramClient.hasParam(GraphName.of("robot/type")).getResult()).booleanValue();
+                    boolean hasApp = ((Boolean) paramClient.hasParam(GraphName.of("robot/application")).getResult()).booleanValue();
+                    // Log the names
+                    Log.i(CLSS, "Parameters ......");
+                    List<GraphName> names = paramClient.getParamNames().getResult();
+                    for (GraphName name : names) {
+                        Log.i(CLSS, String.format("   %s = %s", name.toString(), paramClient.getParam(name).getResult().toString()));
                     }
-                    robot.setTimeLastSeen(new Date());
-                    handler.receiveRobotConnection(robot);
+                    RobotId robotId = new RobotId(masterUri.toASCIIString());
+                    this.robot = RobotDescription.createUnknown(robotId);
 
-                    if (hasApp) {
-                        String appName = (String) paramClient.getParam(GraphName.of("robot/application")).getResult();
-                        robot.setApplicationName(appName);
-                        handler.receiveApplication(appName);
+                    if (hasName && hasType) {
+                        robot.setRobotName(paramClient.getParam(GraphName.of("robot/name")).getResult().toString());
+                        robot.setRobotType(paramClient.getParam(GraphName.of("robot/type")).getResult().toString());
+                        if (((Boolean) paramClient.hasParam(GraphName.of("robot/platform")).getResult()).booleanValue()) {
+                            robot.setPlatform((String) paramClient.getParam(GraphName.of("robot/platform")).getResult());
+                        }
+                        robot.setTimeLastSeen(new Date());
+                        handler.receiveRobotConnection(robot);
+
+                        if (hasApp) {
+                            String appName = (String) paramClient.getParam(GraphName.of("robot/application")).getResult();
+                            robot.setApplicationName(appName);
+                            handler.receiveApplication(appName);
+                        }
+                    } else {
+                        Log.e(CLSS, "No parameters");
+                        handler.handleConnectionError("The parameters on the server are not set. Please set robot/name and robot/type.");
                     }
+                    return;
                 }
-                else {
-                    Log.e(CLSS, "No parameters");
-                    handler.handleConnectionError("The parameters on the server are not set. Please set robot/name and robot/type.");
+                catch (XmlRpcTimeoutException tex) {
+                    if (attempt < attemptLimit) {
+                        attempt++;
+                        continue;
+                    }
+                    Log.e(CLSS, "Timeout Exception while creating parameter client in MasterChecker for " + masterUri);
+                    handler.handleConnectionError(tex.getLocalizedMessage());
                 }
-                return;
-            }
-            catch (XmlRpcTimeoutException tex) {
-                Log.e(CLSS, "Timeout Exception while creating parameter client in MasterChecker for " + masterUri);
-                handler.handleConnectionError(tex.getLocalizedMessage());
-            }
-            catch (Throwable ex) {
-                Log.e(CLSS, "Exception while creating parameter client in MasterChecker for master URI " + masterUri, ex);
-                handler.handleConnectionError(ex.getLocalizedMessage());
+                catch (Throwable ex) {
+                    Log.e(CLSS, "Exception while creating parameter client in MasterChecker for master URI " + masterUri, ex);
+                    handler.handleConnectionError(ex.getLocalizedMessage());
+                }
             }
         }
     }
-
 }

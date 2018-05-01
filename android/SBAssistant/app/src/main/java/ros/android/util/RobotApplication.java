@@ -58,6 +58,7 @@ public class RobotApplication extends AbstractNodeMain implements java.io.Serial
 	// Connection Status
 	public static final String APP_STATUS_NOT_RUNNING="Not Running";
 	public static final String APP_STATUS_RUNNING = "Running ...";
+	public static final String APP_STATUS_STARTING = "Starting ...";
 	public static final String APP_STATUS_UNAVAILABLE = "Unavailable";   // An error
 
 
