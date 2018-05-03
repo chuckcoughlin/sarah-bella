@@ -45,9 +45,6 @@ public class SBConstants {
     public static final String APPLICATION_PARK="park";
     public static final String APPLICATION_SYSTEM="system";
     public static final String APPLICATION_TELEOP="teleop";
-    // Network Types
-    public static final String NETWORK_BLUETOOTH="BLUETOOTH";
-    public static final String NETWORK_WIFI="WIFI";
     // Platform Types
     public static final String PLATFORM_LINUX="Linux";
     public static final String PLATFORM_RASPBERRYPI="RaspberryPy";

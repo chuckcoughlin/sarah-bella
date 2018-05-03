@@ -59,10 +59,11 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
                                                 AdapterView.OnItemClickListener {
     private final static String CLSS = "DiscoveryFragment";
     private final static String IGNORE_KEY = "IGNORE";
-    private final static String SET_APP_COMMAND = "~/robotics/robot/bin/set_ros_application %s";
+    private final static String SET_APP_COMMAND   = "~/robotics/robot/bin/set_ros_application %s";
     private final static String START_APP_COMMAND = "~/robotics/robot/bin/restart_ros";
     private View contentView = null;
     private ViewGroup viewGroup = null;
+    private MasterChecker masterChecker = null;
     private SBDbManager dbManager = null;
     private SBRobotManager robotManager = null;
     private SBApplicationManager applicationManager = null;
@@ -101,7 +102,6 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
                 viewRobotClicked();
             }
         });
-
         return contentView;
     }
 
@@ -113,6 +113,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         dbManager = SBDbManager.getInstance();
         robotManager = SBRobotManager.getInstance();
         applicationManager = SBApplicationManager.getInstance();
+        this.masterChecker = new MasterChecker(this);
         command = new RemoteCommand(dbManager.getSetting(SBConstants.ROS_HOST),
                                     dbManager.getSetting(SBConstants.ROS_USER),
                                     dbManager.getSetting(SBConstants.ROS_USER_PASSWORD),this);
@@ -209,7 +210,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         public View getView(int position, View convertView, ViewGroup parent) {
             //Log.i(CLSS, String.format("RobotApplicationsAdapter.getView position =  %d", position));
             // Get the data item for this position
-            TabletApplication app = getItem(position);
+            TabletApplication tabapp = getItem(position);
             // Check if an existing view is being reused, otherwise inflate the view
             if (convertView == null) {
                 //Log.i(CLSS, String.format("RobotApplicationsAdapter.getView convertView was null"));
@@ -234,9 +235,9 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
             });
 
             // Populate the data into the template view using the data object
-            nameView.setText(app.getApplicationName());
-            descriptionView.setText(app.getDescription());
-            updateStatusImage(app,statusToggle);
+            nameView.setText(tabapp.getApplicationName());
+            descriptionView.setText(tabapp.getDescription());
+            updateStatusImage(tabapp,statusToggle);
 
             // Return the completed view to render on screen
             convertView.postInvalidate(0,0,convertView.getRight(),convertView.getBottom());
@@ -259,7 +260,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
             public void run() {
                 toggle.setVisibility(View.INVISIBLE);
                 TabletApplication tapp = applicationManager.getApplication();
-                if( !robotManager.getConnectionStatus().equalsIgnoreCase(SBRobotManager.STATE_RUNNING) ) {
+                if( !robotManager.getConnectionState().equalsIgnoreCase(SBRobotManager.STATE_ONLINE) ) {
                     toggle.setEnabled(false);
                     toggle.setChecked(false);
                     Log.i(CLSS, String.format("updateStatusImage: set ball GRAY for %s", app.getApplicationName()));
@@ -281,27 +282,15 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         });
     }
     // =========================================== Checker Callbacks ====================================
-    @Override
-    public void handleConnectionError(String reason) {
-        Log.w(CLSS, "handleConnectionError: " + reason);
-        robotManager.setConnectionStatus(SBRobotManager.STATE_UNCONNECTED);
-        applicationManager.setApplication(null);
-        if(getActivity()!=null) {
-            SBWarningDialog warning = SBWarningDialog.newInstance("Error connecting to robot", reason);
-            warning.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
-        }
-    }
-
     /**
      * If this was a bluetooth error, then try wi-fi.
-     * @param type network type (Bluetooth/Wi-fi)
      * @param reason error description
      */
     @Override
-    public void handleNetworkError(String type,String reason) {
-        Log.w(CLSS, String.format("handleNetworkError (%s): %s",type,reason));
-        if(type.equalsIgnoreCase(SBConstants.NETWORK_BLUETOOTH)) {
-            robotManager.setBluetoothError(reason);
+    public void handleNetworkError(String reason) {
+        Log.w(CLSS, String.format("handleNetworkError (%s): %s",robotManager.getConnectionState(),reason));
+        if(robotManager.getConnectionState().equalsIgnoreCase(SBRobotManager.STATE_BLUETOOTH_CONNECTING)) {
+            robotManager.setConnectionState(SBRobotManager.STATE_WIFI_CONNECTING);  // Next try Wifi
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -313,8 +302,20 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
             checkWifi();
         }
         else {
-            robotManager.setWifiError(reason);
+            robotManager.setConnectionState(SBRobotManager.STATE_UNAVAILABLE);
             SBWarningDialog warning = SBWarningDialog.newInstance("Network Error", reason);
+            warning.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
+        }
+    }
+    // We've made a network connection to the robot, but failed to read the parameters we require.
+    // It may be that ROS is not running or is has been aborted.
+    @Override
+    public void handleRobotCommunicationError(String reason) {
+        Log.w(CLSS, "handleRobotCommunicationError: " + reason);
+        robotManager.setConnectionState(SBRobotManager.STATE_OFFLINE);
+        applicationManager.setApplication(null);
+        if(getActivity()!=null) {
+            SBWarningDialog warning = SBWarningDialog.newInstance("Error connecting to robot", reason);
             warning.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
         }
     }
@@ -341,24 +342,21 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         });
     }
 
-    // Update robot's network connection status
-    @Override
-    public void receiveRobotConnection(RobotDescription robot) {
-        Log.i(CLSS, "receiveRobotConnection: SUCCESS!");
-        robotManager.setRobot(robot);
-        robotManager.setConnectionStatus(SBRobotManager.STATE_RUNNING);
-    }
-
     // The basic network connection is made. Now interrogate for robot characteristics.
     @Override
     public void receiveNetworkConnection() {
         Log.i(CLSS, "receiveNetworkConnection: SUCCESS!");
-        MasterChecker checker = new MasterChecker(this);
-        String master = dbManager.getSetting(SBConstants.ROS_MASTER_URI);
-        checker.beginChecking(master,1);  // Assume ROS running, only get one attempt.
-        robotManager.setNetworkConnected(true);
+        robotManager.setConnectionState(SBRobotManager.STATE_STARTING_REMOTE);
+        robotManager.setMasterURI(dbManager.getSetting(SBConstants.ROS_MASTER_URI));
+        masterChecker.beginChecking(robotManager.getRobot(),1);  // Assume ROS running, only get one attempt.
     }
 
+    // Update robot's network connection status
+    @Override
+    public void receiveRobotConnection() {
+        Log.i(CLSS, "receiveRobotConnection: SUCCESS!");
+        robotManager.setConnectionState(SBRobotManager.STATE_ONLINE);
+    }
 
     //======================================== OnItemClickListener =====================================
     // If there has been no change to the list selection, do nothing. Otherwise,
@@ -374,13 +372,12 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
                ! app.getApplicationName().equalsIgnoreCase(applicationManager.getApplication().getApplicationName() )) {
 
             applicationManager.setApplication(app.getApplicationName());
-            robotManager.setConnectionStatus(SBRobotManager.STATE_STARTING);
+            robotManager.setConnectionState(SBRobotManager.STATE_STARTING_REMOTE);
             command.execute(IGNORE_KEY,String.format(SET_APP_COMMAND,app.getApplicationName()));
             command.sudo(app.getApplicationName(),START_APP_COMMAND);
             updateUI();
-            MasterChecker checker = new MasterChecker(this);
-            String master = dbManager.getSetting(SBConstants.ROS_MASTER_URI);
-            checker.beginChecking(master,5);  // Give ROS some time to restart
+            robotManager.setMasterURI(dbManager.getSetting(SBConstants.ROS_MASTER_URI));
+            masterChecker.beginChecking(robotManager.getRobot(),5);  // Give ROS some time to restart
         }
     }
     //======================================== Button Callbacks ======================================
@@ -392,60 +389,59 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     }
 
     /**
-     * This is also called internally on a bluetooth connection error.
+     * Callback for the CONNECT button.
      */
     public void connectRobotClicked() {
         Log.i(CLSS, "Connect robot clicked");
         RobotDescription robot = robotManager.getRobot();
         BluetoothManager bluetoothManager = (BluetoothManager)getActivity().getSystemService(BLUETOOTH_SERVICE);
         // If the robot is currently connected, we really mean "Disconnect"
-        if( !robotManager.getConnectionStatus().equals(SBRobotManager.STATE_UNCONNECTED) &&
-                !robotManager.getConnectionStatus().equals(SBRobotManager.STATE_UNAVAILABLE)) {
-            robotManager.setNetworkConnected(false);
+        if(     !robotManager.getConnectionState().equals(SBRobotManager.STATE_UNAVAILABLE) &&
+                !robotManager.getConnectionState().equals(SBRobotManager.STATE_UNCONNECTED) ) {
+
             applicationManager.setApplication(null);
             if( bluetoothManager.getAdapter()!=null )  bluetoothManager.getAdapter().disable();
             WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE);
             wifiManager.disconnect();
+            robotManager.setConnectionState(SBRobotManager.STATE_UNCONNECTED);
             updateUI();
 
         }
-        else if(!robotManager.hasBluetoothError()) {
-            robotManager.setConnectionStatus(SBRobotManager.STATE_CONNECTING);
-            BluetoothChecker checker = new BluetoothChecker(this);
+        // Start the network connection attempt with bluetooth
+        else {
+            robotManager.setConnectionState(SBRobotManager.STATE_BLUETOOTH_CONNECTING);
+            BluetoothChecker bluetoothChecker = new BluetoothChecker(this);
             String master = dbManager.getSetting(SBConstants.ROS_MASTER_URI);
             if( master.contains("xxx")) master = null;  // Our "hint" is not the real URI
 
             if (master != null) {
-                RobotId id = new RobotId(master);
-                // Supply device name that needs to match robot.
-                String target = dbManager.getSetting(SBConstants.ROS_PAIRED_DEVICE);
-                checker.beginChecking(id,bluetoothManager,target);
+                robotManager.setMasterURI(master);
+                // Supply device name - needs to match robot bluetooth adapter setting.
+                robotManager.setDeviceName(dbManager.getSetting(SBConstants.ROS_PAIRED_DEVICE));
+                bluetoothChecker.beginChecking(robotManager.getRobot(),bluetoothManager);
             }
             else {
-                handleNetworkError(SBConstants.NETWORK_BLUETOOTH,"The MasterURI must be defined on the Settings panel");
+                robotManager.setConnectionState(SBRobotManager.STATE_WIFI_CONNECTING); /// So it's final
+                handleNetworkError("The MasterURI must be defined on the Settings panel");
             }
-        }
-        else {
-            robotManager.setConnectionStatus(SBRobotManager.STATE_STARTING);
-            checkWifi();
         }
     }
 
     private void checkWifi() {
-        WifiChecker checker = new WifiChecker(this);
+        WifiChecker wifiChecker = new WifiChecker(this);
         String master = dbManager.getSetting(SBConstants.ROS_MASTER_URI);
         if( master.contains("xxx")) master = null;  // Our "hint" is not the real URI
 
         if (master != null) {
-            RobotId id = new RobotId(master);
             WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE);
             // Supply SSID in case robot is not the connected WiFi.
-            id.setSSID(dbManager.getSetting(SBConstants.ROS_SSID));
-            id.setWifiPassword(dbManager.getSetting(SBConstants.ROS_WIFIPWD));
-            checker.beginChecking(id,wifiManager);
+            robotManager.setSSID(dbManager.getSetting(SBConstants.ROS_SSID));
+            robotManager.setWifiPassword(dbManager.getSetting(SBConstants.ROS_WIFIPWD));
+            wifiChecker.beginChecking(robotManager.getRobot(),wifiManager);
         }
         else {
-            handleNetworkError(SBConstants.NETWORK_WIFI,"The MasterURI must be defined on the Settings panel");
+            robotManager.setConnectionState(SBRobotManager.STATE_UNAVAILABLE);
+            handleNetworkError("The MasterURI must be defined on the Settings panel");
         }
     }
     //  Start/stop toggle clicked:
@@ -457,10 +453,14 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
             if( applicationManager.getApplication().getExecutionStatus().equals(TabletApplication.STATE_ACTIVE) ) {
                 Log.i(CLSS, "Stop application clicked");
                 applicationManager.stopApplication( applicationManager.getApplication().getApplicationName());
+                robotManager.setConnectionState(SBRobotManager.STATE_OFFLINE);
             }
             else {
                 Log.i(CLSS, "Start application clicked");
+                robotManager.setConnectionState(SBRobotManager.STATE_STARTING_LOCAL);
                 applicationManager.startApplication(robotManager.getRobot());
+                robotManager.setConnectionState(SBRobotManager.STATE_STARTING_REMOTE);
+                masterChecker.beginChecking(robotManager.getRobot(),3);
             }
             Log.i(CLSS, String.format("startApplicationClicked: current position is %d",getListView().getSelectedItemPosition()));
             updateUI();
@@ -472,35 +472,40 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
      */
     private void updateUI() {
         RobotDescription robot = robotManager.getRobot();
+        if( !robotManager.getConnectionState().equalsIgnoreCase(SBRobotManager.STATE_ONLINE)) {
+            robot = null;
+        }
         Log.i(CLSS, String.format("updateUI robot:%s app:%s",(robot==null?"null":robot.getRobotName()),
                 (applicationManager.getApplication()==null?"null":applicationManager.getApplication().getApplicationName())));
 
         Button button = (Button) contentView.findViewById(R.id.connectButton);
         button.setEnabled(true);
-        if (!robotManager.getConnectionStatus().equalsIgnoreCase(SBRobotManager.STATE_RUNNING)) {
+        ImageView robotImage = (ImageView) contentView.findViewById(R.id.robot_icon);
+        if (    robotManager.getConnectionState().equalsIgnoreCase(SBRobotManager.STATE_UNCONNECTED) ||
+                robotManager.getConnectionState().equalsIgnoreCase(SBRobotManager.STATE_UNAVAILABLE)) {
             button.setText(R.string.discoveryButtonConnect);
-            robotManager.setRobot(null);
-            robot = robotManager.getRobot();
+            robotImage.setVisibility(View.VISIBLE);
         }
         else {
             button.setText((R.string.discoveryButtonDisconnect));
+            robotImage.setVisibility(View.INVISIBLE);
         }
 
         button = (Button) contentView.findViewById(R.id.viewButton);
         button.setEnabled(robot != null);
 
-        ImageView iview = (ImageView) contentView.findViewById(R.id.robot_icon);
-        if (robot == null) iview.setVisibility(View.INVISIBLE);
-        else iview.setVisibility(View.VISIBLE);
-
+        // Show the progress bar is we are waiting on a connection
         ProgressBar bar = (ProgressBar) contentView.findViewById(R.id.progress_circle);
-        if (!robotManager.getConnectionStatus().equalsIgnoreCase(SBRobotManager.STATE_CONNECTING) &&
-                !robotManager.getConnectionStatus().equalsIgnoreCase(SBRobotManager.STATE_STARTING) )
+        if (    !robotManager.getConnectionState().equalsIgnoreCase(SBRobotManager.STATE_BLUETOOTH_CONNECTING) &&
+                !robotManager.getConnectionState().equalsIgnoreCase(SBRobotManager.STATE_WIFI_CONNECTING)   &&
+                !robotManager.getConnectionState().equalsIgnoreCase(SBRobotManager.STATE_STARTING_REMOTE) ) {
             bar.setVisibility(View.INVISIBLE);
+        }
         else {
             bar.setVisibility(View.VISIBLE);
             bar.setIndeterminate(true);
         }
+
         TextView tview = (TextView) contentView.findViewById(R.id.robot_name);
         if (robot == null) tview.setVisibility(View.INVISIBLE);
         else {
@@ -508,25 +513,50 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
             tview.setVisibility(View.VISIBLE);
         }
 
-        tview = (TextView) contentView.findViewById(R.id.master_uri);
-        if (robot == null) tview.setVisibility(View.INVISIBLE);
-        else {
-            tview.setText(robot.getRobotId().getMasterUri());
-            tview.setVisibility(View.VISIBLE);
-        }
-
-        ListView listView = getListView();
-
+        // Show the connection warning indicator if there is no network
         ImageView connectionIndicator = contentView.findViewById(R.id.ros_not_running_icon);
-        if (robot == null || applicationManager.getApplication()==null) {
-            listView.setVisibility(View.INVISIBLE);
+        if (    !robotManager.getConnectionState().equalsIgnoreCase(SBRobotManager.STATE_BLUETOOTH_CONNECTING) &&
+                !robotManager.getConnectionState().equalsIgnoreCase(SBRobotManager.STATE_WIFI_CONNECTING)   &&
+                !robotManager.getConnectionState().equalsIgnoreCase(SBRobotManager.STATE_STARTING_REMOTE) ) {
             connectionIndicator.setVisibility(View.INVISIBLE);
         }
-        // If there is no current application, assume that we are between
-        // apps ... waiting for ROS to restart on robot,
-        else if(!robotManager.getConnectionStatus().equalsIgnoreCase(SBRobotManager.STATE_RUNNING)) {
+        else {
             connectionIndicator.setVisibility(View.VISIBLE);
+        }
+
+        // Show the list view if we've got a network connection
+        // If we show the list view, show the connection state
+        ListView listView = getListView();
+        tview = (TextView) contentView.findViewById(R.id.connection_state);
+        tview.setText(robotManager.getConnectionState());
+
+
+        // We have an active application
+        if ( robotManager.getConnectionState().equalsIgnoreCase(SBRobotManager.STATE_ONLINE) ) {
             listView.setVisibility(View.VISIBLE);
+            tview.setVisibility(View.VISIBLE);
+            // Select the current application in the list.
+            int index = 0;
+            int selectedPosition = applicationManager.indexOfCurrentApplication();
+            List<TabletApplication> applicationList = applicationManager.getApplications();
+            for(TabletApplication app:applicationList) {
+                if(index == selectedPosition) {
+                    listView.setItemChecked(index,true);
+                    listView.setSelection(index);
+                    Log.i(CLSS, String.format("receiveApplication: selected application %s (%d)",applicationManager.getApplication().getApplicationName(),index));
+                }
+                else {
+                    listView.setItemChecked(index,false);
+                }
+                index=index+1;
+            }
+        }
+        // We have a network, but no application
+        else if (   robotManager.getConnectionState().equalsIgnoreCase(SBRobotManager.STATE_STARTING_REMOTE) ||
+                    robotManager.getConnectionState().equalsIgnoreCase(SBRobotManager.STATE_OFFLINE) ) {
+
+            listView.setVisibility(View.VISIBLE);
+            tview.setVisibility(View.VISIBLE);
             // Select the current (now former) application in the list.
             int index = 0;
             int selectedPosition = applicationManager.indexOfCurrentApplication();
@@ -544,23 +574,8 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
             }
         }
         else {
-            listView.setVisibility(View.VISIBLE);
-            connectionIndicator.setVisibility(View.INVISIBLE);
-            // Select the current application in the list.
-            int index = 0;
-            int selectedPosition = applicationManager.indexOfCurrentApplication();
-            List<TabletApplication> applicationList = applicationManager.getApplications();
-            for(TabletApplication app:applicationList) {
-                if(index == selectedPosition) {
-                    listView.setItemChecked(index,true);
-                    listView.setSelection(index);
-                    Log.i(CLSS, String.format("receiveApplication: selected application %s (%d)",applicationManager.getApplication().getApplicationName(),index));
-                }
-                else {
-                    listView.setItemChecked(index,false);
-                }
-                index=index+1;
-            }
+            listView.setVisibility(View.INVISIBLE);
+            tview.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -569,7 +584,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     @Override
     public void handleCommandError(String key,String command,String reason) {
         Log.i(CLSS, String.format("handleCommandError: %s=>%s (%s)",command,reason,key));
-        robotManager.setConnectionStatus(SBRobotManager.STATE_UNCONNECTED);
+        robotManager.setConnectionState(SBRobotManager.STATE_OFFLINE);
         if(getActivity()!=null) {
             SBWarningDialog warning = SBWarningDialog.newInstance(String.format("Error executing: %s",command), reason);
             warning.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
@@ -581,11 +596,13 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         Log.i(CLSS, String.format("handleCommandCompletion: %s=>%s (%s)",command,returnValue,key));
         if( !key.equalsIgnoreCase(IGNORE_KEY) ) {
             applicationManager.setApplication(key);  // Key is the newly selected application
+            robotManager.setConnectionState(SBRobotManager.STATE_STARTING_REMOTE);
             getActivity().runOnUiThread(new Runnable() {
                 public void run() {
                     updateUI();
                 }
             });
+            masterChecker.beginChecking(robotManager.getRobot(),5); // Give it some time to spin up.
         }
     }
 }

@@ -14,10 +14,9 @@ public interface SBRobotConnectionHandler extends SBRobotConnectionErrorListener
     /**
      * There was an error in the connection attempt. In general, we try
      * bluetooth first. If that fails, then wifi.
-     * @param networkType bluetooth or wifi
      * @param reason error description
      */
-    public void handleNetworkError(String networkType,String reason);
+    public void handleNetworkError(String reason);
     /**
      * The connection request succeeded. We found the robot.
      * @param appName the application currently running on the robot
@@ -26,9 +25,8 @@ public interface SBRobotConnectionHandler extends SBRobotConnectionErrorListener
     /**
      * The initial request succeeded after the network was estblished.
      * We found the robot.
-     * @param robot the current robot
      */
-    public void receiveRobotConnection(RobotDescription robot);
+    public void receiveRobotConnection();
     /**
      * The bluetooth or wifi connection request succeeded.
      */

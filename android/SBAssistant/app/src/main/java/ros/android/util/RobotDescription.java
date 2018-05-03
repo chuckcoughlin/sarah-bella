@@ -50,17 +50,11 @@ import chuckcoughlin.sb.assistant.common.SBConstants;
 public class RobotDescription implements java.io.Serializable {
 	private static final String CLSS = "RobotDescription";
 
-
-	public static final String OK = "ok";
-	public static final String ERROR = "exception";
-	public static final String WIFI = "invalid wifi";
-	public static final String CONTROL = "not started";
-
 	private static final String NAME_UNKNOWN = "Unknown";
 	private static final String TYPE_UNKNOWN = "Unknown";
 
 	private static final long serialVersionUID = 1L;
-	private RobotId robotId;
+	private final RobotId robotId;
 	private String robotName;
 	private String robotType;
 	private String applicationName;
@@ -68,11 +62,12 @@ public class RobotDescription implements java.io.Serializable {
 	private Date timeLastSeen;
 
 	public RobotDescription() {
+		this.robotId = new RobotId();
 	}
 
-	public RobotDescription(RobotId robotId, String robotName, String robotType, Date timeLastSeen)  {
+	public RobotDescription(RobotId id, String robotName, String robotType, Date timeLastSeen)  {
 		setRobotName(robotName);
-		setRobotId(robotId);
+		this.robotId = id;
 		this.robotType = robotType;
 		this.platform= SBConstants.PLATFORM_LINUX;
 		this.timeLastSeen = timeLastSeen;
@@ -88,15 +83,9 @@ public class RobotDescription implements java.io.Serializable {
 	public RobotId getRobotId() {
 		return robotId;
 	}
-
-	public void setRobotId(RobotId robotId)  {
-		this.robotId = robotId;
-	}
-
 	public String getRobotName() {
 		return (robotName==null?"":robotName);
 	}
-
 	public void setRobotName(String robotName)  {
 		this.robotName = robotName;
 	}
@@ -125,8 +114,8 @@ public class RobotDescription implements java.io.Serializable {
 		return this.robotName.equals(NAME_UNKNOWN);
 	}
 
-	public static RobotDescription createUnknown(RobotId robotId)  {
-		return new RobotDescription(robotId, NAME_UNKNOWN, TYPE_UNKNOWN, new Date());
+	public static RobotDescription createUnknown(RobotId id)  {
+		return new RobotDescription(id,NAME_UNKNOWN, TYPE_UNKNOWN, new Date());
 	}
 
 	@Override

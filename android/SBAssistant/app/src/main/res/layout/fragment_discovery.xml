@@ -56,7 +56,7 @@
             android:textColor="@color/black"
             android:textSize="24sp" />
         <TextView
-            android:id="@+id/master_uri"
+            android:id="@+id/connection_state"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingLeft="15dp"

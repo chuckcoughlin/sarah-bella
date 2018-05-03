@@ -16,5 +16,5 @@ public interface SBRobotConnectionErrorListener {
      * There was an error in the connection attempt.
      * @param reason error description
      */
-    public void handleConnectionError(String reason);
+    public void handleRobotCommunicationError(String reason);
 }

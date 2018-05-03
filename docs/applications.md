@@ -28,7 +28,7 @@ The Android assistant contains command and monitoring code for all applications 
 
 The **discovery** panel allows connection to a single running robot based on a MasterURI configured in the *Settings*. It reads values published from the robot through its ParameterServer to validate the device.  
 
-The CONNECT button initiates a network connection (Bluetooth or Wifi). The triangle indicator at the top shows whether or not a ROS messaging connection has been made.
+The CONNECT button initiates a network connection (Bluetooth or Wifi). The triangle indicator at the top of the screen shows whether or not a ROS messaging connection has been made.
 
 Selecting an application is accomplished by clicking the applicable line in
 the displayed list.  This operation connects to the robot and configures it for the desired operation. This interaction requires that hostname, *sudoer* username

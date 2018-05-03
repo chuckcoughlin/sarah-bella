@@ -43,6 +43,7 @@ import android.net.wifi.WifiInfo;
 
 import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.ros.SBRobotManager;
+import ros.android.util.RobotDescription;
 import ros.android.util.RobotId;
 
 public class WifiChecker {
@@ -50,8 +51,10 @@ public class WifiChecker {
     private CheckerThread checkerThread;
     private SBRobotConnectionHandler handler;
     private static String wifiError = "";
+    private boolean threadRunning;
 
     public WifiChecker(SBRobotConnectionHandler handler) {
+        this.threadRunning = false;
         this.handler = handler;
     }
 
@@ -79,9 +82,13 @@ public class WifiChecker {
         return result;
     }
 
-    public void beginChecking(RobotId robotId, WifiManager manager) {
-        stopChecking();
-        checkerThread = new CheckerThread(robotId, manager);
+    public void beginChecking(RobotDescription robot, WifiManager manager) {
+        if( this.threadRunning ) {
+            Log.i(CLSS, "check already in progress ...");
+            return;
+        }
+
+        checkerThread = new CheckerThread(robot, manager);
         checkerThread.start();
     }
 
@@ -92,11 +99,15 @@ public class WifiChecker {
     }
 
     private class CheckerThread extends Thread {
-        private RobotId robotId;
+        private RobotDescription robot;
         private WifiManager wifiManager;
 
-        public CheckerThread(RobotId robotId, WifiManager wifi) {
-            this.robotId = robotId;
+        public CheckerThread(RobotDescription rbt, WifiManager wifi) {
+            if( threadRunning ) {
+                Log.i(CLSS, "check already in progress ...");
+                return;
+            }
+            this.robot = rbt;
             this.wifiManager = wifi;
             setDaemon(true);
             // don't require callers to explicitly kill all the old checker threads.
@@ -104,7 +115,8 @@ public class WifiChecker {
                 @Override
                 public void uncaughtException(Thread thread, Throwable ex) {
                     Log.e(CLSS, String.format("Uncaught exception checking WiFi Connection: %s",ex.getLocalizedMessage()),ex);
-                    handler.handleNetworkError(SBConstants.NETWORK_WIFI,"Uncaught exception: " + ex.getLocalizedMessage());
+                    handler.handleNetworkError(String.format("Uncaught exception (%s)",ex.getLocalizedMessage()));
+                    threadRunning = false;
                 }
             });
         }
@@ -115,6 +127,7 @@ public class WifiChecker {
 
         @Override
         public void run() {
+            threadRunning = true;
             try {
                 if (wifiValid()) {
                     WifiInfo info = wifiManager.getConnectionInfo();
@@ -134,13 +147,13 @@ public class WifiChecker {
                         i++;
                     }
                     if (!wifiManager.isWifiEnabled()) {
-                        handler.handleNetworkError(SBConstants.NETWORK_WIFI,"Un-able to connect to WiFi");
+                        handler.handleNetworkError("Un-able to connect to WiFi");
                         return;
                     }
                     int n = -1;
                     int priority = -1;
                     WifiConfiguration wc = null;
-                    String SSID = "\"" + robotId.getSSID() + "\"";
+                    String SSID = "\"" + robot.getRobotId().getSSID() + "\"";
                     for (WifiConfiguration test : wifiManager.getConfiguredNetworks()) {
                         Log.i(CLSS, "WIFI " + test.toString());
                         if (test.priority > priority) {
@@ -163,9 +176,9 @@ public class WifiChecker {
                     if (n == -1) {
                         Log.i(CLSS, "WIFI Unknown");
                         wc = new WifiConfiguration();
-                        wc.SSID = "\"" + robotId.getSSID() + "\"";
-                        if (robotId.getWifiPassword() != null) {
-                            wc.preSharedKey = "\"" + robotId.getWifiPassword() + "\"";
+                        wc.SSID = "\"" + robot.getRobotId().getSSID() + "\"";
+                        if (robot.getRobotId().getWifiPassword() != null) {
+                            wc.preSharedKey = "\"" + robot.getRobotId().getWifiPassword() + "\"";
                         } else {
                             wc.preSharedKey = null;
                         }
@@ -190,7 +203,7 @@ public class WifiChecker {
                         n = wifiManager.addNetwork(wc);
                         Log.i(CLSS, "add Network returned " + n);
                         if (n == -1) {
-                            handler.handleNetworkError(SBConstants.NETWORK_WIFI,"Failed to configure WiFi");
+                            handler.handleNetworkError("Failed to configure WiFi");
                         }
                     }
 
@@ -214,18 +227,19 @@ public class WifiChecker {
                             handler.receiveNetworkConnection();
                         }
                         else {
-                            handler.handleNetworkError(SBConstants.NETWORK_WIFI,"WiFi connection timed out");
+                            handler.handleNetworkError("WiFi connection timed out");
                         }
                     }
                 }
             }
             catch (Throwable ex) {
-                Log.e("RosAndroid", "Exception while searching for WiFi for "
-                        + robotId.getSSID(), ex);
-                handler.handleNetworkError(SBConstants.NETWORK_WIFI,ex.getLocalizedMessage());
+                Log.e(CLSS, "Exception while searching for WiFi for "
+                        + robot.getRobotId().getSSID(), ex);
+                handler.handleNetworkError(ex.getLocalizedMessage());
+            }
+            finally {
+                threadRunning = false;
             }
         }
     }
 }
-
-

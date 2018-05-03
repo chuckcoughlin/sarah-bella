@@ -120,6 +120,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
                             Log.e(CLSS, String.format("Exception while creating service client (%s)",snfe.getLocalizedMessage()));
                         }
                         catch (XmlRpcTimeoutException tex) {
+                            // With Bluetooth - UnresolvedAddressException creating service client.
                             Log.e(CLSS, "Exception while creating parameter client");
                         }
                         catch(URISyntaxException e) {

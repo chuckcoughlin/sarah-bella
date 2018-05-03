@@ -40,78 +40,79 @@ import java.util.Map;
  * Returned attributes are never null.
  */
 public class RobotId implements java.io.Serializable {
-  private final String masterUri;
-  private String deviceName;  // Paired device name
-  private String ssid;
-  private String wifiPassword;
-  
-  public RobotId(String master) {
-    this.masterUri = master;
-    this.deviceName = null;
-    this.ssid = null;
-    this.wifiPassword = null;
-  }
+    private String masterUri;
+    private String deviceName;  // Paired device name
+    private String ssid;
+    private String wifiPassword;
 
-
-  public String getMasterUri() {
-    return masterUri;
-  }
-  public String getDeviceName() {
-        return (deviceName==null?"":deviceName);
-    }
-  public String getSSID() {
-    return (ssid==null?"":ssid);
-  }
-  public String getWifiPassword() { return (wifiPassword==null?"":wifiPassword); }
-
-  public void setDeviceName(String name) { this.deviceName = name; }
-  public void setSSID(String wifi) { this.ssid = wifi; }
-  public void setWifiPassword(String passwd) { this.wifiPassword = passwd; }
-
-  @Override
-  public String toString() {
-    String str = getMasterUri() == null ? "" : getMasterUri();
-    if (getSSID() != null) {
-      str = str + " On: " + getSSID();
+    public RobotId() {
+        this.masterUri = null;
+        this.deviceName = null;
+        this.ssid = null;
+        this.wifiPassword = null;
     }
 
-    return str;
-  }
 
-  //TODO: not needed?
-  private boolean nullSafeEquals(Object a, Object b) {
-    if (a == b) { //Handles case where both are null.
-      return true;
+    public String getMasterUri() {
+        return masterUri;
     }
-    if (a == null || b == null) {
-      return false;
+    public String getDeviceName() {
+        return (deviceName == null ? "" : deviceName);
     }
-    //Non-are null
-    return a.equals(b);
-  }
-
-  // Two instances are equal if their MasterURI's are equal.
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
+    public String getSSID() {
+        return (ssid == null ? "" : ssid);
     }
-    if (!(o instanceof RobotId)) {
-      return false;
+    public String getWifiPassword() {return (wifiPassword == null ? "" : wifiPassword);}
+
+    public void setDeviceName(String name) {this.deviceName = name;}
+    public void setMasterUri(String uri) {this.masterUri = uri;}
+
+    public void setSSID(String wifi) {this.ssid = wifi;}
+    public void setWifiPassword(String passwd) {this.wifiPassword = passwd;}
+
+    @Override
+    public String toString() {
+        String str = getMasterUri() == null ? "" : getMasterUri();
+        if (getSSID() != null) {
+            str = str + " On: " + getSSID();
+        }
+
+        return str;
     }
-    RobotId lhs = (RobotId) o;
 
-    return nullSafeEquals(this.masterUri, lhs.masterUri);
-  }
+    //TODO: not needed?
+    private boolean nullSafeEquals(Object a, Object b) {
+        if (a == b) { //Handles case where both are null.
+            return true;
+        }
+        if (a == null || b == null) {
+            return false;
+        }
+        //Non-are null
+        return a.equals(b);
+    }
 
-  @Override
-  public int hashCode() {
-    // Start with a non-zero constant.
-    int result = 17;
+    // Two instances are equal if their MasterURI's are equal.
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof RobotId)) {
+            return false;
+        }
+        RobotId lhs = (RobotId) o;
+        return nullSafeEquals(this.masterUri, lhs.masterUri);
+    }
 
-    // Include a hash for each field checked by equals().
-    result = 31 * result + (masterUri == null ? 0 : masterUri.hashCode());
-    result = 31 * result + (ssid == null ? 0 : ssid.hashCode());
-    return result;
-  }
+    @Override
+    public int hashCode() {
+        // Start with a non-zero constant.
+        int result = 17;
+
+        // Include a hash for each field checked by equals().
+        result = 31 * result + (masterUri == null ? 0 : masterUri.hashCode());
+        result = 31 * result + (ssid == null ? 0 : ssid.hashCode());
+        return result;
+    }
 }

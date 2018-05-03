@@ -5,39 +5,46 @@
  */
 package chuckcoughlin.sb.assistant.ros;
 
-import android.os.Handler;
-
-import org.ros.node.NodeConfiguration;
-
 import ros.android.util.RobotDescription;
+import ros.android.util.RobotId;
 
-// From rosjava
 
 /**
- * Encapsulate the description of the robot to which we are connected. This class is designed to
- * accommodate the existence of only a single robot. Maintain the connection state.
+ * Maintain the state of network connection to the robot. When connected, this class encapsulates
+ * a description of the robot. We accommodate the existence of only a single robot.
  * Since we access from multiple fragments, make this a singleton class to avoid repeated
  * allocations. It is created and shutdown in the MainActivity.
  *
  * Keep track of the state of the remote RosCore.
+ * These are the states:
+ *   UNCONNECTED          - we have yet to attempt a network connection
+ *   BLUETOOTH_CONNECTING - we are attempting a Bluetooth connection
+ *   WIFI_CONNECTING      - we are attempting a Wifi connection (bluetooth failed)
+ *   STARTING_LOCAL       - start the local RosCore (on tablet)
+ *   OFFLINE              - local node is running, but the remote is not
+ *   STARTING_REMOTE      - start the remote node (already running unless we've shut it down)
+ *   ONLINE               - local and remote ROS nodes are communicating
+ *   UNAVAILABLE          - network error, cannot communicate
+ *
+ *   Note: The RobotDescription is valid only during the "ONLINE" state, but we hold it as
+ *   a repository for misc network and other configuration parameters.
  */
 public class SBRobotManager {
     private final static String CLSS = "SBRobotManager";
-    // Network Connection Status
-    public static final String STATE_UNCONNECTED="UNCONNECTED";    // We have no knowledge re internal state of robot
-    public static final String STATE_CONNECTING = "CONNECTING";    // We are attempting to establish a connection
-    public static final String STATE_STARTING   = "STARTING";      // RosCore is not "yet" available (we did a restart?)
-    public static final String STATE_RUNNING    = "RUNNING";       // RosCore is communicating
-    public static final String STATE_UNAVAILABLE= "UNAVAILABLE";   // Network error, no communication possible
+    // Network Connection States
+    public static final String STATE_UNCONNECTED          = "UNCONNECTED";
+    public static final String STATE_BLUETOOTH_CONNECTING = "BLUETOOTH_CONNECTING";
+    public static final String STATE_WIFI_CONNECTING      = "WIFI_CONNECTING";
+    public static final String STATE_STARTING_LOCAL       = "STARTING_LOCAL";
+    public static final String STATE_OFFLINE              = "OFFLINE";
+    public static final String STATE_STARTING_REMOTE      = "STARTING_REMOTE";
+    public static final String STATE_ONLINE               = "ONLINE";
+    public static final String STATE_UNAVAILABLE          = "UNAVAILABLE";
 
     private static volatile SBRobotManager instance = null;
-    private String bluetoothError;
-    private String wifiError;
-    private String connectionStatus;
-    private Thread nodeThread;
-    private Handler uiThreadHandler = new Handler();
-    private RobotDescription robot = null;
-    private NodeConfiguration configuration = null;
+    private String connectionState;
+    private final RobotDescription robot;
+
 
     /**
      * Constructor is private per Singleton pattern. This forces use of the single instance.
@@ -48,10 +55,8 @@ public class SBRobotManager {
         if (instance != null) {
             throw new RuntimeException("Attempt to instantiate SBRobotManager singleton via reflection");
         }
-        this.robot = null;
-        this.bluetoothError = null;
-        this.wifiError = null;
-        this.connectionStatus = STATE_UNCONNECTED;
+        this.robot = RobotDescription.createUnknown(new RobotId());
+        this.connectionState = STATE_UNCONNECTED;
     }
 
     /**
@@ -70,61 +75,25 @@ public class SBRobotManager {
         return instance;
     }
 
-    public RobotDescription getRobot() {
-        return this.robot;
-    }
+    public RobotDescription getRobot() { return this.robot; }
 
-    public void setRobot(RobotDescription desc) {
-        this.robot = desc;
-    }
+    public String getConnectionState() { return this.connectionState; }
+    public void setConnectionState(String status) { this.connectionState = status; }
 
-    public String getConnectionStatus() { return this.connectionStatus; }
-
-    public boolean hasBluetoothError() {
-        return bluetoothError != null;
-    }
-
-    public void setBluetoothError(String reason) {
-        this.bluetoothError = reason;
-        this.robot = null;
-        this.connectionStatus = STATE_UNCONNECTED;
-    }
-
-    public void setConnectionStatus(String status) { this.connectionStatus = status; }
-
-    // Set the Bluetooth device name of the current robot and update database.
+    // Set the Bluetooth paired-device name
     public void setDeviceName(String name) {
-        if (this.robot != null) {
-            this.robot.getRobotId().setDeviceName(name);
-        }
+        this.robot.getRobotId().setDeviceName(name);
     }
-
-    // A network connection is only the first step. We still have ROS.
-    public void setNetworkConnected(boolean flag) {
-        if (flag) {
-            bluetoothError = null;
-            wifiError = null;
-            setConnectionStatus(STATE_CONNECTING);
-        }
-        else {
-            this.robot = null;
-            setConnectionStatus(STATE_UNCONNECTED);
-        }
+    // Set the master (remote) URL, string form
+    public void setMasterURI(String uriString) {
+        this.robot.getRobotId().setMasterUri(uriString);
     }
-
-    // Set the SSID of the current robot and update database.
+    // Set the Wifi password
+    public void setWifiPassword(String pw)     { this.robot.getRobotId().setWifiPassword(pw); }
+    // Set the Wifi network name
     public void setSSID(String ssid) {
-        if (this.robot != null) {
-            this.robot.getRobotId().setSSID(ssid);
-        }
+        this.robot.getRobotId().setSSID(ssid);
     }
-
-    public void setWifiError(String reason) {
-        this.wifiError = reason;
-        this.robot = null;
-        setConnectionStatus(STATE_UNAVAILABLE);
-    }
-
 
     private void shutdown() {
     }

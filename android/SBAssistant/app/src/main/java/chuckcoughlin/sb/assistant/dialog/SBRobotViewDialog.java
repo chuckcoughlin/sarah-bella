@@ -20,7 +20,7 @@ import ros.android.util.RobotDescription;
 
 public class SBRobotViewDialog extends SBBasicDialogFragment {
     public static final String CLSS = "SBRobotViewDialog";
-    private SBRobotManager rosManager;
+    private SBRobotManager robotManager;
     private RobotDescription robot = null;
 
     public SBRobotViewDialog() {super();}
@@ -30,8 +30,8 @@ public class SBRobotViewDialog extends SBBasicDialogFragment {
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        this.rosManager= SBRobotManager.getInstance();
-        this.robot = rosManager.getRobot();
+        this.robotManager= SBRobotManager.getInstance();
+        this.robot = robotManager.getRobot();
     }
 
     @Override

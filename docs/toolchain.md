@@ -38,6 +38,7 @@ We use the kinetic version of ROS. This is the current version used by ROBOTIS f
     * [GPIO](#gpio)
     * [OpenCR Updates](#opencr)
     * [Backups](#backups)
+  * [Troubleshooting](#troubleshooting)
 
 Here is a diagram that shows the relationships between the various development components.
 ![System Architecture for Development](/images/development-layout.png)
@@ -339,7 +340,7 @@ When a network connection to the robot is requested, the tablet first tries to c
 
 Configure Bluetooth using the robot's pull-down menu. Configure the adapter so that it is always visible (discoverable) and give it a "friendly"
 name of "SarahBella". Pairing is based on the friendly name and can be initiated
-either from the robot or the tablet.
+either from the robot or the tablet. The ```bluetoothctl``` tool is available for command-line configuration.
 
 On startup *ROSPi* will connect automatically to the wireless network without user intervention based on some previous manual configuration.
 To configure simply select the desired network from the pull-down and mark it to
@@ -351,13 +352,6 @@ To mitigate problems of wifi adapter drop outs:
 ```
 
 We would like to have *ROSPi* start with a fixed IP address. We have been unsuccessful at creating such a configuration. However in practice, we find that the address is always the same. To see what that address, execute ```ifconfig``` once a network configuration has been established.
-
-We have seen the tablet or emulator reach a state where the host connection seems lost and these messages are found in *Logcat*:
-```
-  java.net.UnknownHostException: Unable to resolve host "ROSPi".
-     No address associated with hostname.
-```
-The situation has been resolved by restarting the robot.
 
 We use **ssh** to remotely switch applications on the robot. It is disabled by default. To enable,
 ```
@@ -491,3 +485,14 @@ Scripting is an alternative to an Arduino IDE on the Mac build system. Complete 
 #### Backups <a id="backups"></a>
 To backup an SD card, mount it on the host system. Then use the Disk Utility application to save the SD card contents
 to an image file on disk. Be sure to select the entire device, not just the named partition. Save as "compressed".
+
+**********************************************************
+## Troubleshooting <a id="troubleshooting"></a>
+[toc](#table-of-contents)
+
+We have seen the tablet or emulator reach a state where the host connection seems lost and these messages are found in *Logcat*:
+```
+  java.net.UnknownHostException: Unable to resolve host "ROSPi".
+     No address associated with hostname.
+```
+The situation has been resolved by restarting the robot.

@@ -34,38 +34,29 @@
 package ros.android.appmanager;
 
 import android.util.Log;
-import android.view.View;
-import android.widget.EditText;
 
-import org.apache.xmlrpc.client.TimingOutCallback;
-import org.ros.address.InetAddressFactory;
-import org.ros.android.NodeMainExecutorService;
 import org.ros.internal.node.client.ParameterClient;
-import org.ros.internal.node.response.Response;
 import org.ros.internal.node.server.NodeIdentifier;
 import org.ros.internal.node.xmlrpc.XmlRpcTimeoutException;
 import org.ros.namespace.GraphName;
-import org.ros.node.NodeConfiguration;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeoutException;
 
-import chuckcoughlin.sb.assistant.R;
 import ros.android.util.RobotDescription;
-import ros.android.util.RobotId;
 
 /**
  * Threaded ROS-master checker. Runs a thread which checks for a valid ROS
- * master and sends back a {@link RobotDescription} (with robot name and type)
+ * master on the remote and sends back a {@link RobotDescription} (with robot name and type)
  * on success or a failure reason on failure.
  *
  * Note that after an application restart on the robot, it can take up to
  * several seconds for the application to initialize.
+ *
+ * Do not allow more than one thread to execute at a time. Ignore subsequent requests.
+ * On a error the thread may show an error dialog.
  * 
  * @author hersh@willowgarage.com
  */
@@ -75,38 +66,48 @@ public class MasterChecker {
 	private final SBRobotConnectionHandler handler;
     private RobotDescription robot = null;
     private int attemptLimit = 1;
+    private boolean threadRunning;
 
 	/** Constructor. Should not take any time. */
 	public MasterChecker(SBRobotConnectionHandler h) {
-		this.handler = h;
+        this.threadRunning = false;
+	    this.handler = h;
 	}
 
 	/**
-	 * Start the checker thread with the given robotId. If the thread is already
+	 * Start the checker thread with the main robot description. If the thread is already
 	 * running, kill it first and then start anew. Returns immediately.
 	 */
-	public void beginChecking(String masterURI,int limit) {
+	public void beginChecking(RobotDescription rbt,int limit) {
+	    if( this.threadRunning ) {
+            Log.i(CLSS, "check already in progress ...");
+            return;
+        }
 	    this.attemptLimit = limit;
         Log.i(CLSS, "Attempting to connect ...");
-		stopChecking();
-		if(masterURI == null) {
+
+		// Validate the master URI
+		String masterUri = rbt.getRobotId().getMasterUri();
+		if(masterUri == null) {
             Log.i(CLSS, "Empty URI ...");
-			handler.handleConnectionError("empty master URI");
+			handler.handleRobotCommunicationError("empty master URI");
 			return;
 		}
 		URI uri;
 		try {
-			uri = new URI(masterURI);
+			uri = new URI(masterUri);
 		}
 		catch(URISyntaxException e) {
-			handler.handleConnectionError("invalid master URI");
+			handler.handleRobotCommunicationError("invalid master URI");
 			return;
 		}
-		checkerThread = new CheckerThread(uri);
+		checkerThread = new CheckerThread(rbt,uri);
 		checkerThread.start();
 	}
 
-	/** Stop the checker thread. */
+	/** Stop the checker thread.
+     *
+     */
 	public void stopChecking() {
 		if(checkerThread != null && checkerThread.isAlive()) {
 			checkerThread.interrupt();
@@ -121,8 +122,9 @@ public class MasterChecker {
         private URI masterUri;
         private RobotDescription robot;
 
-        public CheckerThread(URI masterUri) {
-            this.masterUri = masterUri;
+        public CheckerThread(RobotDescription rbt,URI uri) {
+            this.robot = rbt;
+            this.masterUri = uri;
 
             setDaemon(true);
 
@@ -131,13 +133,15 @@ public class MasterChecker {
                 @Override
                 public void uncaughtException(Thread thread, Throwable ex) {
                     Log.e(CLSS, String.format("Uncaught exception connecting: %s",ex.getLocalizedMessage()),ex);
-                    handler.handleConnectionError("Exception: " + ex.getMessage());
+                    handler.handleRobotCommunicationError("Exception: " + ex.getMessage());
+                    threadRunning = false;
                 }
             });
         }
 
         @Override
         public void run() {
+            threadRunning = true;
             int attempt = 0;
             while (attempt < attemptLimit) {
                 try {
@@ -152,8 +156,6 @@ public class MasterChecker {
                     for (GraphName name : names) {
                         Log.i(CLSS, String.format("   %s = %s", name.toString(), paramClient.getParam(name).getResult().toString()));
                     }
-                    RobotId robotId = new RobotId(masterUri.toASCIIString());
-                    this.robot = RobotDescription.createUnknown(robotId);
 
                     if (hasName && hasType) {
                         robot.setRobotName(paramClient.getParam(GraphName.of("robot/name")).getResult().toString());
@@ -162,17 +164,19 @@ public class MasterChecker {
                             robot.setPlatform((String) paramClient.getParam(GraphName.of("robot/platform")).getResult());
                         }
                         robot.setTimeLastSeen(new Date());
-                        handler.receiveRobotConnection(robot);
+                        handler.receiveRobotConnection();
 
                         if (hasApp) {
                             String appName = (String) paramClient.getParam(GraphName.of("robot/application")).getResult();
                             robot.setApplicationName(appName);
                             handler.receiveApplication(appName);
                         }
-                    } else {
-                        Log.e(CLSS, "No parameters");
-                        handler.handleConnectionError("The parameters on the server are not set. Please set robot/name and robot/type.");
                     }
+                    else {
+                        Log.e(CLSS, "No parameters");
+                        handler.handleRobotCommunicationError("The parameters on the server are not set. Please set robot/name and robot/type.");
+                    }
+                    threadRunning = false;
                     return;
                 }
                 catch (XmlRpcTimeoutException tex) {
@@ -181,13 +185,14 @@ public class MasterChecker {
                         continue;
                     }
                     Log.e(CLSS, "Timeout Exception while creating parameter client in MasterChecker for " + masterUri);
-                    handler.handleConnectionError(tex.getLocalizedMessage());
+                    handler.handleRobotCommunicationError(tex.getLocalizedMessage());
                 }
                 catch (Throwable ex) {
                     Log.e(CLSS, "Exception while creating parameter client in MasterChecker for master URI " + masterUri, ex);
-                    handler.handleConnectionError(ex.getLocalizedMessage());
+                    handler.handleRobotCommunicationError(ex.getLocalizedMessage());
                 }
             }
+            threadRunning = false;
         }
     }
 }

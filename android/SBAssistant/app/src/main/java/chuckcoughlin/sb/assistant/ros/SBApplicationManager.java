@@ -282,7 +282,7 @@ public class SBApplicationManager {
     private void signalError(String msg) {
         this.errorListeners.signal(new SignalRunnable<SBRobotConnectionErrorListener>() {
             public void run(SBRobotConnectionErrorListener listener) {
-                listener.handleConnectionError(msg);
+                listener.handleRobotCommunicationError(msg);
             }
         });
     }
