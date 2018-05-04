@@ -484,11 +484,11 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         if (    robotManager.getConnectionState().equalsIgnoreCase(SBRobotManager.STATE_UNCONNECTED) ||
                 robotManager.getConnectionState().equalsIgnoreCase(SBRobotManager.STATE_UNAVAILABLE)) {
             button.setText(R.string.discoveryButtonConnect);
-            robotImage.setVisibility(View.VISIBLE);
+            robotImage.setVisibility(View.INVISIBLE);
         }
         else {
             button.setText((R.string.discoveryButtonDisconnect));
-            robotImage.setVisibility(View.INVISIBLE);
+            robotImage.setVisibility(View.VISIBLE);
         }
 
         button = (Button) contentView.findViewById(R.id.viewButton);
