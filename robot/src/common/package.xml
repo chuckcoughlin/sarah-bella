@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- See: https://github.com/ethz-asl/ros_best_practices/blob/master/ros_package_template/package.xml -->
+<package format="2">
+  <name>common</name>
+  <version>0.1.0</version>
+  <description>Common ROS parameters for SaraBella.</description>
+  <maintainer email="chuck_coughlin@comcast.net">Chuck Coughlin</maintainer>
+  <license>MIT</license>
+  <url type="website">https://github.com/chuckcoughlin/sarah-bella</url>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+  
+</package>

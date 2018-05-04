@@ -1,8 +1,7 @@
 <launch>
-  <param name="robot/name" value="SarahBella" type="str"/>
-  <param name="robot/type" value="turtlebot3" type="str"/>
+  <arg name="default_params"  value="$(find package_template)/param/params.yaml" />
+  <rosparam command="load" file="$(arg default_params)" />
   <param name="robot/application" value="system" type="str"/>
-  <param name="robot/platform" value="RaspberryPi" type="str"/>
   <!-- Launch file for system_check -->
   <node pkg="system_check" type="publish_system.py" name="sb_publish_system" output="log">
   </node>

@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 #
-# Publish the state of the entire GPIO board at once. This is infrequent.
-# Package: gpio_msgs. Support for publishing Raspberry Pu GPIO outputs.
+# Publish the state of all changed GPIO outputs at once. At a configurable
+# interval, publish them all.
+# Package: gpio_msgs. Support for publishing Raspberry Pi GPIO outputs.
 #                     On start of the method we configure the GPIO pins.
 #
-# NOTE: We've tried separate topic messages for GPIOState and GPIOPin,
-#       but there appears to be a synchronization issue. Issue is: 
+# NOTE: Make sure that different message types get different topics, else
 #       "ros could not process inbound connection: topic types do not match".
 #       
 #		We normally only report changes. However if "/gpio_msgs/publish_all"
-#       is set, the entire array is sent (and then parameter reset).
+#       is set, we would like to publish the entire array and reset parameter.
+#       We assume the list of all outputs meets the 1024 message size limit.
 #
 from subprocess import call
 import rospy
@@ -20,16 +21,13 @@ from gpio_msgs.msg import GPIOState
 from gpio_msgs.msg import GPIOPin
 import GPIOConfiguration
 
-def str2bool(s):
-	return s.lower() in ('true','t','1','yes')
-
 # Configure the GPIO pins.
 GPIOConfiguration.configure()
-
+refreshInterval = 100      # Update all at this rate
 	
-pub = rospy.Publisher('/gpio_msgs',GPIOState,queue_size=1)
-rospy.init_node('sb_publish_gpio_state')
-rate = rospy.Rate(10)  # 10hz response rate
+pub = rospy.Publisher('gpio_msgs/values',GPIOState,queue_size=1)
+rospy.init_node('sb_publish_gpio_values')
+rate = rospy.Rate(1)  # 1hz response time
 # Specify all the args whether we use them or not.
 msg = GPIOState('pins')
 
@@ -37,14 +35,14 @@ msg = GPIOState('pins')
 pinlist = GPIOConfiguration.initialize(msg)
 for pin in pinlist:
 	if str(pin.mode)=="OUT":
-		pin.value = GPIO.input(pin.channel)
+		pin.value = -1
 
-count = 1
+count = 0
 while not rospy.is_shutdown():
-	publish = str2bool(rospy.get_param("/gpio_msgs/publish_all","False"))
-	if count%1000 == 0:
-		publish = True
-		count = 1
+	all = False
+	if count%refreshInterval == 0:
+		all = True
+		count = 0
 	count = count + 1
 	if publish:
 		rospy.loginfo("publish_all: set to TRUE")
@@ -54,9 +52,7 @@ while not rospy.is_shutdown():
 		if str(pin.mode)=="OUT":
 			val = GPIO.input(pin.channel)
 			pin.value=val
-			if publish or val != pin.value:
-				pins.append(pin)
-		elif publish:
+			if all or val != pin.value:
 				pins.append(pin)
 
 	if len(pins)>0:
