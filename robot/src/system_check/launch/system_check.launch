@@ -1,5 +1,5 @@
 <launch>
-  <arg name="default_params"  value="$(find package_template)/param/params.yaml" />
+  <arg name="default_params"  value="$(find common)/param/params.yaml" />
   <rosparam command="load" file="$(arg default_params)" />
   <param name="robot/application" value="system" type="str"/>
   <!-- Launch file for system_check -->
