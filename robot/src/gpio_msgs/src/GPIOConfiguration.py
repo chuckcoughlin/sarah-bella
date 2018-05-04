@@ -23,6 +23,10 @@ def configure():
 # Argument is a GPIOState.
 def initialize(state):
 	count = state.PIN_COUNT
+	state.pins = definePins()
+	rospy.loginfo("Initialized state with %d pins"%(len(pins)))
+
+def definePins():
 	pins = []
 	pin1 = GPIOPin()
 	pin1.label = "3.3V"
@@ -266,6 +270,4 @@ def initialize(state):
 	pin40.mode = str(GPIO.gpio_function(40))
 	pins.append(pin40)
 	
-	state.pins = pins
-	rospy.loginfo("Initialized state with %d pins"%(len(pins)))
 	return pins
