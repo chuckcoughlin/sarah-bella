@@ -64,7 +64,7 @@ dependencies {
     implementation files('libs/jsch-0.1.54.jar')
     implementation files('libs/sensor_msgs-1.12.5.jar')
     implementation files('libs/nav_msgs-1.12.5.jar')
-    implementation files('libs/gpio_msgs-0.0.1.jar')
+    implementation files('libs/gpio_msgs-0.0.2.jar')
     implementation files('libs/turtlebot3_msgs-0.1.5.jar')
     implementation files('libs/tf-1.11.8.jar')
 }
