@@ -95,18 +95,18 @@ public class TabletApplication extends AbstractNodeMain implements java.io.Seria
     public void onShutdown(final Node node) {
 		String appName = getApplicationName();
 		Log.i(CLSS,String.format("%s.onShutdown: connectedNode has been shutdown",getApplicationName()));
-		SBApplicationManager.getInstance().signalApplicationStop(getApplicationName());
+		SBApplicationManager.getInstance().stopApplication(getApplicationName());
 		this.connectedNode = null;
     }
 
     /**
      * We receive this asynchronously from ROS internals once the node is actually started.
-     * Notify the application manager.
+     * Notify the application manager.  DOES THIS ACTUALLY HAPPEN?
      * @param node the ROS node that is
      */
     @Override
     public void onStart(final ConnectedNode node) {
-        Log.i(CLSS,String.format("%s.onStart: Received connectedNode!",getApplicationName()));
+        Log.i(CLSS,String.format("%s.onStart: RECEIVED connectedNode!",getApplicationName()));
         this.connectedNode = node;
         SBApplicationManager.getInstance().signalApplicationStart(this.applicationName);
     }

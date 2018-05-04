@@ -33,6 +33,7 @@ import org.ros.node.service.ServiceResponseListener;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,9 +43,9 @@ import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.ros.SBApplicationStatusListener;
 import chuckcoughlin.sb.assistant.ros.SBApplicationManager;
 import chuckcoughlin.sb.assistant.ros.SBRobotManager;
-import gpio_msgs.GPIOSet;
-import gpio_msgs.GPIOSetRequest;
-import gpio_msgs.GPIOSetResponse;
+import gpio_msgs.GPIOPort;
+import gpio_msgs.GPIOPortRequest;
+import gpio_msgs.GPIOPortResponse;
 import ros.android.views.BatteryLevelView;
 import gpio_msgs.GPIOPin;
 import gpio_msgs.GPIOState;
@@ -57,13 +58,14 @@ import turtlebot3_msgs.SensorState;
 public class SystemFragment extends BasicAssistantFragment implements SBApplicationStatusListener,
                                                                       View.OnClickListener {
     private final static String CLSS = "SystemFragment";
-    private final static String PUBLISH_ALL = "/gpio_msgs/publish_all";  // Flag to complete gpio
     private SBApplicationManager applicationManager;
     private BatteryManager batteryManager;
     private GPIOListener gpioListener = null;
     private SensorStateListener sensorStateListener = null;
     private SystemListener systemListener = null;
-    private ServiceClient<GPIOSetRequest, GPIOSetResponse> gpioServiceClient = null;
+    private ServiceClient<GPIOPortRequest, GPIOPortResponse> gpioInfoServiceClient = null;
+    private ServiceClient<GPIOPortRequest, GPIOPortResponse> gpioGetServiceClient = null;
+    private ServiceClient<GPIOPortRequest, GPIOPortResponse> gpioSetServiceClient = null;
     private View mainView = null;
     private Map<View,GPIOPin> viewPinMap = new HashMap<>();
 
@@ -102,31 +104,24 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
             ConnectedNode node = applicationManager.getApplication().getConnectedNode();
             if (node != null) {
                 sensorStateListener.subscribe(node, "/sensor_state_throttle");
-                gpioListener.subscribe(node,    "/gpio_msgs");
+                gpioListener.subscribe(node,    "/gpio_msgs/values");
                 systemListener.subscribe(node,  "/sb_system");
                 new Thread(new Runnable(){
                     public void run() {
                         try {
-                            Log.i(CLSS, "Set parameter to trigger full message...");
-                            Thread.sleep(5000);
-                            SBRobotManager rosManager = SBRobotManager.getInstance();
-                            String uriString = rosManager.getRobot().getRobotId().getMasterUri();
-                            URI masterUri = new URI(uriString);
-                            ParameterClient paramClient = new ParameterClient(new NodeIdentifier(GraphName.of("/SystemFragment"), masterUri), masterUri);
-                            paramClient.setParam(GraphName.of(PUBLISH_ALL),"True");
-                            Log.i(CLSS, "... publish all set to TRUE");
-                            //gpioServiceClient = node.newServiceClient("/sb_serve_gpio_set", GPIOSet._TYPE);
+                            Thread.sleep(2000);
+                            gpioInfoServiceClient = node.newServiceClient("/sb_serve_gpio_info", GPIOPort._TYPE);
+                            Log.i(CLSS, String.format("gpioInfoClient isConnected (%s)",gpioInfoServiceClient.isConnected()?"TRUE":"FALSE"));
+                            checkConfiguration();
                         }
-                        //catch( ServiceNotFoundException snfe ) {
-                         //   Log.e(CLSS, String.format("Exception while creating service client (%s)",snfe.getLocalizedMessage()));
-                        //}
+                        catch( ServiceNotFoundException snfe ) {
+                            Log.e(CLSS, String.format("Exception while creating service client (%s)",snfe.getLocalizedMessage()));
+                        }
                         catch (XmlRpcTimeoutException tex) {
                             // With Bluetooth - UnresolvedAddressException creating service client.
-                            Log.e(CLSS, "Exception while creating parameter client");
+                            Log.e(CLSS, "Exception while creating service client");
                         }
-                        catch(URISyntaxException e) {
-                            Log.e(CLSS, "Uri Syntax Exception while creating parameter client");
-                        }
+
                         catch (Throwable ex) {
                             Log.e(CLSS, "Exception while creating parameter client ", ex);
                         }
@@ -145,7 +140,9 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
             sensorStateListener.shutdown();
             gpioListener.shutdown();
             systemListener.shutdown();
-            gpioServiceClient = null;
+            gpioGetServiceClient = null;
+            gpioSetServiceClient = null;
+            gpioInfoServiceClient = null;
         }
     }
 
@@ -186,18 +183,20 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     // gpio_msgs
     /**
      * Listen for responses to GPIO service requests. There is a new instance for each request.
+     * Hmmm ... how do we determine which service issued the request ...
      */
-    private class GPIOResponseListener implements ServiceResponseListener<GPIOSetResponse> {
+    private class GPIOResponseListener implements ServiceResponseListener<GPIOPortResponse> {
         @Override
-        public void onSuccess(GPIOSetResponse msg) {
-            Log.i(CLSS, String.format("Got a success - GPIOSetResponse pin %d=%s",msg.getChannel(),(msg.getValue()?"true":"false")));
+        public void onSuccess(GPIOPortResponse msg) {
+            Log.i(CLSS, String.format("Got a success - GPIOPortResponse pin %d=%s (%s)",msg.getChannel(),(msg.getValue()?"true":"false"),msg.getMsg()));
         }
         @Override
         public void onFailure(RemoteException ex) {
-            Log.i(CLSS, String.format("Got a failure - GPIOSetResponse (%s)",ex.getLocalizedMessage()));
+            Log.i(CLSS, String.format("Got a failure - GPIOPortResponse (%s)",ex.getLocalizedMessage()));
         }
 
     }
+
     public class SensorStateListener extends AbstractMessageListener<SensorState> {
         public SensorStateListener() {
             super(SensorState._TYPE);
@@ -274,9 +273,9 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     public void onClick(View view) {
         GPIOPin pin = viewPinMap.get(view);
         Log.i(CLSS,String.format("Received a click view is %s for pin %d",(view.isSelected()?"selected":"not selected"),(pin==null?0:pin.getChannel())));
-        GPIOSetRequest request = gpioServiceClient.newMessage();
+        GPIOPortRequest request = gpioGetServiceClient.newMessage();
         request.setChannel(pin.getChannel());
-        if( gpioServiceClient!=null ) {
+        if( gpioGetServiceClient!=null ) {
             view.setSelected(!view.isSelected());
             if (view.isSelected()) {
                 view.setBackgroundResource(R.drawable.border_darkgray);
@@ -285,11 +284,25 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
                 view.setBackgroundResource(R.drawable.border_lightgray);
                 request.setValue(false);
             }
-            gpioServiceClient.call(request, new GPIOResponseListener());
+            gpioGetServiceClient.call(request, new GPIOResponseListener());
         }
     }
 
     // ========================================= Helper Functions ============================
+    // Use this method to queery the robot for a single GPIO pin configuration
+    public void checkConfiguration() {
+        Collection<GPIOPin> pins = viewPinMap.values();
+        for( GPIOPin pin:pins ) {
+            Log.i(CLSS,String.format("Checking configuration %s for pin %d",pin.getChannel()));
+            GPIOPortRequest request = gpioInfoServiceClient.newMessage();
+            request.setChannel(pin.getChannel());
+            if( gpioGetServiceClient!=null ) {
+                request.setValue(true);
+                gpioGetServiceClient.call(request, new GPIOResponseListener());
+                break;
+            }
+        }
+    }
     private void configureView(View parent, GPIOPin pin) {
         Resources res = parent.getResources();
         int id = res.getIdentifier(String.format("pin%d_label", pin.getChannel()), "id", getContext().getPackageName());

@@ -98,6 +98,7 @@ public class SBApplicationManager {
      * @param listener
      */
     public void addListener(SBApplicationStatusListener listener) {
+        this.applicationListeners.add(listener);
         if( this.application!=null && application.getExecutionStatus().equalsIgnoreCase(TabletApplication.STATE_ACTIVE)) {
             Thread thread = new Thread(new Runnable() {
                 @Override
@@ -107,7 +108,7 @@ public class SBApplicationManager {
             });
             thread.start();
         }
-        this.applicationListeners.add(listener);
+
     }
 
     /**
@@ -182,6 +183,7 @@ public class SBApplicationManager {
                         nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
                         nodeMainExecutor.execute(application,nodeConfiguration);
                         application.setExecutionStatus(TabletApplication.STATE_ACTIVE);
+                        signalApplicationStart(application.getApplicationName());
                     }
                     catch (Exception ex) {
                         signalError(String.format("%s.startApplication: Unable to start (restart?) core (%s), continuing",CLSS,ex.getLocalizedMessage()));
@@ -269,7 +271,7 @@ public class SBApplicationManager {
      * Inform all listeners that the application has stopped. It is up to the
      * individual listeners to terminate all active subscriptions.
      */
-    public void signalApplicationStop(String appName) {
+    private void signalApplicationStop(String appName) {
         this.applicationListeners.signal(new SignalRunnable<SBApplicationStatusListener>() {
             public void run(SBApplicationStatusListener listener) {
                 listener.applicationShutdown(appName);
