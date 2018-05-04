@@ -5,7 +5,7 @@
   Throttle the sensor state. We don't need battery status 10x/sec
 -->
 <launch>
-  <arg name="default_params"  value="$(find package_template)/param/params.yaml" />
+  <arg name="default_params"  value="$(find common)/param/params.yaml" />
   <rosparam command="load" file="$(arg default_params)" />
   <param name="robot/application" value="system" type="str"/>
   <include file="$(find system_check)/launch/system_check.launch" />

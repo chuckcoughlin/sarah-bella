@@ -24,7 +24,7 @@ def configure():
 def initialize(state):
 	count = state.PIN_COUNT
 	state.pins = definePins()
-	rospy.loginfo("Initialized state with %d pins"%(len(pins)))
+	rospy.loginfo("Initialized state with %d pins"%(len(state.pins)))
 
 def definePins():
 	pins = []

@@ -22,3 +22,6 @@ def setmode(mode):
 
 def setup(chanlist,mode):
 	pass
+
+def setwarnings(flag):
+	pass
