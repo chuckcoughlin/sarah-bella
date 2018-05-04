@@ -5,10 +5,9 @@
   Throttle the sensor state. We don't need battery status 10x/sec
 -->
 <launch>
-  <param name="robot/name" value="SarahBella" type="str"/>
-  <param name="robot/type" value="turtlebot3" type="str"/>
+  <arg name="default_params"  value="$(find package_template)/param/params.yaml" />
+  <rosparam command="load" file="$(arg default_params)" />
   <param name="robot/application" value="system" type="str"/>
-  <param name="robot/platform" value="RaspberryPi" type="str"/>
   <include file="$(find system_check)/launch/system_check.launch" />
   <include file="$(find gpio_msgs)/launch/gpio_msgs.launch" />
   <include file="$(find turtlebot3_bringup)/launch/turtlebot3_throttled_core.launch" />

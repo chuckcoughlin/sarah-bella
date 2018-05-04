@@ -39,7 +39,7 @@ def initialize(state):
 	pin3 = GPIOPin()
 	pin3.label = "BCM 2"
 	pin3.channel = 3
-	pin3.mode = GPIO.gpio_function(3)
+	pin3.mode = str(GPIO.gpio_function(3))
 	pins.append(pin3)
 
 	pin4 = GPIOPin()
@@ -51,7 +51,7 @@ def initialize(state):
 	pin5 = GPIOPin()
 	pin5.label = "BCM 3"
 	pin5.channel = 5
-	pin5.mode = GPIO.gpio_function(5)
+	pin5.mode = str(GPIO.gpio_function(5))
 	pins.append(pin5)
 
 	pin6 = GPIOPin()
@@ -63,13 +63,13 @@ def initialize(state):
 	pin7 = GPIOPin()
 	pin7.label = "BCM 4"
 	pin7.channel = 7
-	pin7.mode = GPIO.gpio_function(7)
+	pin7.mode = str(GPIO.gpio_function(7))
 	pins.append(pin7)
 
 	pin8 = GPIOPin()
 	pin8.label = "BCM 14"
 	pin8.channel = 8
-	pin8.mode = GPIO.gpio_function(8)
+	pin8.mode = str(GPIO.gpio_function(8))
 	pins.append(pin8)
 
 	pin9 = GPIOPin()
@@ -81,25 +81,25 @@ def initialize(state):
 	pin10 = GPIOPin()
 	pin10.label = "BCM 15"
 	pin10.channel = 10
-	pin10.mode = GPIO.gpio_function(10)
+	pin10.mode = str(GPIO.gpio_function(10))
 	pins.append(pin10)
 
 	pin11 = GPIOPin()
 	pin11.label = "BCM 17"
 	pin11.channel = 11
-	pin11.mode = GPIO.gpio_function(11)
+	pin11.mode = str(GPIO.gpio_function(11))
 	pins.append(pin11)
 
 	pin12 = GPIOPin()
 	pin12.label = "BCM 18"
 	pin12.channel = 12
-	pin12.mode = GPIO.gpio_function(12)
+	pin12.mode = str(GPIO.gpio_function(12))
 	pins.append(pin12)
 
 	pin13 = GPIOPin()
 	pin13.label = "BCM 27"
 	pin13.mode = "PWR"
-	pin13.mode = GPIO.gpio_function(13)
+	pin13.mode = str(GPIO.gpio_function(13))
 	pins.append(pin13)
 
 	pin14 = GPIOPin()
@@ -111,13 +111,13 @@ def initialize(state):
 	pin15 = GPIOPin()
 	pin15.label = "BCM 22"
 	pin15.channel = 15
-	pin15.mode = GPIO.gpio_function(15)
+	pin15.mode = str(GPIO.gpio_function(15))
 	pins.append(pin15)
 
 	pin16 = GPIOPin()
 	pin16.label = "BCM 23"
 	pin16.channel = 16
-	pin16.mode = GPIO.gpio_function(16)
+	pin16.mode = str(GPIO.gpio_function(16))
 	pins.append(pin16)
 
 	pin17 = GPIOPin()
@@ -129,13 +129,13 @@ def initialize(state):
 	pin18 = GPIOPin()
 	pin18.label = "BCM 24"
 	pin18.channel = 18
-	pin18.mode = GPIO.gpio_function(18)
+	pin18.mode = str(GPIO.gpio_function(18))
 	pins.append(pin18)
 
 	pin19 = GPIOPin()
 	pin19.label = "BCM 10"
 	pin19.channel = 19
-	pin19.mode = GPIO.gpio_function(19)
+	pin19.mode = str(GPIO.gpio_function(19))
 	pins.append(pin19)
 
 	pin20 = GPIOPin()
@@ -147,25 +147,25 @@ def initialize(state):
 	pin21 = GPIOPin()
 	pin21.label = "BCM 9"
 	pin21.channel = 21
-	pin21.mode = GPIO.gpio_function(21)
+	pin21.mode = str(GPIO.gpio_function(21))
 	pins.append(pin21)
 
 	pin22 = GPIOPin()
 	pin22.label = "BCM 25"
 	pin22.channel = 22
-	pin22.mode = GPIO.gpio_function(22)
+	pin22.mode = str(GPIO.gpio_function(22))
 	pins.append(pin22)
 
 	pin23 = GPIOPin()
 	pin23.label = "BCM 11"
 	pin23.channel = 23
-	pin23.mode = GPIO.gpio_function(23)
+	pin23.mode = str(GPIO.gpio_function(23))
 	pins.append(pin23)
 
 	pin24 = GPIOPin()
 	pin24.label = "BCM 8"
 	pin24.channel = 24
-	pin24.mode = GPIO.gpio_function(24)
+	pin24.mode = str(GPIO.gpio_function(24))
 	pins.append(pin24)
 
 	pin25 = GPIOPin()
@@ -177,27 +177,27 @@ def initialize(state):
 	pin26 = GPIOPin()
 	pin26.label = "BCM 7"
 	pin26.channel = 26
-	pin26.mode = GPIO.gpio_function(26)
+	pin26.mode = str(GPIO.gpio_function(26))
 	pins.append(pin26)
 
 	# Got error when tried to set this
 	pin27 = GPIOPin()
 	pin27.label = "BCM 0"
 	pin27.channel = 27
-	#pin27.mode = GPIO.gpio_function(27)
+	#pin27.mode = str(GPIO.gpio_function(27))
 	pins.append(pin27)
 
 	# Got error when tried to set this
 	pin28 = GPIOPin()
 	pin28.label = "BCM 1"
 	pin28.channel = 28
-	#pin28.mode = GPIO.gpio_function(28)
+	#pin28.mode = str(GPIO.gpio_function(28))
 	pins.append(pin28)
 
 	pin29 = GPIOPin()
 	pin29.label = "BCM 5"
 	pin29.channel = 29
-	pin29.mode = GPIO.gpio_function(29)
+	pin29.mode = str(GPIO.gpio_function(29))
 	pins.append(pin29)
 
 	pin30 = GPIOPin()
@@ -209,19 +209,19 @@ def initialize(state):
 	pin31 = GPIOPin()
 	pin31.label = "BCM 6"
 	pin31.channel = 31
-	pin31.mode = GPIO.gpio_function(31)
+	pin31.mode = str(GPIO.gpio_function(31))
 	pins.append(pin31)
 
 	pin32 = GPIOPin()
 	pin32.label = "BCM 12"
 	pin32.channel = 32
-	pin32.mode = GPIO.gpio_function(32)
+	pin32.mode = str(GPIO.gpio_function(32))
 	pins.append(pin32)
 
 	pin33 = GPIOPin()
 	pin33.label = "BCM 13"
 	pin33.channel = 33
-	pin33.mode = GPIO.gpio_function(33)
+	pin33.mode = str(GPIO.gpio_function(33))
 	pins.append(pin33)
 
 	pin34 = GPIOPin()
@@ -233,25 +233,25 @@ def initialize(state):
 	pin35 = GPIOPin()
 	pin35.label = "BCM 19"
 	pin35.channel = 35
-	pin35.mode = GPIO.gpio_function(35)
+	pin35.mode = str(GPIO.gpio_function(35))
 	pins.append(pin35)
 
 	pin36 = GPIOPin()
 	pin36.label = "BCM 16"
 	pin36.channel = 36
-	pin36.mode = GPIO.gpio_function(36)
+	pin36.mode = str(GPIO.gpio_function(36))
 	pins.append(pin36)
 
 	pin37 = GPIOPin()
 	pin37.label = "BCM 26"
 	pin37.channel = 37
-	pin37.mode = GPIO.gpio_function(37)
+	pin37.mode = str(GPIO.gpio_function(37))
 	pins.append(pin37)
 
 	pin38 = GPIOPin()
 	pin38.label = "BCM 20"
 	pin38.channel = 38
-	pin38.mode = GPIO.gpio_function(38)
+	pin38.mode = str(GPIO.gpio_function(38))
 	pins.append(pin38)
 
 	pin39 = GPIOPin()
@@ -263,7 +263,7 @@ def initialize(state):
 	pin40= GPIOPin()
 	pin40.label = "BCM `21"
 	pin40.channel = 40
-	pin40.mode = GPIO.gpio_function(40)
+	pin40.mode = str(GPIO.gpio_function(40))
 	pins.append(pin40)
 	
 	state.pins = pins

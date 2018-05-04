@@ -9,7 +9,8 @@
 #       "ros could not process inbound connection: topic types do not match".
 #       
 #		We normally only report changes. However if "/gpio_msgs/publish_all"
-#       is set, the entire array is sent (and then parameter reset).
+#       is set, we would like to publish the entire array and reset parameter.
+#       However, we're up against a 1024 message size limit.
 #
 from subprocess import call
 import rospy
@@ -57,7 +58,7 @@ while not rospy.is_shutdown():
 			if publish or val != pin.value:
 				pins.append(pin)
 		elif publish:
-				pins.append(pin)
+			pins.append(pin)
 
 	if len(pins)>0:
 		state = GPIOState()
