@@ -7,10 +7,11 @@ import rospy
 import RPi.GPIO as GPIO
 from gpio_msgs.msg import GPIOState, GPIOPin
 
+GPIO.setmode(GPIO.BOARD)
+GPIO.setwarnings(False)
+
 # Get warning if pins are set as outputs, but they are not.
 def configure():
-	GPIO.setmode(GPIO.BOARD)
-	GPIO.setwarnings(False)
 	chanlist = [4,11,27]
 	for channel in chanlist:
 		try:
@@ -25,6 +26,7 @@ def initialize(state):
 	count = state.PIN_COUNT
 	state.pins = definePins()
 	rospy.loginfo("Initialized state with %d pins"%(len(state.pins)))
+	return state.pins
 
 def definePins():
 	pins = []

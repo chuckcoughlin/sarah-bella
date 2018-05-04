@@ -44,9 +44,6 @@ while not rospy.is_shutdown():
 		all = True
 		count = 0
 	count = count + 1
-	if publish:
-		rospy.loginfo("publish_all: set to TRUE")
-	rospy.set_param("/gpio_msgs/publish_all","False")
 	pins = []
 	for pin in pinlist:
 		if str(pin.mode)=="OUT":
