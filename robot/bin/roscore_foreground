@@ -5,6 +5,7 @@
 #  rostopic list
 # --- and others
 # run as super-user
+/etc/init.d/ros stop
 . /opt/ros/kinetic/setup.sh
 export HOME=/home/chuckc
 export ROSLOG=/var/log/ros.log
