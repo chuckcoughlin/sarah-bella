@@ -267,6 +267,7 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/gpio_pins"
                 android:layout_width="340dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right|top"

@@ -19,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.ros.exception.RemoteException;
@@ -56,7 +57,8 @@ import turtlebot3_msgs.SensorState;
  */
 
 public class SystemFragment extends BasicAssistantFragment implements SBApplicationStatusListener,
-                                                                      View.OnClickListener {
+                                                                View.OnClickListener,
+                                                                ServiceResponseListener<GPIOPortResponse> {
     private final static String CLSS = "SystemFragment";
     private SBApplicationManager applicationManager;
     private BatteryManager batteryManager;
@@ -67,7 +69,9 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     private ServiceClient<GPIOPortRequest, GPIOPortResponse> gpioGetServiceClient = null;
     private ServiceClient<GPIOPortRequest, GPIOPortResponse> gpioSetServiceClient = null;
     private View mainView = null;
-    private Map<View,GPIOPin> viewPinMap = new HashMap<>();
+    // NOTE: Pin channels are 1-based, so are off-by-one from the array index
+    private final ImageView[] gpioImageViews = new ImageView[SBConstants.GPIO_PIN_COUNT];
+    private final TextView[]  gpioTextViews  = new TextView[SBConstants.GPIO_PIN_COUNT];
 
     // Inflate the view for the fragment based on layout XML. Create fragment member objects.
     @Override
@@ -84,6 +88,27 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
         mainView = inflater.inflate(R.layout.fragment_system, container, false);
         TextView label = mainView.findViewById(R.id.fragmentSystemText);
         label.setText(R.string.system_title);
+
+        // Add views to the arrays. The "pinContainer" is a list of linear layouts containing text-image-image-text.
+        LinearLayout pinContainer = (LinearLayout)mainView.findViewById(R.id.gpio_pins);
+        int layoutCount = pinContainer.getChildCount();
+        int index = 0;
+        int pinNumber = 0;
+        while(index<layoutCount) {
+            LinearLayout pinHolder = (LinearLayout)pinContainer.getChildAt(index);
+            pinNumber++;
+            gpioImageViews[pinNumber-1] = (ImageView)pinHolder.getChildAt(1) ;
+            gpioTextViews[pinNumber-1]  = (TextView)pinHolder.getChildAt(0) ;
+            pinHolder.getChildAt(0).setTag(new Integer(pinNumber));
+            pinHolder.getChildAt(1).setTag(new Integer(pinNumber));
+            pinNumber++;
+            gpioImageViews[pinNumber-1] = (ImageView)pinHolder.getChildAt(2) ;
+            gpioTextViews[pinNumber-1]  = (TextView)pinHolder.getChildAt(3) ;
+            pinHolder.getChildAt(2).setTag(new Integer(pinNumber));
+            pinHolder.getChildAt(3).setTag(new Integer(pinNumber));
+            index++;
+        }
+        Log.i(CLSS, String.format("onCreateView: %d pins configurad for GPIO",pinNumber));
         return mainView;
     }
     
@@ -110,9 +135,13 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
                     public void run() {
                         try {
                             Thread.sleep(2000);
+                            gpioGetServiceClient = node.newServiceClient("/sb_serve_gpio_get", GPIOPort._TYPE);
+                            Log.i(CLSS, String.format("gpioGetClient isConnected (%s)",gpioGetServiceClient.isConnected()?"TRUE":"FALSE"));
+                            gpioSetServiceClient = node.newServiceClient("/sb_serve_gpio_set", GPIOPort._TYPE);
+                            Log.i(CLSS, String.format("gpioSetClient isConnected (%s)",gpioSetServiceClient.isConnected()?"TRUE":"FALSE"));
                             gpioInfoServiceClient = node.newServiceClient("/sb_serve_gpio_info", GPIOPort._TYPE);
                             Log.i(CLSS, String.format("gpioInfoClient isConnected (%s)",gpioInfoServiceClient.isConnected()?"TRUE":"FALSE"));
-                            checkConfiguration();
+                            checkGPIOConfiguration();
                         }
                         catch( ServiceNotFoundException snfe ) {
                             Log.e(CLSS, String.format("Exception while creating service client (%s)",snfe.getLocalizedMessage()));
@@ -269,18 +298,21 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     }
 
     // =============================================== ClickListener =================================================
-    // Use this method to simulate a toggle button when an image is clicked
+    // Use this method to simulate a toggle button when an image is clicked. The view tag is the pin number.
+    // The only pin modes with click listeners are IN
     public void onClick(View view) {
-        GPIOPin pin = viewPinMap.get(view);
-        Log.i(CLSS,String.format("Received a click view is %s for pin %d",(view.isSelected()?"selected":"not selected"),(pin==null?0:pin.getChannel())));
+        Log.i(CLSS,String.format("Received a click view is %s for pin %d",(view.isSelected()?"selected":"not selected"),
+                (view.getTag()==null?0:view.getTag().toString())))
+        byte channel = ((Integer)view.getTag()).byteValue();
         GPIOPortRequest request = gpioGetServiceClient.newMessage();
-        request.setChannel(pin.getChannel());
+        request.setChannel(channel);
         if( gpioGetServiceClient!=null ) {
             view.setSelected(!view.isSelected());
             if (view.isSelected()) {
                 view.setBackgroundResource(R.drawable.border_darkgray);
                 request.setValue(true);
-            } else {
+            }
+            else {
                 view.setBackgroundResource(R.drawable.border_lightgray);
                 request.setValue(false);
             }
@@ -289,13 +321,13 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     }
 
     // ========================================= Helper Functions ============================
-    // Use this method to queery the robot for a single GPIO pin configuration
-    public void checkConfiguration() {
-        Collection<GPIOPin> pins = viewPinMap.values();
-        for( GPIOPin pin:pins ) {
-            Log.i(CLSS,String.format("Checking configuration %s for pin %d",pin.getChannel()));
+    // Use this method to queery the robot for a GPIO pin configurations
+    public void checkGPIOConfiguration() {;
+        for( ImageView view:gpioImageViews ) {
+            byte channel = ((Integer)view.getTag()).byteValue();
+            Log.i(CLSS,String.format("Checking configuration %s for pin %d",channel));
             GPIOPortRequest request = gpioInfoServiceClient.newMessage();
-            request.setChannel(pin.getChannel());
+            request.setChannel(channel);
             if( gpioGetServiceClient!=null ) {
                 request.setValue(true);
                 gpioGetServiceClient.call(request, new GPIOResponseListener());
@@ -314,7 +346,6 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
             return;
         }
         tv.setText(pin.getLabel());
-        viewPinMap.put(iv,pin);
         iv.setOnClickListener(null);
         if (pin.getMode().equals("IN")) {
             iv.setImageResource(R.drawable.ball_yellow);
