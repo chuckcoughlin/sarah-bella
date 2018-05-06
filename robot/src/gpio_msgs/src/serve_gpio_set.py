@@ -8,20 +8,28 @@ import rospy
 import RPi.GPIO as GPIO
 from std_msgs.msg import String
 from gpio_msgs.srv import GPIOPort
+import GPIOConfiguration
 
-	
+# Get the pin configuraiions
+PIN_COUNT = 40
+pins = GPIOConfiguration.definePins()
+
 def set_GPIO(request):
 	response = GPIOPortResponse()
 	channel = request.channel
+	response.label = ""
 	response.channel = channel
 	rospy.loginfo("sb_serve_gpio_set: Pin %d"%(channel))
 	# CheckMode
-	if str(GPIO.function(channel))=="OUT":
+	mode = str(GPIO.function(channel))
+	if mode=="OUT":
 		GPIO.output(channel,request.value)
+		response.mode = mode
 		response.value = request.value
 		response.msg="Success"
 	else:
 		response.msg="GPIOSet error: channel ",channel," not configured as an OUT"
+		response.mode = mode
 		response.value = False
 	rospy.loginfo(response.msg)
 	return response

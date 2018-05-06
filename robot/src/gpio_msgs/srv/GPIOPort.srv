@@ -1,6 +1,8 @@
 uint8 channel
 bool value
 ---
+string label
+string mode
 uint8 channel
 bool value
 string msg
