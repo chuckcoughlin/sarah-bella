@@ -56,7 +56,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     public void applicationStarted(String appName) {
         Log.i(CLSS, String.format("applicationStarted: %s ...", appName));
         if (appName.equalsIgnoreCase(SBConstants.APPLICATION_TELEOP)) {
-            ConnectedNode node = applicationManager.getApplication().getConnectedNode();
+            ConnectedNode node = applicationManager.getCurrentApplication().getConnectedNode();
             if (node != null) {
                 joystick.onStart(node);
             }

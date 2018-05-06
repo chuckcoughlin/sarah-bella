@@ -49,41 +49,37 @@ import chuckcoughlin.sb.assistant.ros.SBApplicationManager;
  * informed of the application running state.
  */
 public class TabletApplication extends AbstractNodeMain implements java.io.Serializable {
-	private static final String CLSS = "TabletApplication";
-	// Connection Status
-	public static final String STATE_IDLE   = "IDLE";               // Has not been started
-	public static final String STATE_ACTIVE = "ACTIVE";             // Currently running
+    private static final String CLSS = "TabletApplication";
+    // Connection Status
+    public static final String STATE_IDLE = "IDLE";               // Has not been started
+    public static final String STATE_ACTIVE = "ACTIVE";             // Currently running
     public static final String STATE_INITIALIZING = "INITIALIZING"; // We're building up the connected node
 
-	private static final String NAME_UNKNOWN = "Unknown";
-	private static final String TYPE_UNKNOWN = "Unknown";
+    private static final String NAME_UNKNOWN = "Unknown";
+    private static final String TYPE_UNKNOWN = "Unknown";
 
-	private final String applicationName;
-	private final String description;
-	private String executionStatus;
-	private ConnectedNode connectedNode = null;
-
-
-	public TabletApplication(String appName, String desc) {
-		this.applicationName = appName;
-		this.description     = desc;
-	}
+    private final String applicationName;
+    private final String description;
+    private String executionStatus;
+    private ConnectedNode connectedNode = null;
 
 
-	public String getApplicationName()  {
-		return this.applicationName;
-	}
-	public ConnectedNode getConnectedNode() { return this.connectedNode; }
-	public String getDescription() {
-		return description;
-	}
+    public TabletApplication(String appName, String desc) {
+        this.applicationName = appName;
+        this.description = desc;
+        this.executionStatus = STATE_IDLE;
+    }
 
-	public String getExecutionStatus() {
-		return executionStatus;
-	}
-	public void setExecutionStatus(String status) {
-		this.executionStatus = status;
-	}
+    public String getApplicationName() {
+        return this.applicationName;
+    }
+    public ConnectedNode getConnectedNode() { return this.connectedNode; }
+    public String getDescription() {
+        return description;
+    }
+    public String getExecutionStatus() {
+        return executionStatus;
+    }
 
 
     @Override
@@ -91,48 +87,52 @@ public class TabletApplication extends AbstractNodeMain implements java.io.Seria
         return GraphName.of(CLSS);
     }
 
+    // Signify that this has started the process of creating a ROS core/
+    public void onInitialize() {
+        this.executionStatus = STATE_INITIALIZING;
+    }
+
+
     @Override
     public void onShutdown(final Node node) {
-		String appName = getApplicationName();
-		Log.i(CLSS,String.format("%s.onShutdown: connectedNode has been shutdown",getApplicationName()));
-		SBApplicationManager.getInstance().stopApplication(getApplicationName());
-		this.connectedNode = null;
+        super.onShutdown(node);
+        this.executionStatus = STATE_IDLE;
+        Log.i(CLSS, String.format("%s.onShutdown: connectedNode has been shutdown", getApplicationName()));
+        this.connectedNode = null;
     }
 
     /**
      * We receive this asynchronously from ROS internals once the node is actually started.
      * Notify the application manager.  DOES THIS ACTUALLY HAPPEN?
+     *
      * @param node the ROS node that is
      */
     @Override
     public void onStart(final ConnectedNode node) {
-        Log.i(CLSS,String.format("%s.onStart: RECEIVED connectedNode!",getApplicationName()));
+        super.onStart(node);
+        this.executionStatus = STATE_ACTIVE;
+        Log.i(CLSS, String.format("%s.onStart: RECEIVED connectedNode!", getApplicationName()));
         this.connectedNode = node;
-        SBApplicationManager.getInstance().signalApplicationStart(this.applicationName);
     }
-	@Override
-	public boolean equals(Object o) {
-		// Return true if the objects are identical.
-		if(this == o) {
-			return true;
-		}
-		if(!(o instanceof TabletApplication)) {
-			return false;
-		}
-		TabletApplication lhs = (TabletApplication) o;
 
-		// Applications are the same if they have the same name
-		return (applicationName == null ? lhs.applicationName == null : applicationName.equals(lhs.applicationName));
-	}
+    @Override
+    public boolean equals(Object o) {
+        // Return true if the objects are identical.
+        if (this == o) {return true; }
+        if (!(o instanceof TabletApplication)) {return false;}
+        TabletApplication lhs = (TabletApplication) o;
 
-	// Make class Comparable
-	@Override
-	public int hashCode() {
-		// Start with a non-zero constant.
-		int result = 17;
-		// Include a hash for each field checked by equals().
-		result = 31 * result + (applicationName == null ? 0 : applicationName.hashCode());
+        // Applications are the same if they have the same name
+        return (applicationName == null ? lhs.applicationName == null : applicationName.equals(lhs.applicationName));
+    }
 
-		return result;
-	}
+    // Make class Comparable
+    @Override
+    public int hashCode() {
+        // Start with a non-zero constant.
+        int result = 17;
+        // Include a hash for each field checked by equals().
+        result = 31 * result + (applicationName == null ? 0 : applicationName.hashCode());
+        return result;
+    }
 }

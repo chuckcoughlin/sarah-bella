@@ -101,7 +101,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     public void applicationStarted(String appName) {
         Log.i(CLSS, String.format("applicationStarted: %s ...", appName));
         if (appName.equalsIgnoreCase(SBConstants.APPLICATION_SYSTEM)) {
-            ConnectedNode node = applicationManager.getApplication().getConnectedNode();
+            ConnectedNode node = applicationManager.getCurrentApplication().getConnectedNode();
             if (node != null) {
                 sensorStateListener.subscribe(node, "/sensor_state_throttle");
                 gpioListener.subscribe(node,    "/gpio_msgs/values");

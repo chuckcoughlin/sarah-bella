@@ -92,7 +92,7 @@ public class SBLogManager implements SBApplicationStatusListener {
     // We don't care what the application is, subscribe to the logs.
     @Override
     public void applicationStarted(String appName) {
-        ConnectedNode node = SBApplicationManager.getInstance().getApplication().getConnectedNode();
+        ConnectedNode node = SBApplicationManager.getInstance().getCurrentApplication().getConnectedNode();
         android.util.Log.i(CLSS, String.format("application started - %s", appName));
         if (node != null) {
             logListener.subscribe(node, "/rosout");  // Aggregated feed

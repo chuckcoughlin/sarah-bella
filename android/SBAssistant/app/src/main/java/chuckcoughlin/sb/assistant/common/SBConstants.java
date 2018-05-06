@@ -36,6 +36,9 @@ public class SBConstants {
     public static final String ROS_USER_HINT="robot sudoer";
     public static final String ROS_USER_PASSWORD_HINT="robot sudoer password";
 
+    // Name of the main node on the tablet
+    public static final String MAIN_NODE_NAME = "tablet_node_main";
+
     // Number of log messages to store/display
     public static final int NUM_LOG_MESSAGES = 100;
 

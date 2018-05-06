@@ -254,12 +254,12 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
      */
     private void updateStatusImage(final TabletApplication app, ToggleButton toggle ) {
         Log.i(CLSS, String.format("updateStatusImage: for %s (%s)",app.getApplicationName(),
-                (applicationManager.getApplication()==null?null:applicationManager.getApplication().getExecutionStatus())));
+                (applicationManager.getCurrentApplication()==null?null:applicationManager.getCurrentApplication().getExecutionStatus())));
 
         getActivity().runOnUiThread(new Runnable() {
             public void run() {
                 toggle.setVisibility(View.INVISIBLE);
-                TabletApplication tapp = applicationManager.getApplication();
+                TabletApplication tapp = applicationManager.getCurrentApplication();
                 if( !robotManager.getConnectionState().equalsIgnoreCase(SBRobotManager.STATE_ONLINE) ) {
                     toggle.setEnabled(false);
                     toggle.setChecked(false);
@@ -330,7 +330,6 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     public void receiveApplication(String appName) {
         Log.w(CLSS, "receiveApplication: " + appName);
         applicationManager.setApplication(appName);
-        applicationManager.getApplication().setExecutionStatus(TabletApplication.STATE_IDLE);
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -368,8 +367,8 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     public void onItemClick(AdapterView<?> adapter, View v, int position,long rowId) {
         Log.i(CLSS, String.format("onItemClick: row %d",position));
         TabletApplication app = (TabletApplication)adapter.getItemAtPosition(position);
-        if( applicationManager.getApplication()==null ||
-               ! app.getApplicationName().equalsIgnoreCase(applicationManager.getApplication().getApplicationName() )) {
+        if( applicationManager.getCurrentApplication()==null ||
+               ! app.getApplicationName().equalsIgnoreCase(applicationManager.getCurrentApplication().getApplicationName() )) {
 
             applicationManager.setApplication(app.getApplicationName());
             robotManager.setConnectionState(SBRobotManager.STATE_STARTING_REMOTE);
@@ -449,16 +448,17 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     //    restart ROS on the robot with the newly desired application.
     //    Signal any interested listeners that the application has started
     public void startApplicationClicked() {
-        if( applicationManager.getApplication()!=null ) {
-            if( applicationManager.getApplication().getExecutionStatus().equals(TabletApplication.STATE_ACTIVE) ) {
+        TabletApplication tabApp = applicationManager.getCurrentApplication();
+        if( tabApp!=null ) {
+            if( tabApp.getExecutionStatus().equals(TabletApplication.STATE_ACTIVE) ) {
                 Log.i(CLSS, "Stop application clicked");
-                applicationManager.stopApplication( applicationManager.getApplication().getApplicationName());
+                applicationManager.stopApplication();
                 robotManager.setConnectionState(SBRobotManager.STATE_OFFLINE);
             }
             else {
                 Log.i(CLSS, "Start application clicked");
                 robotManager.setConnectionState(SBRobotManager.STATE_STARTING_LOCAL);
-                applicationManager.startApplication(robotManager.getRobot());
+                applicationManager.startApplication();
                 robotManager.setConnectionState(SBRobotManager.STATE_STARTING_REMOTE);
                 masterChecker.beginChecking(robotManager.getRobot(),3);
             }
@@ -476,7 +476,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
             robot = null;
         }
         Log.i(CLSS, String.format("updateUI robot:%s app:%s",(robot==null?"null":robot.getRobotName()),
-                (applicationManager.getApplication()==null?"null":applicationManager.getApplication().getApplicationName())));
+                (applicationManager.getCurrentApplication()==null?"null":applicationManager.getCurrentApplication().getApplicationName())));
 
         Button button = (Button) contentView.findViewById(R.id.connectButton);
         button.setEnabled(true);
@@ -543,7 +543,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
                 if(index == selectedPosition) {
                     listView.setItemChecked(index,true);
                     listView.setSelection(index);
-                    Log.i(CLSS, String.format("receiveApplication: selected application %s (%d)",applicationManager.getApplication().getApplicationName(),index));
+                    Log.i(CLSS, String.format("receiveApplication: selected application %s (%d)",app.getApplicationName(),index));
                 }
                 else {
                     listView.setItemChecked(index,false);
@@ -565,7 +565,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
                 if(index == selectedPosition) {
                     listView.setItemChecked(index,true);
                     listView.setSelection(index);
-                    Log.i(CLSS, String.format("receiveApplication: selected application %s (%d)",applicationManager.getApplication().getApplicationName(),index));
+                    Log.i(CLSS, String.format("receiveApplication: selected application %s (%d)",app.getApplicationName(),index));
                 }
                 else {
                     listView.setItemChecked(index,false);

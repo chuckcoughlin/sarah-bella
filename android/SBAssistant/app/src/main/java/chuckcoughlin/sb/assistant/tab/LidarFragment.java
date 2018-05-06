@@ -89,7 +89,7 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
 
         Log.i(CLSS, String.format("applicationStarted: %s ...", appName));
         this.appName = appName;
-        ConnectedNode node = applicationManager.getApplication().getConnectedNode();
+        ConnectedNode node = applicationManager.getCurrentApplication().getConnectedNode();
         if (node != null) {
             transformListener.subscribe(node, "/tf_throttle");
             laserListener.subscribe(node,"/scan_throttle");
