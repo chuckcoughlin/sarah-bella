@@ -22,7 +22,9 @@ def config_GPIO(request):
 	if channel>0 and channel<= PIN_COUNT:
 		pin = pins[channel]
 		response.value = True
-		response.msg=pin.mode+","+pin.label
+		response.label = pin.label
+		response.mode  = pin.mode
+		response.msg="Success"
 	else:
 		response.msg="GPIOInfo error: channel ",channel," is out-of-range"
 		response.value = False
