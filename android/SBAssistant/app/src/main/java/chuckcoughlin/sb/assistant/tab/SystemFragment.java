@@ -24,32 +24,22 @@ import android.widget.TextView;
 
 import org.ros.exception.RemoteException;
 import org.ros.exception.ServiceNotFoundException;
-import org.ros.internal.node.client.ParameterClient;
-import org.ros.internal.node.server.NodeIdentifier;
 import org.ros.internal.node.xmlrpc.XmlRpcTimeoutException;
-import org.ros.namespace.GraphName;
 import org.ros.node.ConnectedNode;
 import org.ros.node.service.ServiceClient;
 import org.ros.node.service.ServiceResponseListener;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 import chuckcoughlin.sb.assistant.R;
 import chuckcoughlin.sb.assistant.common.AbstractMessageListener;
 import chuckcoughlin.sb.assistant.common.SBConstants;
-import chuckcoughlin.sb.assistant.ros.SBApplicationStatusListener;
 import chuckcoughlin.sb.assistant.ros.SBApplicationManager;
-import chuckcoughlin.sb.assistant.ros.SBRobotManager;
+import chuckcoughlin.sb.assistant.ros.SBApplicationStatusListener;
+import gpio_msgs.GPIOPin;
 import gpio_msgs.GPIOPort;
 import gpio_msgs.GPIOPortRequest;
 import gpio_msgs.GPIOPortResponse;
-import ros.android.views.BatteryLevelView;
-import gpio_msgs.GPIOPin;
 import gpio_msgs.GPIOState;
+import ros.android.views.BatteryLevelView;
 import turtlebot3_msgs.SensorState;
 
 /**
@@ -302,7 +292,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     // The only pin modes with click listeners are IN
     public void onClick(View view) {
         Log.i(CLSS,String.format("Received a click view is %s for pin %d",(view.isSelected()?"selected":"not selected"),
-                (view.getTag()==null?0:view.getTag().toString())))
+                (view.getTag()==null?0:view.getTag().toString())));
         byte channel = ((Integer)view.getTag()).byteValue();
         GPIOPortRequest request = gpioGetServiceClient.newMessage();
         request.setChannel(channel);
@@ -316,24 +306,39 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
                 view.setBackgroundResource(R.drawable.border_lightgray);
                 request.setValue(false);
             }
-            gpioGetServiceClient.call(request, new GPIOResponseListener());
+            gpioGetServiceClient.call(request, this);
         }
     }
+
+    // =============================================== ServiceResponseListener =================================================
+    // Use this message for all service responses. The response should contain enough info that
+    // we can figure out what to do.
+    @Override
+    public void onSuccess(GPIOPortResponse response) {
+        Log.i(CLSS,String.format("Successful service response %s=(%s,%d %s,%s)",response.getMsg(),response.getLabel(),
+                response.getChannel(),response.getMode(),response.getValue()?"TRUE":"FALSE"));
+    }
+
+    @Override
+    public void onFailure(RemoteException re) {
+        Log.w(CLSS,String.format("Exception returned from service request (%s)",re.getLocalizedMessage()));
+    }
+
 
     // ========================================= Helper Functions ============================
     // Use this method to queery the robot for a GPIO pin configurations
     public void checkGPIOConfiguration() {;
         for( ImageView view:gpioImageViews ) {
             byte channel = ((Integer)view.getTag()).byteValue();
-            Log.i(CLSS,String.format("Checking configuration %s for pin %d",channel));
+            Log.i(CLSS,String.format("Checking configuration for pin %d",channel));
             GPIOPortRequest request = gpioInfoServiceClient.newMessage();
             request.setChannel(channel);
-            if( gpioGetServiceClient!=null ) {
+            if( gpioInfoServiceClient!=null ) {
                 request.setValue(true);
-                gpioGetServiceClient.call(request, new GPIOResponseListener());
+                gpioInfoServiceClient.call(request, this);
                 break;
             }
-        }
+         }
     }
     private void configureView(View parent, GPIOPin pin) {
         Resources res = parent.getResources();

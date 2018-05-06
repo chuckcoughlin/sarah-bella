@@ -159,7 +159,7 @@ public class SBApplicationManager {
      */
     public void setApplication(String name) {
         if( currentApplication != null ) {
-            if( this.currentApplication.getApplicationName().equalsIgnoreCase(name)) return; // no-op
+            if( name!=null && this.currentApplication.getApplicationName().equalsIgnoreCase(name)) return; // no-op
             // Inform any listeners on the old application that it has stopped.
             currentApplication.onShutdown(currentApplication.getConnectedNode());
             signalApplicationStop(currentApplication.getApplicationName());

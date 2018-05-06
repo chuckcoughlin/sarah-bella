@@ -43,7 +43,6 @@ import ros.android.appmanager.SBRobotConnectionHandler;
 import ros.android.appmanager.WifiChecker;
 import ros.android.util.TabletApplication;
 import ros.android.util.RobotDescription;
-import ros.android.util.RobotId;
 
 import static android.content.Context.BLUETOOTH_SERVICE;
 import static android.content.Context.WIFI_SERVICE;
@@ -92,7 +91,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                connectRobotClicked();
+                connectButtonClicked();
             }
         });
         button = (Button) contentView.findViewById(R.id.viewButton);
@@ -390,15 +389,15 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     /**
      * Callback for the CONNECT button.
      */
-    public void connectRobotClicked() {
-        Log.i(CLSS, "Connect robot clicked");
+    public void connectButtonClicked() {
+        Log.i(CLSS, "Connect button clicked");
         RobotDescription robot = robotManager.getRobot();
         BluetoothManager bluetoothManager = (BluetoothManager)getActivity().getSystemService(BLUETOOTH_SERVICE);
         // If the robot is currently connected, we really mean "Disconnect"
         if(     !robotManager.getConnectionState().equals(SBRobotManager.STATE_UNAVAILABLE) &&
                 !robotManager.getConnectionState().equals(SBRobotManager.STATE_UNCONNECTED) ) {
 
-            applicationManager.setApplication(null);
+            applicationManager.setApplication(null);   // Shutdown current
             if( bluetoothManager.getAdapter()!=null )  bluetoothManager.getAdapter().disable();
             WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE);
             wifiManager.disconnect();
