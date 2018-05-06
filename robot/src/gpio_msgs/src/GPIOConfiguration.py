@@ -37,7 +37,7 @@ def definePins():
 	pins.append(pin1)
 
 	pin2 = GPIOPin()
-	pin2.label = "5"
+	pin2.label = "5V"
 	pin2.channel = 2
 	pin2.mode = "PWR"
 	pins.append(pin2)
