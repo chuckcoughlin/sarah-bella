@@ -177,8 +177,8 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
         }
 
         /**
-         * Receive a GPIOState message. If the message contains all pins, then re-configure
-         * the path, otherwise simply update the pin value.
+         * Receive a GPIOState message. The message contains all pins for which
+         * values have changed. Simply update the pin value.
          * @param state the GPIOState message
          */
         @Override
@@ -186,34 +186,18 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
             Log.i(CLSS, String.format("Got a Message - GPIOState"));
             Activity mainActivity = getActivity();
             if (mainActivity == null) {
-                Log.i(CLSS, String.format("GPIOStateListener: Main Activity no longer available"));
+                Log.i(CLSS, String.format("GPIOListener: Main Activity no longer available"));
                 return;
             }
             mainActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     for( GPIOPin pin:state.getPins()) {
-                        configureView(mainView,pin);
+                        //configureView(mainView,pin);
                     }
                 }
             });
         }
-    }
-    // gpio_msgs
-    /**
-     * Listen for responses to GPIO service requests. There is a new instance for each request.
-     * Hmmm ... how do we determine which service issued the request ...
-     */
-    private class GPIOResponseListener implements ServiceResponseListener<GPIOPortResponse> {
-        @Override
-        public void onSuccess(GPIOPortResponse msg) {
-            Log.i(CLSS, String.format("Got a success - GPIOPortResponse pin %d=%s (%s)",msg.getChannel(),(msg.getValue()?"true":"false"),msg.getMsg()));
-        }
-        @Override
-        public void onFailure(RemoteException ex) {
-            Log.i(CLSS, String.format("Got a failure - GPIOPortResponse (%s)",ex.getLocalizedMessage()));
-        }
-
     }
 
     public class SensorStateListener extends AbstractMessageListener<SensorState> {
@@ -315,8 +299,24 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     // we can figure out what to do.
     @Override
     public void onSuccess(GPIOPortResponse response) {
-        Log.i(CLSS,String.format("Successful service response %s=(%s,%d %s,%s)",response.getMsg(),response.getLabel(),
-                response.getChannel(),response.getMode(),response.getValue()?"TRUE":"FALSE"));
+        Activity mainActivity = getActivity();
+        if (mainActivity == null) {
+            Log.i(CLSS, String.format("GPIOPortResponse: Main Activity no longer available"));
+            return;
+        }
+        Log.i(CLSS, String.format("SUCCESS: GPIOPortResponse pin %d (%s): %s:%s:%s",response.getChannel(),
+                response.getMode(),response.getLabel(),(response.getValue()?"true":"false"),response.getMsg()));
+        if( !response.getLabel().isEmpty() ) {
+            mainActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    configureView(response);
+                }
+            });
+        }
+        else if(response.getMode().equalsIgnoreCase("IN")) {
+
+        }
     }
 
     @Override
@@ -326,8 +326,8 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
 
 
     // ========================================= Helper Functions ============================
-    // Use this method to queery the robot for a GPIO pin configurations
-    public void checkGPIOConfiguration() {;
+    // Use this method to query the robot for a GPIO pin configurations
+    private void checkGPIOConfiguration() {;
         for( ImageView view:gpioImageViews ) {
             byte channel = ((Integer)view.getTag()).byteValue();
             Log.i(CLSS,String.format("Checking configuration for pin %d",channel));
@@ -336,41 +336,47 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
             if( gpioInfoServiceClient!=null ) {
                 request.setValue(true);
                 gpioInfoServiceClient.call(request, this);
-                break;
             }
          }
     }
-    private void configureView(View parent, GPIOPin pin) {
-        Resources res = parent.getResources();
-        int id = res.getIdentifier(String.format("pin%d_label", pin.getChannel()), "id", getContext().getPackageName());
-        TextView tv = (TextView) parent.findViewById(id);
-        id = res.getIdentifier(String.format("pin%d_image", pin.getChannel()), "id", getContext().getPackageName());
-        ImageView iv = (ImageView) mainView.findViewById(id);
-        if( tv==null || iv==null ) {
-            Log.i(CLSS,String.format("Unable to find GPIO image or view for pin %d",pin.getChannel()));
-            return;
-        }
-        tv.setText(pin.getLabel());
-        iv.setOnClickListener(null);
-        if (pin.getMode().equals("IN")) {
-            iv.setImageResource(R.drawable.ball_yellow);
-            Log.i(CLSS,String.format("Set click listener for pin %d",pin.getChannel()));
-            iv.setOnClickListener(this);
-        }
-        else if (pin.getMode().equals("OUT")) {
-            if (pin.getValue()) {
-                iv.setImageResource(R.drawable.ball_red);
+    private void configureView(GPIOPortResponse pin) {
+        int pinNumber = pin.getChannel();
+        if( pinNumber<=SBConstants.GPIO_PIN_COUNT ) {
+            TextView  tv = gpioTextViews[pinNumber-1];
+            ImageView iv =  gpioImageViews[pinNumber-1];
+            if( tv==null || iv==null ) {
+                Log.i(CLSS,String.format("Unable to find GPIO image or view for pin %d",pin.getChannel()));
+                return;
+            }
+            tv.setText(pin.getLabel());
+            iv.setOnClickListener(null);
+            if (pin.getMode().equals("IN")) {
+                iv.setImageResource(R.drawable.ball_yellow);
+                Log.i(CLSS,String.format("Set click listener for pin %d",pin.getChannel()));
+                iv.setOnClickListener(this);
+            }
+            else if (pin.getMode().equals("OUT")) {
+                if (pin.getValue()) {
+                    iv.setImageResource(R.drawable.ball_red);
+                }
+                else {
+                    iv.setImageResource(R.drawable.ball_green);
+                }
+            }
+            else if (pin.getMode().equals("PWR")) {
+                iv.setImageResource(R.drawable.flash);
+            }
+            else if (pin.getMode().equals("GND")) {
+                iv.setImageResource(R.drawable.ground);
             }
             else {
-                iv.setImageResource(R.drawable.ball_green);
+                Log.w(CLSS,String.format("GPIO port response has unrecognized mode (%s)",pin.getMode()));
             }
         }
-        else if (pin.getMode().equals("PWR")) {
-            iv.setImageResource(R.drawable.flash);
+        else {
+            Log.w(CLSS,String.format("GPIO port response has illegal pin number (%d)",pinNumber));
         }
-        else if (pin.getMode().equals("GND")) {
-            iv.setImageResource(R.drawable.ground);
-        }
+
     }
 
 }

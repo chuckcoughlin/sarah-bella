@@ -208,8 +208,9 @@ public class SBApplicationManager {
                         }
                     });
                     thread.start();
-                } else {
-                    Log.w(CLSS, String.format("%s.startApplication: Application %s not started. Current state = %s.", currentApplication.getApplicationName(),
+                }
+                else {
+                    Log.w(CLSS, String.format("%s.startApplication: Application %s not started. Current state = %s.", CLSS,currentApplication.getApplicationName(),
                             currentApplication.getExecutionStatus()));
                 }
             }
