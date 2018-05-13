@@ -21,7 +21,7 @@ def set_GPIO(request):
 	response.channel = channel
 	rospy.loginfo("sb_serve_gpio_set: Pin %d"%(channel))
 	# CheckMode
-	mode = str(GPIO.function(channel))
+	mode = GPIOConfiguration.getMode(channel)
 	if mode=="OUT":
 		GPIO.output(channel,request.value)
 		response.mode = mode

@@ -24,7 +24,7 @@ def get_GPIO(request):
 	response.channel = request.channel
 	rospy.loginfo("GPIOGet: Read channel %d"%(channel))
 	# CheckMode
-	mode = str(GPIO.function(channel))
+	mode = GPIOConfiguration.getMode(channel)
 	if mode=="IN" or mode=="OUT":
 		response.mode = mode
 		response.value = GPIO.input(channel)
