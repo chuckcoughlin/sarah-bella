@@ -25,13 +25,13 @@ def get_GPIO(request):
 	rospy.loginfo("GPIOGet: Read channel %d"%(channel))
 	# CheckMode
 	mode = str(GPIO.function(channel))
-	if mode=="IN":
+	if mode=="IN" or mode=="OUT":
 		response.mode = mode
-		response.value = str2bool(str(GPIO.input(channel)))
+		response.value = GPIO.input(channel)
 		response.msg="Success"
 	else:
 		response.mode = mode
-		response.msg="GPIOGet error: channel ",channel," not configured as an IN"
+		response.msg="GPIOGet error: channel ",channel," not configured as an IN or OUT"
 		response.value = False
 	rospy.loginfo(response.msg)
 	return response

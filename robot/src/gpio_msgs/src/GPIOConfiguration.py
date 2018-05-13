@@ -37,7 +37,7 @@ def initialize(state):
 	return state.pins
 
 def getMode(channel):
-	mode = GPIO.gpio_function*channel)
+	mode = GPIO.gpio_function(channel)
 	if mode==GPIO.IN:
 		return "IN"
 	elif mode==GPIO.OUT:

@@ -34,7 +34,7 @@ msg = GPIOState('pins')
 # Initialize the pin object fields, including values of outputs
 pinlist = GPIOConfiguration.initialize(msg)
 for pin in pinlist:
-	if str(pin.mode)=="OUT":
+	if pin.mode=="OUT":
 		pin.value = -1
 
 count = 0
@@ -46,7 +46,7 @@ while not rospy.is_shutdown():
 	count = count + 1
 	pins = []
 	for pin in pinlist:
-		if str(pin.mode)=="OUT":
+		if pin.mode=="OUT":
 			val = GPIO.input(pin.channel)
 			pin.value=val
 			if all or val != pin.value:
