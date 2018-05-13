@@ -2,8 +2,8 @@
 # Its sole purpose is to allow ROS to run in the Linux virtual machine
 # for testing.
 BOARD = 0
-IN = "IN"
-OUT="OUT"
+IN = 1
+OUT= 0
 
 def gpio_function(chan):
 	if chan in [4,11,27]:
