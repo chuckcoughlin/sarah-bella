@@ -11,7 +11,6 @@ package chuckcoughlin.sb.assistant.tab;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Resources;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -98,7 +97,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
             pinHolder.getChildAt(3).setTag(new Integer(pinNumber));
             index++;
         }
-        Log.i(CLSS, String.format("onCreateView: %d pins configurad for GPIO",pinNumber));
+        Log.i(CLSS, String.format("onCreateView: %d pins configured for GPIO",pinNumber));
         return mainView;
     }
     
@@ -193,7 +192,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
                 @Override
                 public void run() {
                     for( GPIOPin pin:state.getPins()) {
-                        //configureView(mainView,pin);
+                        Log.i(CLSS, String.format("GPIOListener: State of %d is %s",(int)pin.getChannel(),(pin.getValue()?"TRUE":"FALSE")));
                     }
                 }
             });
@@ -207,7 +206,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
 
         @Override
         public void onNewMessage(SensorState bs) {
-            Log.i(CLSS, String.format("Got a Sensor Message - battery = %2.2f", bs.getBattery()/10));
+            //Log.i(CLSS, String.format("Got a Sensor Message - battery = %2.2f", bs.getBattery()/10));
             Activity mainActivity = getActivity();
             if (mainActivity == null) {
                 Log.i(CLSS, String.format("SensorStateListener: Main Activity no longer available"));
@@ -275,7 +274,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     // Use this method to simulate a toggle button when an image is clicked. The view tag is the pin number.
     // The only pin modes with click listeners are IN
     public void onClick(View view) {
-        Log.i(CLSS,String.format("Received a click view is %s for pin %d",(view.isSelected()?"selected":"not selected"),
+        Log.i(CLSS,String.format("Received a click view is %s for pin %s",(view.isSelected()?"selected":"not selected"),
                 (view.getTag()==null?0:view.getTag().toString())));
         byte channel = ((Integer)view.getTag()).byteValue();
         GPIOPortRequest request = gpioGetServiceClient.newMessage();
@@ -283,11 +282,11 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
         if( gpioGetServiceClient!=null ) {
             view.setSelected(!view.isSelected());
             if (view.isSelected()) {
-                view.setBackgroundResource(R.drawable.border_darkgray);
+                view.setBackgroundResource(R.drawable.border_false);
                 request.setValue(true);
             }
             else {
-                view.setBackgroundResource(R.drawable.border_lightgray);
+                view.setBackgroundResource(R.drawable.border_true);
                 request.setValue(false);
             }
             gpioGetServiceClient.call(request, this);
@@ -310,7 +309,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
             mainActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    configureView(response);
+                    configureView(response.getChannel(),response.getMode(),response.getLabel(),response.getValue());
                 }
             });
         }
@@ -339,39 +338,86 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
             }
          }
     }
-    private void configureView(GPIOPortResponse pin) {
-        int pinNumber = pin.getChannel();
+
+    // Configure the GPIO image view both for the GPIO mode and value.
+    private void configureView(int pinNumber,String mode,String label,boolean value) {
         if( pinNumber<=SBConstants.GPIO_PIN_COUNT ) {
             TextView  tv = gpioTextViews[pinNumber-1];
             ImageView iv =  gpioImageViews[pinNumber-1];
             if( tv==null || iv==null ) {
-                Log.i(CLSS,String.format("Unable to find GPIO image or view for pin %d",pin.getChannel()));
+                Log.i(CLSS,String.format("Unable to find GPIO image or view for pin %d",pinNumber));
                 return;
             }
-            tv.setText(pin.getLabel());
-            iv.setOnClickListener(null);
-            if (pin.getMode().equals("IN")) {
-                iv.setImageResource(R.drawable.ball_yellow);
-                Log.i(CLSS,String.format("Set click listener for pin %d",pin.getChannel()));
-                iv.setOnClickListener(this);
-            }
-            else if (pin.getMode().equals("OUT")) {
-                if (pin.getValue()) {
-                    iv.setImageResource(R.drawable.ball_red);
+
+            // If there is a label, then configure the image with the correct icon.
+            if( !label.isEmpty() ) {
+                tv.setText(label);
+                iv.setOnClickListener(null);
+                iv.setVisibility(View.VISIBLE);
+                if (mode.equalsIgnoreCase("IN")) {
+                    iv.setImageResource(R.drawable.ball_yellow);
+                    iv.setVisibility(View.INVISIBLE);
+                    Log.i(CLSS,String.format("Set click listener for pin %d",pinNumber));
+                    iv.setOnClickListener(this);
+                }
+                else if (mode.equalsIgnoreCase("OUT")) {
+                    if (value) {
+                        iv.setImageResource(R.drawable.ball_red);
+                    }
+                    else {
+                        iv.setImageResource(R.drawable.ball_green);
+                    }
+                }
+                else if (mode.equalsIgnoreCase("GND")) {
+                    iv.setImageResource(R.drawable.ground);
+                }
+                else if (mode.equalsIgnoreCase("I2C")) {
+                    iv.setImageResource(R.drawable.ball_blue);
+                }
+                else if (mode.equalsIgnoreCase("HWE")) {
+                    iv.setImageResource(R.drawable.ball_blue);
+                }
+                else if (mode.equalsIgnoreCase("PWR")) {
+                    iv.setImageResource(R.drawable.flash);
+                }
+                else if (mode.equalsIgnoreCase("SER")) {
+                    iv.setImageResource(R.drawable.ball_blue);
+                }
+                else if (mode.equalsIgnoreCase("SPI")) {
+                    iv.setImageResource(R.drawable.ball_blue);
+                }
+                else if (mode.equalsIgnoreCase("UNK")) {
+                    iv.setImageResource(R.drawable.ball_yellow);
                 }
                 else {
-                    iv.setImageResource(R.drawable.ball_green);
+                    Log.w(CLSS,String.format("GPIO port %d response has unrecognized mode (%s)",pinNumber,mode));
                 }
             }
-            else if (pin.getMode().equals("PWR")) {
-                iv.setImageResource(R.drawable.flash);
+
+            // For IN and OUT pins, we mark the value
+            if( mode.equalsIgnoreCase("IN") )  {
+                if( value ) {
+                    iv.setBackgroundResource(R.drawable.border_true);
+                }
+                else {
+                    iv.setBackgroundResource(R.drawable.border_false);
+                }
             }
-            else if (pin.getMode().equals("GND")) {
-                iv.setImageResource(R.drawable.ground);
+            else if( mode.equalsIgnoreCase("OUT"))  {
+                if( value ) {
+                    iv.setSelected(true);
+                    iv.setImageResource(R.drawable.ball_red);
+                    iv.setBackgroundResource(R.drawable.border_true);
+                }
+                else {
+                    iv.setSelected(false);
+                    iv.setImageResource(R.drawable.ball_green);
+                    iv.setBackgroundResource(R.drawable.border_false);
+                }
             }
-            else {
-                Log.w(CLSS,String.format("GPIO port response has unrecognized mode (%s)",pin.getMode()));
-            }
+
+
+
         }
         else {
             Log.w(CLSS,String.format("GPIO port response has illegal pin number (%d)",pinNumber));

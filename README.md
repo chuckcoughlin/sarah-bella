@@ -13,7 +13,7 @@ debugged and added to the repository on the development system.  From there the 
 
  As of May, 2018 this project is under active development. In general, documentation precedes completed features. The following major features can be considered "done":
   * SBAssistant: android controller, panel navigation, robot Bluetooth or WiFi connection, select/change active robot application.
-  * system: tablet displays robot status - CPU, memory, battery.
+  * system: tablet displays robot status - CPU, memory, battery and GPIO configuration. Tablet gets, sets and subscribes to GPIO values.
   * logging: tablet displays ROS log messages generated on the robot.
   * lidar: tablet displays laser scan output.
 
