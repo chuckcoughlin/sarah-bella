@@ -182,7 +182,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
          */
         @Override
         public void onNewMessage(GPIOState state) {
-            Log.i(CLSS, String.format("Got a Message - GPIOState"));
+            //Log.i(CLSS, String.format("Got a Message - GPIOState"));
             Activity mainActivity = getActivity();
             if (mainActivity == null) {
                 Log.i(CLSS, String.format("GPIOListener: Main Activity no longer available"));
@@ -193,6 +193,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
                 public void run() {
                     for( GPIOPin pin:state.getPins()) {
                         Log.i(CLSS, String.format("GPIOListener: State of %d is %s",(int)pin.getChannel(),(pin.getValue()?"TRUE":"FALSE")));
+                        configureView(pin.getChannel(),pin.getMode(),pin.getLabel(),pin.getValue());
                     }
                 }
             });
@@ -231,7 +232,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
 
         @Override
         public void onNewMessage(system_check.System system) {
-            Log.i(CLSS, String.format("Got a System Message - CPU Usage = %2.2f", system.getCpuPercent()));
+            //Log.i(CLSS, String.format("Got a System Message - CPU Usage = %2.2f", system.getCpuPercent()));
             Activity mainActivity = getActivity();
             if (mainActivity == null) {
                 Log.i(CLSS, String.format("Main Activity no longer available"));
@@ -295,12 +296,13 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
 
     // =============================================== ServiceResponseListener =================================================
     // Use this message for all service responses. The response should contain enough info that
-    // we can figure out what to do.
+    // we can figure
+    //            Log.i(CLSS, String.format("GPIOPortResponout what to do.
     @Override
     public void onSuccess(GPIOPortResponse response) {
         Activity mainActivity = getActivity();
         if (mainActivity == null) {
-            Log.i(CLSS, String.format("GPIOPortResponse: Main Activity no longer available"));
+            Log.i(CLSS, String.format("Main Activity no longer available"));
             return;
         }
         Log.i(CLSS, String.format("SUCCESS: GPIOPortResponse pin %d (%s): %s:%s:%s",response.getChannel(),
@@ -355,10 +357,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
                 iv.setOnClickListener(null);
                 iv.setVisibility(View.VISIBLE);
                 if (mode.equalsIgnoreCase("IN")) {
-                    iv.setImageResource(R.drawable.ball_yellow);
-                    iv.setVisibility(View.INVISIBLE);
-                    Log.i(CLSS,String.format("Set click listener for pin %d",pinNumber));
-                    iv.setOnClickListener(this);
+                    iv.setImageResource(R.drawable.ball_gray);
                 }
                 else if (mode.equalsIgnoreCase("OUT")) {
                     if (value) {
@@ -367,6 +366,8 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
                     else {
                         iv.setImageResource(R.drawable.ball_green);
                     }
+                    Log.i(CLSS,String.format("Set click listener for pin %d",pinNumber));
+                    iv.setOnClickListener(this);
                 }
                 else if (mode.equalsIgnoreCase("GND")) {
                     iv.setImageResource(R.drawable.ground);
@@ -415,9 +416,6 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
                     iv.setBackgroundResource(R.drawable.border_false);
                 }
             }
-
-
-
         }
         else {
             Log.w(CLSS,String.format("GPIO port response has illegal pin number (%d)",pinNumber));

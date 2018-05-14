@@ -203,23 +203,23 @@ public class SBApplicationManager {
                                 nodeMainExecutor.execute(currentApplication, nodeConfiguration);
                                 SBApplicationManager.getInstance().signalApplicationStart(currentApplication.getApplicationName());
                             } catch (Exception ex) {
-                                signalError(String.format("%s.startApplication: Unable to start (restart?) core (%s), continuing", CLSS, ex.getLocalizedMessage()));
+                                signalError(String.format("startApplication: Unable to start (restart?) core (%s), continuing", ex.getLocalizedMessage()));
                             }
                         }
                     });
                     thread.start();
                 }
                 else {
-                    Log.w(CLSS, String.format("%s.startApplication: Application %s not started. Current state = %s.", CLSS,currentApplication.getApplicationName(),
+                    Log.w(CLSS, String.format("startApplication: Application %s not started. Current state = %s.", currentApplication.getApplicationName(),
                             currentApplication.getExecutionStatus()));
                 }
             }
             else {
-                Log.w(CLSS,String.format("%s.startApplication: No node configuration has been defined."));
+                Log.w(CLSS,String.format("startApplication: No node configuration has been defined."));
             }
         }
         else {
-            Log.w(CLSS,String.format("%s.startApplication: No current application is defined."));
+            Log.w(CLSS,String.format("startApplication: No current application is defined."));
         }
     }
 
@@ -285,7 +285,7 @@ public class SBApplicationManager {
             }
         }
         catch(SQLException sqle ) {
-            Log.w(CLSS,String.format("%s.createApplications: ERROR retrieving app names (%s).",sqle.getLocalizedMessage()));
+            Log.w(CLSS,String.format("createApplications: ERROR retrieving app names (%s).",sqle.getLocalizedMessage()));
         }
         finally {
             if( cursor!=null ) cursor.close();
@@ -342,7 +342,7 @@ public class SBApplicationManager {
             }
             catch (Exception ex) {
                 this.exception = ex;
-                Log.w(CLSS,String.format("%s.createApplications: ERROR determining node configuration (%s).",ex.getLocalizedMessage()));
+                Log.w(CLSS,String.format("createApplications: ERROR determining node configuration (%s).",ex.getLocalizedMessage()));
                 return null;
             }
             finally{}
