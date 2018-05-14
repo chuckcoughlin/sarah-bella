@@ -12,7 +12,7 @@ GPIO.setwarnings(False)
 
 # Get warning if pins are set as outputs, but they are not.
 def configure():
-	chanlist = [3,5,7,8,10,12,13,15,16,18,19,21,22,23,24,26,29,32,33,35,36,37,38,40]
+	chanlist = [3,5,8,10,13,15,19,21,22,23,24,26,29,32,33,35,36,37,38,40]
 	for channel in chanlist:
 		try:
 			GPIO.setup([channel],GPIO.IN)
@@ -20,7 +20,7 @@ def configure():
 		except:
 			rospy.logwarn("ERROR: Setting GPIO ",channel," to IN")
 
-	chanlist = [11,27,28]
+	chanlist = [7,11,12,16,18]
 	for channel in chanlist:
 		try:
 			GPIO.setup([channel],GPIO.OUT)
