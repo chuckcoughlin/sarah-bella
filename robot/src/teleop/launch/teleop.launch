@@ -8,4 +8,6 @@
   <param name="robot/platform" value="RaspberryPi" type="str"/>
   <include file="$(find turtlebot3_bringup)/launch/turtlebot3_core.launch" />
   <node pkg="topic_tools" type="throttle" name="odom_throttle" args="messages /odom 0.5"/>
+  <node pkg="geometry_msgs" type="serve_twist_command" name="sb_serve_twist_command" output="log
+/>
 </launch>
