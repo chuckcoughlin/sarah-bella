@@ -156,9 +156,10 @@ module support(x,y,z) {
 }
   
 // --------------------- Final Assembly ----------------------
+module final_assembly() {
 // Baseplate
 translate([0,0,thickness/2])
-difference() {
+difference() { 
     base(porch_x,porch_center_y,thickness);
     translate([0,-porch_center_y,0])
         holes(tab_x/2,tab_y,thickness);
@@ -208,8 +209,12 @@ translate([hex_offset,-porch_center_y-hex_radius/2,thickness])
         connector(thickness);
 translate([-hex_offset,-porch_center_y-hex_radius/2,0])
     connector(thickness);
- intersection() {   
-    translate([0,6+2*lampholder_thickness+thickness,-bulb_width/2+3])
-    rotate(90,[1,0,0]) 
-      lamp_flare();
- }
+}
+
+difference() {
+    final_assembly();
+// Subtract this  
+ translate([0,6+2*lampholder_thickness+thickness,-bulb_width/2+3])
+  rotate(90,[1,0,0]) 
+    lamp_flare();
+}
