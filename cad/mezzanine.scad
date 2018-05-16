@@ -21,10 +21,11 @@ breadboard_thickness = 10;
 breadboard_z = 10;          // Base to bottom of breadboard
 
 pillar_x     = 24;    // Center-line to center of pillar
-pillar_y     = 20;    // Baseline to center of pillar
+pillar_y     = -20;   // Baseline to center of pillar
 rim          = 3;     // Width of rim
 
-rivet1_x     = 54;
+battery_rivet_x     = 28;  // On centerline
+battery_rivet_y     = 16;  // On centerline, 16mm from rim.
 rivet2_x     = 60;
 rivet_y      = 8;
 rivet_radius = 2.5;   // Hole radius for rivet attachment
@@ -42,14 +43,14 @@ module tub(z,rwidth) {
 // Subtract this from the base platform
 // These are the posts
 module post_holes(z) {
-    for(i=[[pillar_x,-pillar_y],[-pillar_x,-pillar_y]]) {
+    for(i=[[pillar_x,pillar_y],[-pillar_x,pillar_y]]) {
         translate(i)
         rotate(22.5,0,0)
         cylinder(r=4,h=z,$fn=6);
     }
 }
 
-// These are the various holes for rivets
+// These are the various holes for battery rivets.
 // z - thickness
 module rivet_holes(z) {
     for(i=[[rivet1_x,-rivet_y],[rivet2_x,-rivet_y],
