@@ -2,7 +2,7 @@
 <package format="2">
   <name>teleop</name>
   <version>0.0.0</version>
-  <description>Turtlebot3 startup with motor control.</description>
+  <description>Turtlebot3 remote control.</description>
 
   <maintainer email="chuck_coughlin@comcast.net">chuckc</maintainer>
   <license>MIT</license>
