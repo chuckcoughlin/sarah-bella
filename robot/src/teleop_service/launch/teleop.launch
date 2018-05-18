@@ -1,0 +1,13 @@
+<!-- The "teleop" application relies on builtin functions except for our TwistCommand service.
+  Does not start the LIDAR.
+-->
+<launch>
+  <param name="robot/name" value="SarahBella" type="str"/>
+  <param name="robot/type" value="turtlebot3" type="str"/>
+  <param name="robot/application" value="teleop" type="str"/>
+  <param name="robot/platform" value="RaspberryPi" type="str"/>
+  <include file="$(find turtlebot3_bringup)/launch/turtlebot3_core.launch" />
+  <node pkg="topic_tools" type="throttle" name="odom_throttle" args="messages /odom 0.5"/>
+  <node pkg="teleop_service" type="twist_command.py" name="sb_serve_twist_command" output="log"
+/>
+</launch>
