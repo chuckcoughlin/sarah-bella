@@ -307,7 +307,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         }
     }
     // We've made a network connection to the robot, but failed to read the parameters we require.
-    // It may be that ROS is not running or is has been aborted.
+    // It may be that ROS is not running or is has been aborted. Disconnect.
     @Override
     public void handleRobotCommunicationError(String reason) {
         Log.w(CLSS, "handleRobotCommunicationError: " + reason);
@@ -317,6 +317,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
             SBWarningDialog warning = SBWarningDialog.newInstance("Error connecting to robot", reason);
             warning.show(getActivity().getFragmentManager(), DIALOG_TRANSACTION_KEY);
         }
+        robotManager.setConnectionState(SBRobotManager.STATE_OFFLINE);
     }
 
     // The application name is a global parameter of the robot. This method is called

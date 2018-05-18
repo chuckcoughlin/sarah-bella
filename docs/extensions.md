@@ -185,6 +185,13 @@ The initial construction of the package files was accomplished using:
    breadboard - 60x170 mm, solder-less
    relay module - Ivoldar Labs 5V
  ```
+ We've extended the TurtleBot3 "waffle" structures to add space for mounting the
+ headlamp and battery. 3D-printing source for these structures are contained in
+ the source code repository.
+ ![Porch (lamp holder)](/images/porch-cad.png)
+ ````                        Porch - Rendering of CAD Drawing ````
+ ![Mezzanine (auxiliary battery holder)](/images/mezzanine-cad.png)
+ ````                        Mezzanine - Rendering of CAD Drawing ````
 
  ### 03- Teleop <a id="teleop"></a>
 The view widget came from [here](https://github.com/rosjava/android_core/tree/kinetic/android_15/src/org/ros/android/view). There is no additional code required on the robot.

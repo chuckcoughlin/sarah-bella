@@ -190,6 +190,7 @@ public class MasterChecker {
                 catch (Throwable ex) {
                     Log.e(CLSS, "Exception while creating parameter client in MasterChecker for master URI " + masterUri, ex);
                     handler.handleRobotCommunicationError(ex.getLocalizedMessage());
+                    break;
                 }
             }
             threadRunning = false;

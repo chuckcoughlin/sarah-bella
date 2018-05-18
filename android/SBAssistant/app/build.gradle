@@ -67,4 +67,5 @@ dependencies {
     implementation files('libs/gpio_msgs-0.0.3.jar')
     implementation files('libs/turtlebot3_msgs-0.1.5.jar')
     implementation files('libs/tf-1.11.8.jar')
+    implementation files('libs/geometry_msgs-1.12.5.jar')
 }

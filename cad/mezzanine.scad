@@ -15,10 +15,12 @@ wide_y  = -26;    // The near edge the wide rectangular portion
 fillet_side= 16;  // End of flare to narrow
 full_y  = -86;    // Greatest extent of the plate
 
-breadboard_width = 164;     // 
-breadboard_height = 26;     // Chopped
+// NOTE: Added 1mm of "slop" to breadboard dimensions
+breadboard_width = 165;     // 
+breadboard_height = 27;     // Chopped
 breadboard_thickness = 10;
 breadboard_z = 10;          // Base to bottom of breadboard
+post_width   = 8;          // Support post for breadboard
 
 pillar_x     = 24;    // Center-line to center of pillar
 pillar_y     = -20;   // Baseline to center of pillar
@@ -32,15 +34,29 @@ main_rivet_y        = 0;
 rivet_radius = 2.5;   // Hole radius for rivet attachment
 round_radius = 2;     // Radius of the corner arcs
 
-// Make 4 holders for the breadboard corners plus 1 at midpoint 
-// of battery edge
-module supports(rwidth) {
-    //linear_extrude(height=z,center=false,convexity=10) {
-     //   difference() {
-      //      square([breadboard_x+2*rwidth,breadboard_y+2*rwidth],true);
-      //      square([breadboard_x,breadboard_y],true);
-       // }
-    //}
+// Make 4 holders for the breadboard corners
+module breadboard_posts() {
+     z = breadboard_z+thickness;
+    
+     for(i=[[breadboard_width/2,breadboard_height/2,z/2],
+            [-breadboard_width/2,breadboard_height/2,z/2], 
+            [-breadboard_width/2,-breadboard_height/2,z/2],
+            [breadboard_width/2,-breadboard_height/2,z/2]]) {
+                translate(i)
+                cube(size=[post_width,post_width,z],center=true);
+       }
+}
+// Offset holders for the breadboard corners to make notches at the top
+module breadboard_notches() {
+     z = 2*breadboard_z+thickness;
+     w = post_width;
+     for(i=[[breadboard_width/2-w/2,breadboard_height/2-w/2,z/2],
+            [-breadboard_width/2+w/2,breadboard_height/2-w/2,z/2], 
+            [-breadboard_width/2+w/2,-breadboard_height/2+w/2,z/2],
+            [breadboard_width/2-w/2,-breadboard_height/2+w/2,z/2]]) {
+                translate(i)
+                cube(size=[w,w,breadboard_thickness],center=true);
+       }
 }
 // Subtract this from the base platform
 // These are the posts
@@ -240,5 +256,7 @@ difference() {
      base_cutout(thickness,rim);
 }
  translate([0,0,thickness/2])
- supports(rim);
-     
+difference() {
+    breadboard_posts();
+    breadboard_notches();
+}

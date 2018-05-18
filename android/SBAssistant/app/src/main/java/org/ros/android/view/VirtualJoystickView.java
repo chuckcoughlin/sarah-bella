@@ -34,13 +34,17 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import chuckcoughlin.sb.assistant.R;
+import geometry_msgs.TwistCommandRequest;
+import geometry_msgs.TwistCommandResponse;
 
+import org.ros.exception.ServiceNotFoundException;
 import org.ros.message.MessageListener;
 import org.ros.namespace.GraphName;
 import org.ros.node.ConnectedNode;
 import org.ros.node.Node;
 import org.ros.node.NodeMain;
-import org.ros.node.topic.Publisher;
+
+import org.ros.node.service.ServiceClient;
 import org.ros.node.topic.Subscriber;
 
 import java.util.Timer;
@@ -98,7 +102,7 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
      */
     private static final float POST_LOCK_MAGNET_THETA = 20.0f;
     private static final int INVALID_POINTER_ID = -1;
-    private Publisher<geometry_msgs.Twist> publisher = null;
+    private ServiceClient<TwistCommandRequest, TwistCommandResponse> serviceClient = null;
     private Subscriber<nav_msgs.Odometry> subscriber = null;
     /**
      * mainLayout The parent layout that contains all the elements of the virtual
@@ -240,13 +244,13 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
      * Velocity commands are published when this is true. Not published otherwise.
      * This is to prevent spamming velocity commands.
      */
-    private volatile boolean publishVelocity;
+    private volatile boolean running;
     /**
      * Used to publish velocity commands at a specific rate.
      */
-    private Timer publisherTimer;
-    private geometry_msgs.Twist currentVelocityCommand;
-    private String publishTopic = "~cmd_vel";
+    private Timer serviceTimer;
+    private geometry_msgs.TwistCommandRequest currentVelocityRequest;
+    private String serviceName = "sb_serve_twist_command";
     private String subscribeTopic = "~odom";
 
     public VirtualJoystickView(Context context) {
@@ -302,7 +306,7 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
         // turn-in-place mode easy. Since the actual heading is irrelevant it does
         // no harm.
         currentOrientation = (float) -heading;
-        // Only update the orientation images if the turn-in-place mode is active.
+        // Only update the orientation images if the turn-in-place mode is running.
         if (turnInPlaceMode) {
             post(new Runnable() {
                 @Override
@@ -338,7 +342,7 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
                             previousVelocityMode = false;
                         }
                     }
-                    // Since the resume-previous-velocity mode is not active generate
+                    // Since the resume-previous-velocity mode is not running generate
                     // velocities based on current contact position.
                     else {
                         onContactMove(event.getX(event.findPointerIndex(pointerId)),
@@ -526,7 +530,7 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
 
     /**
      * Sets {@link #turnInPlaceMode} to false indicating that the turn-in-place is
-     * no longer active. It also changes the alpha values appropriately.
+     * no longer running. It also changes the alpha values appropriately.
      */
     private void endTurnInPlaceRotation() {
         turnInPlaceMode = false;
@@ -605,7 +609,7 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
      */
     private void onContactDown() {
         // The divets should be completely opaque indicating
-        // the virtual joystick is active.
+        // the virtual joystick is running.
         thumbDivet.setAlpha(1.0f);
         magnitudeText.setAlpha(1.0f);
         // Previous contact location need not be shown any more.
@@ -614,7 +618,7 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
         for (ImageView tack : orientationWidget) {
             tack.setVisibility(VISIBLE);
         }
-        publishVelocity = true;
+        running = true;
     }
 
     /**
@@ -693,12 +697,12 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
         animateOrientationWidgets();
         updateThumbDivet(thumbDivetX, thumbDivetY);
         updateMagnitudeText();
-        // Publish the velocities.
+        // Command the velocities.
         if (holonomic) {
-            publishVelocity(normalizedMagnitude * Math.cos(contactTheta * Math.PI / 180.0),
+            commandVelocity(normalizedMagnitude * Math.cos(contactTheta * Math.PI / 180.0),
                     normalizedMagnitude * Math.sin(contactTheta * Math.PI / 180.0), 0);
         } else {
-            publishVelocity(normalizedMagnitude * Math.cos(contactTheta * Math.PI / 180.0), 0,
+            commandVelocity(normalizedMagnitude * Math.cos(contactTheta * Math.PI / 180.0), 0,
                     normalizedMagnitude * Math.sin(contactTheta * Math.PI / 180.0));
         }
 
@@ -712,12 +716,12 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
     private void updateTurnInPlaceMode() {
         if (!turnInPlaceMode) {
             if (floatCompare(contactTheta, 270)) {
-                // If the user is turning left and the turn-in-place mode is not active
+                // If the user is turning left and the turn-in-place mode is not running
                 // then activate it for a left turn.
                 turnInPlaceMode = true;
                 rightTurnOffset = 0;
             } else if (floatCompare(contactTheta, 90)) {
-                // If the user is turning right and the turn-in-place mode is not active
+                // If the user is turning right and the turn-in-place mode is not running
                 // then activate it for a right turn.
                 turnInPlaceMode = true;
                 rightTurnOffset = 15;
@@ -756,7 +760,7 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
 
     /**
      * The divets and the ring are made transparent to reflect that the virtual
-     * joystick is no longer active. The intensity circle is slowly scaled to 0.
+     * joystick is no longer running. The intensity circle is slowly scaled to 0.
      */
     private void onContactUp() {
         // TODO(munjaldesai): The 1000 should eventually be replaced with a number
@@ -775,13 +779,13 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
         // Reset the pointer id.
         pointerId = INVALID_POINTER_ID;
         // The robot should stop moving.
-        publishVelocity(0, 0, 0);
+        commandVelocity(0, 0, 0);
         // Stop publishing the velocity since the contact is no longer on the
         // screen.
-        publishVelocity = false;
-        // Publish one last message to make sure the robot stops.
-        if (publisher != null) publisher.publish(currentVelocityCommand);
-        // Turn-in-place should not be active anymore.
+        running = false;
+        // Make one last request to make sure the robot stops.
+        if (serviceClient != null) serviceClient.call(currentVelocityRequest,null);
+        // Turn-in-place should not be running anymore.
         endTurnInPlaceRotation();
         // Hide the orientation tacks.
         for (ImageView tack : orientationWidget) {
@@ -795,15 +799,15 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
      * @param linearVelocityX  The normalized linear velocity (-1 to 1).
      * @param angularVelocityZ The normalized angular velocity (-1 to 1).
      */
-    private void publishVelocity(double linearVelocityX, double linearVelocityY,
+    private void commandVelocity(double linearVelocityX, double linearVelocityY,
                                  double angularVelocityZ) {
-        if (currentVelocityCommand != null) {
-            currentVelocityCommand.getLinear().setX(linearVelocityX);
-            currentVelocityCommand.getLinear().setY(-linearVelocityY);
-            currentVelocityCommand.getLinear().setZ(0);
-            currentVelocityCommand.getAngular().setX(0);
-            currentVelocityCommand.getAngular().setY(0);
-            currentVelocityCommand.getAngular().setZ(-angularVelocityZ);
+        if (currentVelocityRequest != null) {
+            currentVelocityRequest.getLinear().setX(linearVelocityX);
+            currentVelocityRequest.getLinear().setY(-linearVelocityY);
+            currentVelocityRequest.getLinear().setZ(0);
+            currentVelocityRequest.getAngular().setX(0);
+            currentVelocityRequest.getAngular().setY(0);
+            currentVelocityRequest.getAngular().setZ(-angularVelocityZ);
         }
     }
 
@@ -919,8 +923,8 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
     /*
      * Set the publish and subscribe topics
      */
-    public void setTopicNames(String pubTopic,String subTopic) {
-        this.publishTopic = pubTopic;
+    public void setTopicNames(String srvName,String subTopic) {
+        this.serviceName = srvName;
         this.subscribeTopic = subTopic;
     }
 
@@ -931,18 +935,23 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
 
     @Override
     public void onStart(ConnectedNode connectedNode) {
-        publisher = connectedNode.newPublisher(publishTopic, geometry_msgs.Twist._TYPE);
-        currentVelocityCommand = publisher.newMessage();
+        try {
+            serviceClient = connectedNode.newServiceClient(serviceName, geometry_msgs.TwistCommand._TYPE);
+            currentVelocityRequest = serviceClient.newMessage();
+        }
+        catch(ServiceNotFoundException snfe) {
+            Log.e(CLSS,String.format("onStart service %s not found (%s)",serviceName,snfe.getLocalizedMessage()));
+        }
         subscriber = connectedNode.newSubscriber(subscribeTopic, nav_msgs.Odometry._TYPE);
         subscriber.addMessageListener(this);
-        publisherTimer = new Timer();
-        publisherTimer.schedule(new TimerTask() {
+        serviceTimer = new Timer();
+        serviceTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                if (publishVelocity) {
-                    Log.i(CLSS,String.format("publish Twist(xy) %f %f",currentVelocityCommand.getLinear().getX(),
-                                                                           currentVelocityCommand.getLinear().getY()));
-                    publisher.publish(currentVelocityCommand);
+                if (running) {
+                    Log.i(CLSS,String.format("onStart: command Twist(xy) %f %f",
+                            currentVelocityRequest.getLinear().getX(),currentVelocityRequest.getLinear().getY()));
+                    serviceClient.call(currentVelocityRequest,null);
                 }
             }
         }, 0, 80);
@@ -958,18 +967,18 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
     }
 
     public void onShutdownComplete() {
-        if(publisher!=null)  {
-            publisher.shutdown();
-            publisher = null;
+        if(serviceClient!=null)  {
+            serviceClient.shutdown();
+            serviceClient = null;
         }
         if(subscriber!=null) {
             subscriber.shutdown();
             subscriber = null;
         }
-        if( publisherTimer!=null ) {
-            publisherTimer.cancel();
-            publisherTimer.purge();
-            publisherTimer = null;
+        if( serviceTimer !=null ) {
+            serviceTimer.cancel();
+            serviceTimer.purge();
+            serviceTimer = null;
         }
 
     }
