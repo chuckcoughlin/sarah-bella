@@ -48,17 +48,13 @@ elif [ ${APP} = "park" ]
 then
     echo "LAUNCH_PKG=automatic_parking" > ${CONFIG}
     echo "LAUNCH_FILE=automatic_parking.launch" >> ${CONFIG}
-elif [ ${APP} = "sensor" ]
-then
-    echo "LAUNCH_PKG=sensor_msgs" > ${CONFIG}
-    echo "LAUNCH_FILE=battery_state.launch" >> ${CONFIG}
 elif [ ${APP} = "system" ]
 then
     echo "LAUNCH_PKG=system_check" > ${CONFIG}
     echo "LAUNCH_FILE=system.launch" >> ${CONFIG}
 elif [ ${APP} = "teleop" -o ${APP} = "teleops" ]
 then
-    echo "LAUNCH_PKG=teleop" > ${CONFIG}
+    echo "LAUNCH_PKG=teleop_service" > ${CONFIG}
     echo "LAUNCH_FILE=teleop.launch" >> ${CONFIG}
 else
 	echo "Unknown application ${APP}"
