@@ -12,6 +12,7 @@ import GPIOConfiguration
 
 # Get the pin configuraiions
 PIN_COUNT = 40
+GPIOConfiguration.configure()
 pins = GPIOConfiguration.definePins()
 
 def set_GPIO(request):
@@ -24,9 +25,14 @@ def set_GPIO(request):
 	if mode=="OUT":
 		GPIO.output(channel,request.value)
 		response.mode = mode
-		response.value = GPIO.input(channel)
-		response.msg="Success"
-		rospy.loginfo("sb_serve_gpio_set: Pin %d %s => %s"%(channel,str(request.value),str(response.value)))
+		try:
+			response.value = GPIO.input(channel)
+			response.msg="Success"
+			rospy.loginfo("sb_serve_gpio_set: Pin %d %s => %s"%(channel,str(request.value),str(response.value)))
+		except:
+			response.msg = "Configuration error: channel %d"%(channel)
+			rospy.logwarn("sb_serve_gpio_set: Pin %d configuration error"%(channel)
+			response.mode = "BAD"
 	else:
 		response.msg="GPIOSet error: channel ",channel," not configured as an OUT"
 		response.mode = mode

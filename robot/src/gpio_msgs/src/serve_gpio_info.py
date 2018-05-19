@@ -6,6 +6,7 @@
 #
 import sys
 import rospy
+import RPi.GPIO as GPIO
 from std_msgs.msg import String
 from gpio_msgs.srv import GPIOPort,GPIOPortRequest,GPIOPortResponse
 import GPIOConfiguration

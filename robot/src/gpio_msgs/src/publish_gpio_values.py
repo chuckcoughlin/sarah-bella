@@ -47,10 +47,15 @@ while not rospy.is_shutdown():
 	pins = []
 	for pin in pinlist:
 		if pin.mode=="OUT" or pin.mode=="IN":
-			val = GPIO.input(pin.channel)
-			pin.value=val
-			if all or val != pin.value:
-				pins.append(pin)
+			try:
+				val = GPIO.input(pin.channel)
+				pin.value=val
+				if all or val != pin.value:
+					pins.append(pin)
+			except:
+				rospy.logwarn("ERROR getting value for pin %d"%(pin.channel))
+				pin.mode = "BAD"
+				
 
 	if len(pins)>0:
 		state = GPIOState()
