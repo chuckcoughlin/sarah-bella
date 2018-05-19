@@ -10,6 +10,7 @@ from std_msgs.msg import String
 from gpio_msgs.srv import GPIOPort,GPIOPortRequest,GPIOPortResponse
 import GPIOConfiguration
 
+GPIOConfiguration.configure()
 # Read the pin configurations
 PIN_COUNT = 40
 pins = GPIOConfiguration.definePins()
@@ -22,18 +23,18 @@ def get_GPIO(request):
 	channel = request.channel
 	response.label = ""
 	response.channel = request.channel
-	rospy.loginfo("GPIOGet: Read channel %d"%(channel))
 	# CheckMode
 	mode = GPIOConfiguration.getMode(channel)
 	if mode=="IN" or mode=="OUT":
 		response.mode = mode
 		response.value = GPIO.input(channel)
 		response.msg="Success"
+		rospy.loginfo("GPIOGet: Read channel %d = %s"%(channel,str(response.value)))
 	else:
 		response.mode = mode
 		response.msg="GPIOGet error: channel ",channel," not configured as an IN or OUT"
 		response.value = False
-	rospy.loginfo(response.msg)
+		rospy.loginfo(response.msg)
 	return response
 
 

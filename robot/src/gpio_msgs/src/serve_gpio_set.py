@@ -19,19 +19,19 @@ def set_GPIO(request):
 	channel = request.channel
 	response.label = ""
 	response.channel = channel
-	rospy.loginfo("sb_serve_gpio_set: Pin %d"%(channel))
 	# CheckMode
 	mode = GPIOConfiguration.getMode(channel)
 	if mode=="OUT":
 		GPIO.output(channel,request.value)
 		response.mode = mode
-		response.value = request.value
+		response.value = GPIO.input(channel)
 		response.msg="Success"
+		rospy.loginfo("sb_serve_gpio_set: Pin %d %s => %s"%(channel,str(request.value),str(response.value)))
 	else:
 		response.msg="GPIOSet error: channel ",channel," not configured as an OUT"
 		response.mode = mode
 		response.value = False
-	rospy.loginfo(response.msg)
+		rospy.loginfo(response.msg)
 	return response
 
 

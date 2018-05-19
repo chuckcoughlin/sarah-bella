@@ -10,6 +10,7 @@ from std_msgs.msg import String
 from gpio_msgs.srv import GPIOPort,GPIOPortRequest,GPIOPortResponse
 import GPIOConfiguration
 
+GPIOConfiguration.configure()
 PIN_COUNT = 40
 pins = GPIOConfiguration.definePins()
 
@@ -20,13 +21,13 @@ def config_GPIO(request):
 	response.value = request.value
 	if channel>0 and channel<= PIN_COUNT:
 		pin = pins[channel-1]
-		response.value = True
+		response.value = GPIO.LOW
 		response.label = pin.label
 		response.mode  = pin.mode
 		response.msg="Success"
 	else:
 		response.msg="GPIOInfo error: channel ",channel," is out-of-range"
-		response.value = False
+		response.value = GPIO.LOW
 	rospy.loginfo(response.msg)
 	return response
 
