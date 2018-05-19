@@ -10,7 +10,7 @@
 import sys
 import rospy
 from geometry_msgs.msg import Twist
-from teleop.srv import TwistCommand,TwistCommandRequest,TwistCommandResponse
+from teleop_service.srv import TwistCommand,TwistCommandRequest,TwistCommandResponse
 
 pub = rospy.Publisher('/cmd_vel',Twist,queue_size=1)
 
