@@ -79,9 +79,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        SBDbManager.destroy();
-        SBLogManager.destroy();
-        SBRobotManager.destroy();
-        SBApplicationManager.destroy();
+        if( isFinishing()) {
+            SBDbManager.destroy();
+            SBLogManager.destroy();
+            SBRobotManager.destroy();
+            SBApplicationManager.destroy();
+        }
     }
 }

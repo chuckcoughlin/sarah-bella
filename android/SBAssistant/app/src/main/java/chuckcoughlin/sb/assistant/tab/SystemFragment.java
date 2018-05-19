@@ -278,9 +278,9 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
         Log.i(CLSS,String.format("Received a click view is %s for pin %s",(view.isSelected()?"selected":"not selected"),
                 (view.getTag()==null?0:view.getTag().toString())));
         byte channel = ((Integer)view.getTag()).byteValue();
-        GPIOPortRequest request = gpioGetServiceClient.newMessage();
+        GPIOPortRequest request = gpioSetServiceClient.newMessage();
         request.setChannel(channel);
-        if( gpioGetServiceClient!=null ) {
+        if( gpioSetServiceClient!=null ) {
             view.setSelected(!view.isSelected());
             if (view.isSelected()) {
                 view.setBackgroundResource(R.drawable.border_false);
@@ -290,7 +290,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
                 view.setBackgroundResource(R.drawable.border_true);
                 request.setValue(false);
             }
-            gpioGetServiceClient.call(request, this);
+            gpioSetServiceClient.call(request, this);
         }
     }
 
@@ -316,7 +316,20 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
             });
         }
         else if(response.getMode().equalsIgnoreCase("IN")) {
-
+            mainActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    configureView(response.getChannel(),response.getMode(),response.getLabel(),response.getValue());
+                }
+            });
+        }
+        else if(response.getMode().equalsIgnoreCase("OUT")) {
+            mainActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    configureView(response.getChannel(),response.getMode(),response.getLabel(),response.getValue());
+                }
+            });
         }
     }
 
@@ -406,14 +419,14 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
             }
             else if( mode.equalsIgnoreCase("OUT"))  {
                 if( value ) {
-                    iv.setSelected(true);
-                    iv.setImageResource(R.drawable.ball_red);
-                    iv.setBackgroundResource(R.drawable.border_true);
-                }
-                else {
                     iv.setSelected(false);
                     iv.setImageResource(R.drawable.ball_green);
                     iv.setBackgroundResource(R.drawable.border_false);
+                }
+                else {
+                    iv.setSelected(true);
+                    iv.setImageResource(R.drawable.ball_red);
+                    iv.setBackgroundResource(R.drawable.border_true);
                 }
             }
         }

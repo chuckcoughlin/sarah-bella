@@ -188,6 +188,7 @@ The initial construction of the package files was accomplished using:
  We've extended the TurtleBot3 "waffle" structures to add space for mounting the
  headlamp and battery. 3D-printing source for these structures are contained in
  the source code repository.
+ 
  ![Porch (lamp holder)](/images/porch-cad.png)
  ````                        Porch - Rendering of CAD Drawing ````
  ![Mezzanine (auxiliary battery holder)](/images/mezzanine-cad.png)

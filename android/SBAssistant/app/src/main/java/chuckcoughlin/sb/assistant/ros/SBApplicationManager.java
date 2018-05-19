@@ -16,32 +16,19 @@ import org.ros.RosCore;
 import org.ros.address.InetAddressFactory;
 import org.ros.concurrent.ListenerGroup;
 import org.ros.concurrent.SignalRunnable;
-import org.ros.exception.RosException;
-import org.ros.namespace.GraphName;
-import org.ros.namespace.NameResolver;
 import org.ros.node.DefaultNodeMainExecutor;
-import org.ros.node.Node;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
-
 
 import chuckcoughlin.sb.assistant.common.SBConstants;
 import chuckcoughlin.sb.assistant.db.SBDbManager;
 import ros.android.appmanager.SBRobotConnectionErrorListener;
 import ros.android.util.TabletApplication;
-import ros.android.util.RobotDescription;
 
 
 /**
@@ -117,6 +104,20 @@ public class SBApplicationManager {
     }
 
     /**
+     * Called by the application's onStart. We now have a connected node and can inform
+     * our subscribers.
+     * @param name
+     */
+    public void applicationStarted(String name) {
+        if( name.equalsIgnoreCase(currentApplication.getApplicationName())) {
+            signalApplicationStart(name);
+        }
+        else {
+            Log.e(CLSS, String.format("applicationStarted: notified by %s, but cirrent application is %s",name,currentApplication.getApplicationName()));
+        }
+
+    }
+    /**
      * @return the application.
      */
     public TabletApplication getCurrentApplication() { return this.currentApplication; }
@@ -177,7 +178,9 @@ public class SBApplicationManager {
      * Set as a result of the asynch task on startup.
      * @param config
      */
-    public void setNodeConfiguration(NodeConfiguration config) { this.nodeConfiguration=config; }
+    public void setNodeConfiguration(NodeConfiguration config) {
+        this.nodeConfiguration=config;
+    }
 
     /**
      * Start RosCore on the local machine for the current application. The current state
@@ -201,8 +204,8 @@ public class SBApplicationManager {
                                 rosCore.awaitStart();
                                 nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
                                 nodeMainExecutor.execute(currentApplication, nodeConfiguration);
-                                SBApplicationManager.getInstance().signalApplicationStart(currentApplication.getApplicationName());
-                            } catch (Exception ex) {
+                            }
+                            catch (Exception ex) {
                                 signalError(String.format("startApplication: Unable to start (restart?) core (%s), continuing", ex.getLocalizedMessage()));
                             }
                         }
@@ -294,7 +297,8 @@ public class SBApplicationManager {
     }
     /**
      * Inform all listeners that the named application has started. It is up to the
-     * individual listeners to create subscriptions as appropriate.
+     * individual listeners to create subscriptions as appropriate. We need to wait
+     * for a connected node to exist before doing this.
      */
     private void signalApplicationStart(String appName) {
         Log.i(CLSS, String.format("signalApplicationStart: %s",appName));

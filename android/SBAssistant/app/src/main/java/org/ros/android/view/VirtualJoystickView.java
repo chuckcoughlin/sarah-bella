@@ -34,8 +34,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import chuckcoughlin.sb.assistant.R;
-import geometry_msgs.TwistCommandRequest;
-import geometry_msgs.TwistCommandResponse;
+import teleop_service.TwistCommandRequest;
+import teleop_service.TwistCommandResponse;
 
 import org.ros.exception.ServiceNotFoundException;
 import org.ros.message.MessageListener;
@@ -47,6 +47,7 @@ import org.ros.node.NodeMain;
 import org.ros.node.service.ServiceClient;
 import org.ros.node.topic.Subscriber;
 
+import java.nio.channels.UnresolvedAddressException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -249,8 +250,8 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
      * Used to publish velocity commands at a specific rate.
      */
     private Timer serviceTimer;
-    private geometry_msgs.TwistCommandRequest currentVelocityRequest;
-    private String serviceName = "sb_serve_twist_command";
+    private teleop_service.TwistCommandRequest currentVelocityRequest;
+    private String serviceName = "/sb_serve_twist_command";
     private String subscribeTopic = "~odom";
 
     public VirtualJoystickView(Context context) {
@@ -802,12 +803,12 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
     private void commandVelocity(double linearVelocityX, double linearVelocityY,
                                  double angularVelocityZ) {
         if (currentVelocityRequest != null) {
-            currentVelocityRequest.getLinear().setX(linearVelocityX);
-            currentVelocityRequest.getLinear().setY(-linearVelocityY);
-            currentVelocityRequest.getLinear().setZ(0);
-            currentVelocityRequest.getAngular().setX(0);
-            currentVelocityRequest.getAngular().setY(0);
-            currentVelocityRequest.getAngular().setZ(-angularVelocityZ);
+            currentVelocityRequest.setLinearX(linearVelocityX);
+            currentVelocityRequest.setLinearY(-linearVelocityY);
+            currentVelocityRequest.setLinearZ(0);
+            currentVelocityRequest.setAngularX(0);
+            currentVelocityRequest.setAngularY(0);
+            currentVelocityRequest.setAngularZ(-angularVelocityZ);
         }
     }
 
@@ -936,25 +937,29 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
     @Override
     public void onStart(ConnectedNode connectedNode) {
         try {
-            serviceClient = connectedNode.newServiceClient(serviceName, geometry_msgs.TwistCommand._TYPE);
+            serviceClient = connectedNode.newServiceClient(serviceName, teleop_service.TwistCommand._TYPE);
             currentVelocityRequest = serviceClient.newMessage();
+            subscriber = connectedNode.newSubscriber(subscribeTopic, nav_msgs.Odometry._TYPE);
+            subscriber.addMessageListener(this);
+            serviceTimer = new Timer();
+            serviceTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    if (running) {
+                        Log.i(CLSS,String.format("onStart: command Twist(xy) %f %f",
+                                currentVelocityRequest.getLinearX(),currentVelocityRequest.getLinearY()));
+                        serviceClient.call(currentVelocityRequest,null);
+                    }
+                }
+            }, 0, 80);
         }
         catch(ServiceNotFoundException snfe) {
             Log.e(CLSS,String.format("onStart service %s not found (%s)",serviceName,snfe.getLocalizedMessage()));
         }
-        subscriber = connectedNode.newSubscriber(subscribeTopic, nav_msgs.Odometry._TYPE);
-        subscriber.addMessageListener(this);
-        serviceTimer = new Timer();
-        serviceTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                if (running) {
-                    Log.i(CLSS,String.format("onStart: command Twist(xy) %f %f",
-                            currentVelocityRequest.getLinear().getX(),currentVelocityRequest.getLinear().getY()));
-                    serviceClient.call(currentVelocityRequest,null);
-                }
-            }
-        }, 0, 80);
+        catch( UnresolvedAddressException uae) {
+            Log.e(CLSS,String.format("onStart service %s, unresolved address (%s)",serviceName,uae.getLocalizedMessage()));
+        }
+
     }
 
     @Override

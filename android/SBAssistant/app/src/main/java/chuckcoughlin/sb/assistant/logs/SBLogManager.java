@@ -98,6 +98,9 @@ public class SBLogManager implements SBApplicationStatusListener {
             logListener.subscribe(node, "/rosout");  // Aggregated feed
             android.util.Log.i(CLSS, String.format("subscription started - /rosout"));
         }
+        else {
+            android.util.Log.i(CLSS, String.format("No connected node"));
+        }
     }
 
     @Override
@@ -124,7 +127,6 @@ public class SBLogManager implements SBApplicationStatusListener {
             if( observer!=null ) {
                 if(full) observer.notifyLogRemoved();
                 observer.notifyLogAppended();
-                //observer.notifyLogChanged();
             }
             else {
                 //android.util.Log.i(CLSS, String.format("WARNING: Attempt to notify null observer"));

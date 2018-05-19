@@ -103,7 +103,7 @@ public class TabletApplication extends AbstractNodeMain implements java.io.Seria
 
     /**
      * We receive this asynchronously from ROS internals once the node is actually started.
-     * Notify the application manager.  DOES THIS ACTUALLY HAPPEN?
+     * Notify the application manager.
      *
      * @param node the ROS node that is
      */
@@ -113,6 +113,7 @@ public class TabletApplication extends AbstractNodeMain implements java.io.Seria
         this.executionStatus = STATE_ACTIVE;
         Log.i(CLSS, String.format("%s.onStart: RECEIVED connectedNode!", getApplicationName()));
         this.connectedNode = node;
+        SBApplicationManager.getInstance().applicationStarted(getApplicationName());
     }
 
     @Override
