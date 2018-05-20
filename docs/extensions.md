@@ -188,19 +188,25 @@ The initial construction of the package files was accomplished using:
  We've extended the TurtleBot3 "waffle" structures to add space for mounting the
  headlamp and battery. 3D-printing source for these structures are contained in
  the source code repository.
- 
+
  ![Porch (lamp holder)](/images/porch-cad.png)
  ````                        Porch - Rendering of CAD Drawing ````
  ![Mezzanine (auxiliary battery holder)](/images/mezzanine-cad.png)
  ````                        Mezzanine - Rendering of CAD Drawing ````
 
  ### 03- Teleop <a id="teleop"></a>
-The view widget came from [here](https://github.com/rosjava/android_core/tree/kinetic/android_15/src/org/ros/android/view). There is no additional code required on the robot.
+The view widget came from [here](https://github.com/rosjava/android_core/tree/kinetic/android_15/src/org/ros/android/view).
+
+On the robot we use a service for control. It simply transforms requests into ```/cmd_vel (Twist)``` messages. The service is required because, with ROS, remote publishers must be established before local (on robot) subscribers. In our design the application is started from the tablet.
 
 ##### ----------------------- tablet --------------------------<br/>
-**publish:** /cmd_vel (Twist)<br/>
+**action:** /sb_serve_twist_command (TwistCommandRequest)<br/>
 **subscribe:**  /odom_throttle (Odometry)<br/>
 
+##### ----------------------- robot --------------------------<br/>
+**service:** /sb_serve_twist_command (TwistCommand)<br/>
+**subscribe:** /cmd_vel (Twist)<br/>
+**publish:**  /odom_throttle (Odometry)<br/>
 
  ### 04- Follow <a id="follow"></a>
  The *follower* application is one of the ROBOTIS demonstrations. I chose the version from: https://github.com/NVIDIA-Jetson/turtlebot3/tree/master/turtlebot_apps/turtlebot_follower. I modified references from *turtlebot_msgs* to *turtlebot3_msgs*.

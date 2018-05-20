@@ -154,7 +154,12 @@ public class MasterChecker {
                     Log.i(CLSS, "Parameters ......");
                     List<GraphName> names = paramClient.getParamNames().getResult();
                     for (GraphName name : names) {
-                        Log.i(CLSS, String.format("   %s = %s", name.toString(), paramClient.getParam(name).getResult().toString()));
+                        try {
+                            Log.i(CLSS, String.format("   %s = %s", name.toString(), paramClient.getParam(name).getResult().toString()));
+                        }
+                        catch(Exception ex) {
+                            Log.i(CLSS, String.format("EXCEPTION: getting parameter %s (%s)", name.toString(), ex.getLocalizedMessage()));
+                        }
                     }
 
                     if (hasName && hasType) {

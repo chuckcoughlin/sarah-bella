@@ -295,9 +295,8 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
     }
 
     // =============================================== ServiceResponseListener =================================================
-    // Use this message for all service responses. The response should contain enough info that
-    // we can figure
-    //            Log.i(CLSS, String.format("GPIOPortResponout what to do.
+    // Use this method for all service responses. The response should contain enough info that
+    // we can figure out what to do.
     @Override
     public void onSuccess(GPIOPortResponse response) {
         Activity mainActivity = getActivity();

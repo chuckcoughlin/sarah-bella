@@ -16,6 +16,7 @@
 
 package org.ros.android.view;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
 import android.util.AttributeSet;
@@ -34,10 +35,13 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import chuckcoughlin.sb.assistant.R;
+import teleop_service.TwistCommand;
 import teleop_service.TwistCommandRequest;
 import teleop_service.TwistCommandResponse;
 
+import org.ros.exception.RemoteException;
 import org.ros.exception.ServiceNotFoundException;
+import org.ros.internal.node.xmlrpc.XmlRpcTimeoutException;
 import org.ros.message.MessageListener;
 import org.ros.namespace.GraphName;
 import org.ros.node.ConnectedNode;
@@ -45,6 +49,7 @@ import org.ros.node.Node;
 import org.ros.node.NodeMain;
 
 import org.ros.node.service.ServiceClient;
+import org.ros.node.service.ServiceResponseListener;
 import org.ros.node.topic.Subscriber;
 
 import java.nio.channels.UnresolvedAddressException;
@@ -58,8 +63,8 @@ import java.util.TimerTask;
  *
  * @author munjaldesai@google.com (Munjal Desai)
  */
-public class VirtualJoystickView extends RelativeLayout implements AnimationListener,
-        MessageListener<nav_msgs.Odometry>, NodeMain {
+public class VirtualJoystickView extends RelativeLayout implements AnimationListener,NodeMain,
+                                         MessageListener<nav_msgs.Odometry>, ServiceResponseListener<TwistCommandResponse> {
     private static final String CLSS = "VirtualJoystickView";
 
     /**
@@ -651,7 +656,8 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
             // The magnitude should not exceed 1.
             normalizedMagnitude = 1f;
             contactRadius = 1f;
-        } else if (contactRadius < deadZoneRatio) {
+        }
+        else if (contactRadius < deadZoneRatio) {
             // Since the contact is inside the dead zone snap the thumb divet to the
             // dead zone. It should stay there till the contact gets outside the
             // deadzone area.
@@ -670,7 +676,8 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
                 // 270 then subtract the additional degrees so that the current theta is
                 // 0, 90, 180, or 270.
                 contactTheta -= ((contactTheta + 360) % 90);
-            } else if ((contactTheta + 360) % 90 > (90 - magnetTheta)) {
+            }
+            else if ((contactTheta + 360) % 90 > (90 - magnetTheta)) {
                 // If the current angle is within MAGNET_THETA degrees - 0, 90, 180, or
                 // 270 then add the additional degrees so that the current theta is 0,
                 // 90, 180, or 270.
@@ -680,11 +687,13 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
             if (floatCompare(contactTheta, 90) || floatCompare(contactTheta, 270)) {
                 magnetizedXAxis = true;
             }
-        } else {
+        }
+        else {
             // Use a wider range to keep the contact snapped in.
             if (differenceBetweenAngles((contactTheta + 360) % 360, 90) < POST_LOCK_MAGNET_THETA) {
                 contactTheta = 90;
-            } else if (differenceBetweenAngles((contactTheta + 360) % 360, 270) < POST_LOCK_MAGNET_THETA) {
+            }
+            else if (differenceBetweenAngles((contactTheta + 360) % 360, 270) < POST_LOCK_MAGNET_THETA) {
                 contactTheta = 270;
             }
             // Indicate that the contact is not snapped to the x-axis.
@@ -785,7 +794,7 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
         // screen.
         running = false;
         // Make one last request to make sure the robot stops.
-        if (serviceClient != null) serviceClient.call(currentVelocityRequest,null);
+        if (serviceClient != null) serviceClient.call(currentVelocityRequest,this);
         // Turn-in-place should not be running anymore.
         endTurnInPlaceRotation();
         // Hide the orientation tacks.
@@ -804,7 +813,7 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
                                  double angularVelocityZ) {
         if (currentVelocityRequest != null) {
             currentVelocityRequest.setLinearX(linearVelocityX);
-            currentVelocityRequest.setLinearY(-linearVelocityY);
+            currentVelocityRequest.setLinearY(linearVelocityY);
             currentVelocityRequest.setLinearZ(0);
             currentVelocityRequest.setAngularX(0);
             currentVelocityRequest.setAngularY(0);
@@ -936,30 +945,40 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
 
     @Override
     public void onStart(ConnectedNode connectedNode) {
-        try {
-            serviceClient = connectedNode.newServiceClient(serviceName, teleop_service.TwistCommand._TYPE);
-            currentVelocityRequest = serviceClient.newMessage();
-            subscriber = connectedNode.newSubscriber(subscribeTopic, nav_msgs.Odometry._TYPE);
-            subscriber.addMessageListener(this);
-            serviceTimer = new Timer();
-            serviceTimer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    if (running) {
-                        Log.i(CLSS,String.format("onStart: command Twist(xy) %f %f",
-                                currentVelocityRequest.getLinearX(),currentVelocityRequest.getLinearY()));
-                        serviceClient.call(currentVelocityRequest,null);
-                    }
+        final VirtualJoystickView jv = this;
+        new Thread(new Runnable(){
+            public void run() {
+                try {
+                    Log.i(CLSS,String.format("onStart: starting client for %s on %s",serviceName,connectedNode.getMasterUri().toString()));
+                    serviceClient = connectedNode.newServiceClient(serviceName, teleop_service.TwistCommand._TYPE);
+                    currentVelocityRequest = serviceClient.newMessage();
+                    subscriber = connectedNode.newSubscriber(subscribeTopic, nav_msgs.Odometry._TYPE);
+                    subscriber.addMessageListener(VirtualJoystickView.this);
+                    serviceTimer = new Timer();
+                    serviceTimer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            if (running) {
+                                Log.i(CLSS,String.format("onStart: command Twist(xy) %f %f",
+                                        currentVelocityRequest.getLinearX(),currentVelocityRequest.getLinearY()));
+                                serviceClient.call(currentVelocityRequest,jv);
+                            }
+                        }
+                    }, 40, 100);  // ~msecs
                 }
-            }, 0, 80);
-        }
-        catch(ServiceNotFoundException snfe) {
-            Log.e(CLSS,String.format("onStart service %s not found (%s)",serviceName,snfe.getLocalizedMessage()));
-        }
-        catch( UnresolvedAddressException uae) {
-            Log.e(CLSS,String.format("onStart service %s, unresolved address (%s)",serviceName,uae.getLocalizedMessage()));
-        }
+                catch( ServiceNotFoundException snfe ) {
+                    Log.e(CLSS, String.format("Exception while creating service client (%s)",snfe.getLocalizedMessage()));
+                }
+                catch (XmlRpcTimeoutException tex) {
+                    // With Bluetooth - UnresolvedAddressException creating service client.
+                    Log.e(CLSS, "Exception while creating service client");
+                }
 
+                catch (Throwable ex) {
+                    Log.e(CLSS, "Exception while creating parameter client ", ex);
+                }
+            }
+        }).start();
     }
 
     @Override
@@ -990,5 +1009,18 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
 
     @Override
     public void onError(Node node, Throwable throwable) {
+    }
+
+    // =============================================== ServiceResponseListener =================================================
+    // Use these methods to handle service responses. In general, the responses have no useful information.
+    // The framework requires that they be handled, however.
+    @Override
+    public void onSuccess(TwistCommandResponse response) {
+        Log.i(CLSS, String.format("SUCCESS: TwistCommandResponse (%s)",response.getMsg()));
+    }
+
+    @Override
+    public void onFailure(RemoteException re) {
+        Log.w(CLSS,String.format("Exception returned from service request (%s)",re.getLocalizedMessage()));
     }
 }

@@ -465,7 +465,7 @@ Our GPIO access method is RPi.GPIO.
   sudo apt-get install python-dev
   sudo apt-get install python-rpi.gpio
 ```
-For further documentation of this package, see: https://sourceforge.net/projects/raspberry-gpio-python/.
+For further documentation of this package, see: https://pypi.org/project/RPi.GPIO/.
 
 Most GPIO pins can be configured as either input or output, so the board configuration must be set before use. The configuration must be set in each process (publisher, subscriber, service). To do this in the current code base, edit
  ```~/catkin_ws/src/gpio_msgs/src/GPIOConfiguration.py```.
