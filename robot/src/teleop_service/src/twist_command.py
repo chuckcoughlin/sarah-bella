@@ -20,13 +20,13 @@ def handleTwist(request):
 	twist.linear.x = request.linear_x
 	twist.linear.y = request.linear_y
 	twist.linear.z = request.linear_z
-	twist.angular.x= requerst.angular_x
-	twist.angular.y= requerst.angular_y
-	twist.angular.z= requerst.angular_z
+	twist.angular.x= request.angular_x
+	twist.angular.y= request.angular_y
+	twist.angular.z= request.angular_z
 	response.msg = ""
-	rospy.loginfo("sb_serve_twist_command:" )
+	rospy.loginfo("Twist Command: %2.2f,%2.2f,%2.2f %2.2f,%2.2f,%2.2f"%(twist.linear.x,twist.linear.y,twist.linear.z,twist.angular.x,twist.angular.y,twist.angular.z) )
 	# Publish Twist
-	pub.publist(twist)
+	pub.publish(twist)
 	return response
 
 
