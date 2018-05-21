@@ -23,6 +23,7 @@ public class SBLogManager implements SBApplicationStatusListener {
     private final LogListener logListener;
     private final FixedSizeList<rosgraph_msgs.Log> logList;
     private final List<LogListObserver> observers;
+    private boolean frozen = false;
 
     /**
      * Constructor is private per Singleton pattern. This forces use of the single instance.
@@ -46,7 +47,7 @@ public class SBLogManager implements SBApplicationStatusListener {
             instance = new SBLogManager();
         }
         else {
-            throw new IllegalStateException("Attempt to initialize old copy of SBLogManager");
+            android.util.Log.w(CLSS,String.format("initialize: Log manager exists, re-initialization ignored"));
         }
         return instance;
     }
@@ -110,6 +111,21 @@ public class SBLogManager implements SBApplicationStatusListener {
         shutdown();
     }
 
+    /**
+     * Remove existing logs.
+     */
+    public void clear() {
+        logList.clear();
+        notifyObservers(true);
+    }
+    public void freeze() {
+        frozen = true;
+    }
+    public void resume() {
+        frozen = false;
+    }
+
+    public boolean isFrozen() { return frozen; }
 
     public void addObserver(LogListObserver observer) {
         observers.add(observer);
@@ -142,10 +158,16 @@ public class SBLogManager implements SBApplicationStatusListener {
 
         @Override
         public void onNewMessage(rosgraph_msgs.Log msg) {
-            android.util.Log.i(CLSS, String.format("Got a log message - %s", msg.getMsg()));
-            boolean full = logList.isFull();
-            logList.add(msg);
-            notifyObservers(full);
+
+            if( !frozen ) {
+                android.util.Log.i(CLSS, String.format("%s", msg.getMsg()));
+                boolean full = logList.isFull();
+                logList.add(msg);
+                notifyObservers(full);
+            }
+            else {
+                android.util.Log.i(CLSS, String.format("Ignored log message - %s", msg.getMsg()));
+            }
         }
     }
 }

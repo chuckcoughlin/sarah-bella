@@ -45,7 +45,7 @@ public class SBDbManager extends SQLiteOpenHelper {
             instance = new SBDbManager(context.getApplicationContext());
         }
         else {
-            throw new IllegalStateException("Attempt to initialize old copy of SBDbManager");
+            Log.w(CLSS,String.format("initialize: DB manager exists, re-initialization ignored"));
         }
         return instance;
     }

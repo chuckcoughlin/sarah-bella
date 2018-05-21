@@ -143,10 +143,8 @@ SensorState
 
 The *GPIOState* message is a custom message that provides the current state and configuration of the GPIO header.
 It consists of a list of *GPIOPin* messages. Normally the pin messages represent only
-those output channels that have changed. However, when the ROS parameter
-```/gpio_msgs/publish_all``` is set to "True", then the robot will return messages for the
-entire list of 40 pins. This parameter is handled like a semaphore, and is immediately
-reset to "False" by the robot. The GPIOState topic is designed to have a response
+those input/output channels that have changed state. However, on every 100th cycle, the robot will return messages for the
+entire list of 40 pins. The GPIOState topic is designed to have a response
 time on the order of 0.1 seconds.
 
 Each GPIOPin sub-message consists of:
@@ -186,13 +184,13 @@ The initial construction of the package files was accomplished using:
    relay module - Ivoldar Labs 5V
  ```
  We've extended the TurtleBot3 "waffle" structures to add space for mounting the
- headlamp and battery. 3D-printing source for these structures are contained in
+ headlamp and battery. The figures below are rendered from the CAD files. 3D-print sources for these structures are contained in
  the source code repository.
 
  ![Porch (lamp holder)](/images/porch-cad.png)
- ````                        Porch - Rendering of CAD Drawing ````
+ ````Porch````
  ![Mezzanine (auxiliary battery holder)](/images/mezzanine-cad.png)
- ````                        Mezzanine - Rendering of CAD Drawing ````
+ ````Mezzanine````
 
  ### 03- Teleop <a id="teleop"></a>
 The view widget came from [here](https://github.com/rosjava/android_core/tree/kinetic/android_15/src/org/ros/android/view).

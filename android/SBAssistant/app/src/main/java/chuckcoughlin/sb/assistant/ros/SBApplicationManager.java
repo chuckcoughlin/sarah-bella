@@ -59,7 +59,7 @@ public class SBApplicationManager {
 
     // Listeners for application status
     private final ListenerGroup<SBApplicationStatusListener> applicationListeners;
-    private final ListenerGroup<SBRobotConnectionErrorListener> errorListeners;
+    private final ListenerGroup errorListeners;
 
     /**
      * Constructor is private per Singleton pattern. This forces use of the single instance.

@@ -19,6 +19,10 @@
     <string name="discoveryToggleOff">OFF</string>
     <string name="discoveryButtonView">View</string>
     <string name="discoveryViewPopupTitle">Robot Attributes</string>
+    <!-- Strings for Log tab-->
+    <string name="logButtonClear">Clear</string>
+    <string name="logButtonFreeze">Freeze</string>
+    <string name="logButtonThaw">Unfreeze</string>
     <!-- Strings for System tab -->
     <string name="systemRobotLabel">Robot</string>
     <string name="systemTabletLabel">Tablet</string>

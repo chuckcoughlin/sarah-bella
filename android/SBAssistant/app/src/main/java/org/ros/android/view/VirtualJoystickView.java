@@ -57,8 +57,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * VirtualJoystickView creates a virtual joystick view that publishes velocity
- * as (geometry_msgs.Twist) messages. The current version contains the following
+ * VirtualJoystickView creates a virtual joystick view that requests velocities
+ * as (teleop_service.TwistCommand) messages. The current version contains the following
  * features: snap to axes, turn in place, and resume previous velocity.
  *
  * @author munjaldesai@google.com (Munjal Desai)
@@ -813,7 +813,7 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
                                  double angularVelocityZ) {
         if (currentVelocityRequest != null) {
             currentVelocityRequest.setLinearX(linearVelocityX);
-            currentVelocityRequest.setLinearY(linearVelocityY);
+            currentVelocityRequest.setLinearY(-linearVelocityY);
             currentVelocityRequest.setLinearZ(0);
             currentVelocityRequest.setAngularX(0);
             currentVelocityRequest.setAngularY(0);
@@ -1016,7 +1016,7 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
     // The framework requires that they be handled, however.
     @Override
     public void onSuccess(TwistCommandResponse response) {
-        Log.i(CLSS, String.format("SUCCESS: TwistCommandResponse (%s)",response.getMsg()));
+        //Log.i(CLSS, String.format("SUCCESS: TwistCommandResponse (%s)",response.getMsg()));
     }
 
     @Override
