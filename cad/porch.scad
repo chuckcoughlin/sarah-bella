@@ -101,13 +101,18 @@ module relay_holes(x,y,z) {
 
 
 // Protrusions to allow screws to main platform
+// Add filler an extra 2mm to sides and back
 module connector(z) {
+    translate([0,4,0])
+        cube([12,5,thickness],center=true);
+    translate([-4,2,0])
+        cube([4,4,thickness],center=true);
+    translate([4,2,0])
+        cube([4,4,thickness],center=true);
     difference() {
         rotate(22.5,0,0)
         cylinder(h=z,r1=5,r2=5,$fn=8,center=true);
         cylinder(h=z,r1=2,r2=2,center=true);
-        translate([0,0,z/2])
-          cylinder(height=z/2,r1=2.5,r2=2.5,$fn=8);
     }
 }
 // Subtract this from the base platform
@@ -115,11 +120,11 @@ module connector(z) {
 module connector_housing(z) {
     linear_extrude(height=z,center=true) {
         rotate(22.5,0,0)
-        circle(r=5,$fn=8);
+        circle(r=6,$fn=8);
     }
 }
 // Subtract this from the base platform
-// This also works for the cutout for posts.
+// This is the cutout for posts.
 module post_housing(z) {
     linear_extrude(height=z,center=true) {
         rotate(22.5,0,0)
@@ -204,7 +209,7 @@ translate([bulb_width/2-rim/2,porch_center_y/4,0])
 translate([-bulb_width/2+rim/2,porch_center_y/4,0])
     support(rim,porch_center_y/2,6);
 // These are the two protrusions for fastening to the robot.
-translate([hex_offset,-porch_center_y-hex_radius/2,thickness])
+translate([hex_offset,-porch_center_y-hex_radius/2,thickness]) 
     rotate(180,[0,1,0])
         connector(thickness);
 translate([-hex_offset,-porch_center_y-hex_radius/2,0])
