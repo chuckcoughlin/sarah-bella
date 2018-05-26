@@ -16,6 +16,7 @@
 
 package org.ros.android.view;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
 import android.util.AttributeSet;
@@ -34,27 +35,36 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import chuckcoughlin.sb.assistant.R;
+import teleop_service.TwistCommand;
+import teleop_service.TwistCommandRequest;
+import teleop_service.TwistCommandResponse;
 
+import org.ros.exception.RemoteException;
+import org.ros.exception.ServiceNotFoundException;
+import org.ros.internal.node.xmlrpc.XmlRpcTimeoutException;
 import org.ros.message.MessageListener;
 import org.ros.namespace.GraphName;
 import org.ros.node.ConnectedNode;
 import org.ros.node.Node;
 import org.ros.node.NodeMain;
-import org.ros.node.topic.Publisher;
+
+import org.ros.node.service.ServiceClient;
+import org.ros.node.service.ServiceResponseListener;
 import org.ros.node.topic.Subscriber;
 
+import java.nio.channels.UnresolvedAddressException;
 import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * VirtualJoystickView creates a virtual joystick view that publishes velocity
- * as (geometry_msgs.Twist) messages. The current version contains the following
+ * VirtualJoystickView creates a virtual joystick view that requests velocities
+ * as (teleop_service.TwistCommand) messages. The current version contains the following
  * features: snap to axes, turn in place, and resume previous velocity.
  *
  * @author munjaldesai@google.com (Munjal Desai)
  */
-public class VirtualJoystickView extends RelativeLayout implements AnimationListener,
-        MessageListener<nav_msgs.Odometry>, NodeMain {
+public class VirtualJoystickView extends RelativeLayout implements AnimationListener,NodeMain,
+                                         MessageListener<nav_msgs.Odometry>, ServiceResponseListener<TwistCommandResponse> {
     private static final String CLSS = "VirtualJoystickView";
 
     /**
@@ -98,7 +108,7 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
      */
     private static final float POST_LOCK_MAGNET_THETA = 20.0f;
     private static final int INVALID_POINTER_ID = -1;
-    private Publisher<geometry_msgs.Twist> publisher = null;
+    private ServiceClient<TwistCommandRequest, TwistCommandResponse> serviceClient = null;
     private Subscriber<nav_msgs.Odometry> subscriber = null;
     /**
      * mainLayout The parent layout that contains all the elements of the virtual
@@ -240,13 +250,13 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
      * Velocity commands are published when this is true. Not published otherwise.
      * This is to prevent spamming velocity commands.
      */
-    private volatile boolean publishVelocity;
+    private volatile boolean running;
     /**
      * Used to publish velocity commands at a specific rate.
      */
-    private Timer publisherTimer;
-    private geometry_msgs.Twist currentVelocityCommand;
-    private String publishTopic = "~cmd_vel";
+    private Timer serviceTimer;
+    private teleop_service.TwistCommandRequest currentVelocityRequest;
+    private String serviceName = "/sb_serve_twist_command";
     private String subscribeTopic = "~odom";
 
     public VirtualJoystickView(Context context) {
@@ -302,7 +312,7 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
         // turn-in-place mode easy. Since the actual heading is irrelevant it does
         // no harm.
         currentOrientation = (float) -heading;
-        // Only update the orientation images if the turn-in-place mode is active.
+        // Only update the orientation images if the turn-in-place mode is running.
         if (turnInPlaceMode) {
             post(new Runnable() {
                 @Override
@@ -338,7 +348,7 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
                             previousVelocityMode = false;
                         }
                     }
-                    // Since the resume-previous-velocity mode is not active generate
+                    // Since the resume-previous-velocity mode is not running generate
                     // velocities based on current contact position.
                     else {
                         onContactMove(event.getX(event.findPointerIndex(pointerId)),
@@ -526,7 +536,7 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
 
     /**
      * Sets {@link #turnInPlaceMode} to false indicating that the turn-in-place is
-     * no longer active. It also changes the alpha values appropriately.
+     * no longer running. It also changes the alpha values appropriately.
      */
     private void endTurnInPlaceRotation() {
         turnInPlaceMode = false;
@@ -605,7 +615,7 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
      */
     private void onContactDown() {
         // The divets should be completely opaque indicating
-        // the virtual joystick is active.
+        // the virtual joystick is running.
         thumbDivet.setAlpha(1.0f);
         magnitudeText.setAlpha(1.0f);
         // Previous contact location need not be shown any more.
@@ -614,7 +624,7 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
         for (ImageView tack : orientationWidget) {
             tack.setVisibility(VISIBLE);
         }
-        publishVelocity = true;
+        running = true;
     }
 
     /**
@@ -646,7 +656,8 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
             // The magnitude should not exceed 1.
             normalizedMagnitude = 1f;
             contactRadius = 1f;
-        } else if (contactRadius < deadZoneRatio) {
+        }
+        else if (contactRadius < deadZoneRatio) {
             // Since the contact is inside the dead zone snap the thumb divet to the
             // dead zone. It should stay there till the contact gets outside the
             // deadzone area.
@@ -665,7 +676,8 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
                 // 270 then subtract the additional degrees so that the current theta is
                 // 0, 90, 180, or 270.
                 contactTheta -= ((contactTheta + 360) % 90);
-            } else if ((contactTheta + 360) % 90 > (90 - magnetTheta)) {
+            }
+            else if ((contactTheta + 360) % 90 > (90 - magnetTheta)) {
                 // If the current angle is within MAGNET_THETA degrees - 0, 90, 180, or
                 // 270 then add the additional degrees so that the current theta is 0,
                 // 90, 180, or 270.
@@ -675,11 +687,13 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
             if (floatCompare(contactTheta, 90) || floatCompare(contactTheta, 270)) {
                 magnetizedXAxis = true;
             }
-        } else {
+        }
+        else {
             // Use a wider range to keep the contact snapped in.
             if (differenceBetweenAngles((contactTheta + 360) % 360, 90) < POST_LOCK_MAGNET_THETA) {
                 contactTheta = 90;
-            } else if (differenceBetweenAngles((contactTheta + 360) % 360, 270) < POST_LOCK_MAGNET_THETA) {
+            }
+            else if (differenceBetweenAngles((contactTheta + 360) % 360, 270) < POST_LOCK_MAGNET_THETA) {
                 contactTheta = 270;
             }
             // Indicate that the contact is not snapped to the x-axis.
@@ -693,12 +707,12 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
         animateOrientationWidgets();
         updateThumbDivet(thumbDivetX, thumbDivetY);
         updateMagnitudeText();
-        // Publish the velocities.
+        // Command the velocities.
         if (holonomic) {
-            publishVelocity(normalizedMagnitude * Math.cos(contactTheta * Math.PI / 180.0),
+            commandVelocity(normalizedMagnitude * Math.cos(contactTheta * Math.PI / 180.0),
                     normalizedMagnitude * Math.sin(contactTheta * Math.PI / 180.0), 0);
         } else {
-            publishVelocity(normalizedMagnitude * Math.cos(contactTheta * Math.PI / 180.0), 0,
+            commandVelocity(normalizedMagnitude * Math.cos(contactTheta * Math.PI / 180.0), 0,
                     normalizedMagnitude * Math.sin(contactTheta * Math.PI / 180.0));
         }
 
@@ -712,12 +726,12 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
     private void updateTurnInPlaceMode() {
         if (!turnInPlaceMode) {
             if (floatCompare(contactTheta, 270)) {
-                // If the user is turning left and the turn-in-place mode is not active
+                // If the user is turning left and the turn-in-place mode is not running
                 // then activate it for a left turn.
                 turnInPlaceMode = true;
                 rightTurnOffset = 0;
             } else if (floatCompare(contactTheta, 90)) {
-                // If the user is turning right and the turn-in-place mode is not active
+                // If the user is turning right and the turn-in-place mode is not running
                 // then activate it for a right turn.
                 turnInPlaceMode = true;
                 rightTurnOffset = 15;
@@ -756,7 +770,7 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
 
     /**
      * The divets and the ring are made transparent to reflect that the virtual
-     * joystick is no longer active. The intensity circle is slowly scaled to 0.
+     * joystick is no longer running. The intensity circle is slowly scaled to 0.
      */
     private void onContactUp() {
         // TODO(munjaldesai): The 1000 should eventually be replaced with a number
@@ -775,13 +789,13 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
         // Reset the pointer id.
         pointerId = INVALID_POINTER_ID;
         // The robot should stop moving.
-        publishVelocity(0, 0, 0);
+        commandVelocity(0, 0, 0);
         // Stop publishing the velocity since the contact is no longer on the
         // screen.
-        publishVelocity = false;
-        // Publish one last message to make sure the robot stops.
-        if (publisher != null) publisher.publish(currentVelocityCommand);
-        // Turn-in-place should not be active anymore.
+        running = false;
+        // Make one last request to make sure the robot stops.
+        if (serviceClient != null) serviceClient.call(currentVelocityRequest,this);
+        // Turn-in-place should not be running anymore.
         endTurnInPlaceRotation();
         // Hide the orientation tacks.
         for (ImageView tack : orientationWidget) {
@@ -795,15 +809,15 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
      * @param linearVelocityX  The normalized linear velocity (-1 to 1).
      * @param angularVelocityZ The normalized angular velocity (-1 to 1).
      */
-    private void publishVelocity(double linearVelocityX, double linearVelocityY,
+    private void commandVelocity(double linearVelocityX, double linearVelocityY,
                                  double angularVelocityZ) {
-        if (currentVelocityCommand != null) {
-            currentVelocityCommand.getLinear().setX(linearVelocityX);
-            currentVelocityCommand.getLinear().setY(-linearVelocityY);
-            currentVelocityCommand.getLinear().setZ(0);
-            currentVelocityCommand.getAngular().setX(0);
-            currentVelocityCommand.getAngular().setY(0);
-            currentVelocityCommand.getAngular().setZ(-angularVelocityZ);
+        if (currentVelocityRequest != null) {
+            currentVelocityRequest.setLinearX(linearVelocityX);
+            currentVelocityRequest.setLinearY(-linearVelocityY);
+            currentVelocityRequest.setLinearZ(0);
+            currentVelocityRequest.setAngularX(0);
+            currentVelocityRequest.setAngularY(0);
+            currentVelocityRequest.setAngularZ(-angularVelocityZ);
         }
     }
 
@@ -919,8 +933,8 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
     /*
      * Set the publish and subscribe topics
      */
-    public void setTopicNames(String pubTopic,String subTopic) {
-        this.publishTopic = pubTopic;
+    public void setTopicNames(String srvName,String subTopic) {
+        this.serviceName = srvName;
         this.subscribeTopic = subTopic;
     }
 
@@ -931,21 +945,40 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
 
     @Override
     public void onStart(ConnectedNode connectedNode) {
-        publisher = connectedNode.newPublisher(publishTopic, geometry_msgs.Twist._TYPE);
-        currentVelocityCommand = publisher.newMessage();
-        subscriber = connectedNode.newSubscriber(subscribeTopic, nav_msgs.Odometry._TYPE);
-        subscriber.addMessageListener(this);
-        publisherTimer = new Timer();
-        publisherTimer.schedule(new TimerTask() {
-            @Override
+        final VirtualJoystickView jv = this;
+        new Thread(new Runnable(){
             public void run() {
-                if (publishVelocity) {
-                    Log.i(CLSS,String.format("publish Twist(xy) %f %f",currentVelocityCommand.getLinear().getX(),
-                                                                           currentVelocityCommand.getLinear().getY()));
-                    publisher.publish(currentVelocityCommand);
+                try {
+                    Log.i(CLSS,String.format("onStart: starting client for %s on %s",serviceName,connectedNode.getMasterUri().toString()));
+                    serviceClient = connectedNode.newServiceClient(serviceName, teleop_service.TwistCommand._TYPE);
+                    currentVelocityRequest = serviceClient.newMessage();
+                    subscriber = connectedNode.newSubscriber(subscribeTopic, nav_msgs.Odometry._TYPE);
+                    subscriber.addMessageListener(VirtualJoystickView.this);
+                    serviceTimer = new Timer();
+                    serviceTimer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            if (running) {
+                                Log.i(CLSS,String.format("onStart: command Twist(xy) %f %f",
+                                        currentVelocityRequest.getLinearX(),currentVelocityRequest.getLinearY()));
+                                serviceClient.call(currentVelocityRequest,jv);
+                            }
+                        }
+                    }, 40, 100);  // ~msecs
+                }
+                catch( ServiceNotFoundException snfe ) {
+                    Log.e(CLSS, String.format("Exception while creating service client (%s)",snfe.getLocalizedMessage()));
+                }
+                catch (XmlRpcTimeoutException tex) {
+                    // With Bluetooth - UnresolvedAddressException creating service client.
+                    Log.e(CLSS, "Exception while creating service client");
+                }
+
+                catch (Throwable ex) {
+                    Log.e(CLSS, "Exception while creating parameter client ", ex);
                 }
             }
-        }, 0, 80);
+        }).start();
     }
 
     @Override
@@ -958,23 +991,36 @@ public class VirtualJoystickView extends RelativeLayout implements AnimationList
     }
 
     public void onShutdownComplete() {
-        if(publisher!=null)  {
-            publisher.shutdown();
-            publisher = null;
+        if(serviceClient!=null)  {
+            serviceClient.shutdown();
+            serviceClient = null;
         }
         if(subscriber!=null) {
             subscriber.shutdown();
             subscriber = null;
         }
-        if( publisherTimer!=null ) {
-            publisherTimer.cancel();
-            publisherTimer.purge();
-            publisherTimer = null;
+        if( serviceTimer !=null ) {
+            serviceTimer.cancel();
+            serviceTimer.purge();
+            serviceTimer = null;
         }
 
     }
 
     @Override
     public void onError(Node node, Throwable throwable) {
+    }
+
+    // =============================================== ServiceResponseListener =================================================
+    // Use these methods to handle service responses. In general, the responses have no useful information.
+    // The framework requires that they be handled, however.
+    @Override
+    public void onSuccess(TwistCommandResponse response) {
+        //Log.i(CLSS, String.format("SUCCESS: TwistCommandResponse (%s)",response.getMsg()));
+    }
+
+    @Override
+    public void onFailure(RemoteException re) {
+        Log.w(CLSS,String.format("Exception returned from service request (%s)",re.getLocalizedMessage()));
     }
 }

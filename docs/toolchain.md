@@ -459,25 +459,16 @@ The GPIO pin layout is shown below:
 ![GPIO](/images/RaspberryPi-GPIO.png)
 ````                        RaspberryPi GPIO Pin Assignments ````
 
-Download the *wiringPi* GPIO library and build the 'gpio' tool. Copy into a *bin* area for use in ROS scripts as needed.
 
-```
-  mkdir -p ~/external
-  cd ~/external
-  git clone git://git.drogon.net/wiringPi
-  cd wiringPi
-  sudo ./build
-  mkdir ~/robotics/bin
-  cp gpio/gpio ~/robotics/bin
-```
-An alternative GPIO access method is RPi.GPIO.
+Our GPIO access method is RPi.GPIO.
 ```
   sudo apt-get install python-dev
   sudo apt-get install python-rpi.gpio
 ```
-For further documentation of this package, see: https://sourceforge.net/projects/raspberry-gpio-python/.
+For further documentation of this package, see: https://pypi.org/project/RPi.GPIO/.
 
-Most GPIO pins can be configured as either input or output, so the board configuration must be set before use. To do this, edit ```~/catkin_ws/src/gpio_msgs/src/GPIOConfiguration.py```.
+Most GPIO pins can be configured as either input or output, so the board configuration must be set before use. The configuration must be set in each process (publisher, subscriber, service). To do this in the current code base, edit
+ ```~/catkin_ws/src/gpio_msgs/src/GPIOConfiguration.py```.
 
 #### OpenCR <a id="opencr"></a>
 Scripting is an alternative to an Arduino IDE on the Mac build system. Complete directions may be found [here](http://emanual.robotis.com/docs/en/platform/turtlebot3/opencr_setup/#opencr-setup), section 8.1.1. Make sure that the board is in *DFU* mode. No extraneous connections are required. Make sure that */dev/ttyACM0* exists. I have found that loose cables may be the culprit if the device file is not present.

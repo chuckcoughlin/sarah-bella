@@ -12,10 +12,11 @@ GPIO.setwarnings(False)
 
 # Get warning if pins are set as outputs, but they are not.
 def configure():
+	rospy.loginfo("Configuring GPIO pins ...")
 	chanlist = [3,5,8,10,13,15,19,21,22,23,24,26,29,32,33,35,36,37,38,40]
 	for channel in chanlist:
 		try:
-			GPIO.setup([channel],GPIO.IN)
+			GPIO.setup(channel,GPIO.IN)
 			rospy.loginfo("Setting GPIO ",channel," to IN")
 		except:
 			rospy.logwarn("ERROR: Setting GPIO ",channel," to IN")
@@ -23,7 +24,7 @@ def configure():
 	chanlist = [7,11,12,16,18]
 	for channel in chanlist:
 		try:
-			GPIO.setup([channel],GPIO.OUT)
+			GPIO.setup(channel,GPIO.OUT,initial=GPIO.LOW)
 			rospy.loginfo("Setting GPIO ",channel," to OUT")
 		except:
 			rospy.logwarn("ERROR: Setting GPIO ",channel," to OUT")
@@ -37,23 +38,27 @@ def initialize(state):
 	return state.pins
 
 def getMode(channel):
-	mode = GPIO.gpio_function(channel)
-	if mode==GPIO.IN:
-		return "IN"
-	elif mode==GPIO.OUT:
-		return "OUT"
-	elif mode==GPIO.SPI:
-		return "SPI"
-	elif mode==GPIO.I2C:
-		return "I2C"
-	elif mode==GPIO.HARD_PWM:
-		return "HWE"
-	elif mode==GPIO.SERIAL:
-		return "SER"
-	elif mode==GPIO.UNKNOWN:
-		return "UNK"
-	else:
-		return "??"
+	try:
+		mode = GPIO.gpio_function(channel)
+		if mode==GPIO.IN:
+			return "IN"
+		elif mode==GPIO.OUT:
+			return "OUT"
+		elif mode==GPIO.SPI:
+			return "SPI"
+		elif mode==GPIO.I2C:
+			return "I2C"
+		elif mode==GPIO.HARD_PWM:
+			return "HWE"
+		elif mode==GPIO.SERIAL:
+			return "SER"
+		elif mode==GPIO.UNKNOWN:
+			return "UNK"
+		else:
+			return "??"
+	except:
+			# Illegal on a Raspberry Pi
+			return "BAD"
 
 def definePins():
 	pins = []

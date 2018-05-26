@@ -16,6 +16,7 @@ debugged and added to the repository on the development system.  From there the 
   * system: tablet displays robot status - CPU, memory, battery and GPIO configuration. Tablet gets, sets and subscribes to GPIO values.
   * logging: tablet displays ROS log messages generated on the robot.
   * lidar: tablet displays laser scan output.
+  * teleop: use a virtual joystick on the tablet to control the robot.
 
 
  For further details see [applications](http://github.com/chuckcoughlin/sarah-bella/tree/master/docs/applications.md), [toolchain](https://github.com/chuckcoughlin/sarah-bella/tree/master/docs/toolchain.md) and [extensions](https://github.com/chuckcoughlin/sarah-bella/tree/master/docs/extensions.md).

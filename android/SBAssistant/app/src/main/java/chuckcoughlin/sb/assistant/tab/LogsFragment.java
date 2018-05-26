@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import chuckcoughlin.sb.assistant.R;
@@ -29,12 +30,13 @@ public class LogsFragment extends BasicAssistantFragment implements SBApplicatio
     private RecyclerView.LayoutManager layoutManager;
     private LogRecyclerAdapter adapter;
     private SBApplicationManager applicationManager;
+    private View rootView = null;
     private RecyclerView logMessageView;
     private TextView logView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_logs, container, false);
+        rootView = inflater.inflate(R.layout.fragment_logs, container, false);
         TextView textView = rootView.findViewById(R.id.fragmentLogsText);
         textView.setText(R.string.fragmentLogsLabel);
         this.applicationManager = SBApplicationManager.getInstance();
@@ -47,6 +49,21 @@ public class LogsFragment extends BasicAssistantFragment implements SBApplicatio
         adapter = new LogRecyclerAdapter();
         logMessageView.setAdapter(adapter);
 
+        Button button = (Button) rootView.findViewById(R.id.clearButton);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clearButtonClicked();
+            }
+        });
+        button = (Button) rootView.findViewById(R.id.freezeButton);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                freezeButtonClicked();
+            }
+        });
+        updateUI();
         return rootView;
     }
 
@@ -70,6 +87,34 @@ public class LogsFragment extends BasicAssistantFragment implements SBApplicatio
     public void applicationShutdown(String appName) {
         Log.i(CLSS, String.format("applicationShutdown"));
         SBLogManager.getInstance().removeObserver(adapter);
+    }
+
+    //======================================== Button Callbacks ======================================
+    //
+    public void clearButtonClicked() {
+        Log.i(CLSS, "Clear button clicked");
+        SBLogManager.getInstance().clear();
+    }
+
+    public void freezeButtonClicked() {
+        SBLogManager logManager = SBLogManager.getInstance();
+        if( logManager.isFrozen() ) {
+            logManager.resume();
+        }
+        else {
+            logManager.freeze();
+        }
+        updateUI();
+    }
+
+    private void updateUI() {
+        Button button = (Button) rootView.findViewById(R.id.freezeButton);
+        if( SBLogManager.getInstance().isFrozen() ) {
+            button.setText(R.string.logButtonThaw);
+        }
+        else {
+            button.setText(R.string.logButtonFreeze);
+        }
     }
 
 }

@@ -66,7 +66,7 @@ screen centers the image on the touch point.
 ```                        SB Assistant - System Page ```</br>
 [toc](#table-of-contents)
 
-The **system** panel is designed to read system parameters and interactively exercise devices on the robot. It displays system CPU and memory performance metrics; it also sports a table that displays status of GPIO outputs and provides control actions for GPIO inputs.
+The **system** panel is designed to read system parameters and interactively exercise devices on the robot. It displays system CPU and memory performance metrics; it also shows a table that displays configuration and status of GPIO pins. The gray dots refer to inputs, the red/green to outputs.  Selecting an output changes its state.
 
 ******************************************************
 ### 02 - Headlamp <a id="headlamp"></a>
@@ -79,7 +79,7 @@ lamp on and off.
 ```                        SB Assistant - Teleop Control ```</br>
 [toc](#table-of-contents)
 
-The **teleop** application ...
+The **teleop** application provides remote-control of the robot via the virtual joystick. Pressing further from the center results in increasing speed in the direction pressed. Lifting the finger, stops the robot.
 
 ******************************************************
 ### 04 - Follow <a id="follow"></a>

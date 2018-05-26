@@ -39,7 +39,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         TextView label = view.findViewById(R.id.fragmentTeleopsText);
         label.setText(R.string.fragmentTeleopLabel);
         joystick = (VirtualJoystickView)view.findViewById(R.id.virtual_joystick);
-        joystick.setTopicNames("/cmd_vel","/odom_throttle");   // Publish & subscribe topics
+        joystick.setTopicNames("/sb_serve_twist_command","/odom_throttle");   // Publish & subscribe topics
         applicationManager.addListener(this);
         return view;
     }
