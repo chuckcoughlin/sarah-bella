@@ -70,8 +70,15 @@ The **system** panel is designed to read system parameters and interactively exe
 
 ******************************************************
 ### 02 - Headlamp <a id="headlamp"></a>
+![SB Assistant](/images/sarah-bella-porch.png)
+```                        Sarah-Bella Porch Structure ```</br>
+![SB Assistant](/images/sarah-bella-mezzanine.png)
+```                        Sarah-Bella Mezzanine Structure ```</br>
+[toc](#table-of-contents)
 The **headlamp** application has no separate control panel. Instead, the *system* panel is used. Simply press the GPIO channel labelled ```HEADLAMP``` to turn the
 lamp on and off.
+
+The photos show the "porch" add-on structure used to hold the headlamp and relay module. The "mezzanine" holds a breadboard and auxiliary battery.
 
 ******************************************************
 ### 03 - Teleop <a id="teleop"></a>
