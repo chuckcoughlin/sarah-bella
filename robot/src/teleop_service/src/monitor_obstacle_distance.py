@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+#
+# Use the LasarScan to compute the distance to any obstacle in a region in front
+# of the robot. The region has a width specified as a parameter.
+#
+# Package: teleop_service. Width parameter = "robot/width"
+#          Refresh interval used to slow down the publication rate
+#
+import rospy
+import sys
+import math
+from sensor_msgs.msg import LaserScan
+from std_msgs.msg import String
+from teleop_service.msg import ObstacleDistance
+	
+DEFAULT_WIDTH = 1000. # mm
+REFRESH_INTERVAL = 10
+INFINITY = 100000.
+
+
+# Specify all the args whether we use them or not.
+msg = ObstacleDistance('distance')
+pub = rospy.Publisher('sb_teleop',ObstacleDistance,queue_size=1)
+rospy.init_node('sb_publish_obstacle_distance')
+
+count = 0
+# Callback for every new LaserScan message
+def callback(laser):
+	count = count+1
+	if count%refreshInterval == 0:
+		width = float(rospy.get_param("/robot/width",DEFAULT_WIDTH))
+		distance = INFINITY
+		# Only consider -90 to 90. (0 is straight ahead)
+		delta = laser.angle_increment
+		angle = laser.angle_min - delta
+		for d in laser.ranges:
+			angle = angle + delta
+			if angle>-math.pi/2 and angle<math.pi/2:
+				obstacle = width/2*cos(angle)
+				if obstacle<distance:
+					distance = obstacle
+
+		msg.distance = distance
+		pub.publish(msg)
+		rospy.loginfo("Published obstacle distance %f "%(distance))
+	
+
+sub = rospy.Subscriber("/sensor_msgs",LaserScan,callback)
+rospy.spin()

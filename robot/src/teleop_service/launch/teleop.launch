@@ -6,8 +6,8 @@
   <param name="robot/type" value="turtlebot3" type="str"/>
   <param name="robot/application" value="teleop" type="str"/>
   <param name="robot/platform" value="RaspberryPi" type="str"/>
-  <include file="$(find turtlebot3_bringup)/launch/turtlebot3_core.launch" />
-  <node pkg="topic_tools" type="throttle" name="odom_throttle" args="messages /odom 0.5"/>
-  <node pkg="teleop_service" type="twist_command.py" name="sb_serve_twist_command" output="log"
+  <include file="$(find turtlebot3_bringup)/launch/turtlebot3_throttled_core.launch" />
+  <node pkg="teleop_service" type="twist_command.py" name="sb_serve_twist_command" output="log" />
+  <node pkg="teleop_service" type="monitor_obstacle_distance.py" name="sb_publish_obstacle_distance" output="log" />
 />
 </launch>
