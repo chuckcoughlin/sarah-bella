@@ -19,6 +19,7 @@ We use the kinetic version of ROS. This is the current version used by ROBOTIS f
     * [Emulator](#emulator)
     * [Persistent Storage](#persistent-storage)
     * [Transfer to Tablet](#transfer-to-tablet)
+    * [Voice Commands](#voice-commands)
   * [Linux Build System](#linux-header)
     * [Virtualbox Setup](#virtualbox-setup)
     * [ROS Development Setup](#ros-development-setup)
@@ -146,6 +147,10 @@ On the build system, configure Android Studio (Tools->Run>Edit Configurations) t
 
 To transfer non-apk files download and install Android File Transfer from http://www.android.com/filetransfer. This tool facilitates transfer of files between the host build system and tablet.
 
+#### Voice Commands <a id="voice-commands"></a>
+Voice commands are implemented purely via the Android tablet using the builtin
+speech-to-text features of the Android. For intelligent analysis of what is spoken, we use Google's DialogFlow service. Signup is available [here](https://console.dialogflow.com/api-client/#/login). Your Google account is
+required. DialogFlow is free if usage is less that 1000 requests per day.
 ***************************************************************
 
 ## Linux Build System <a id="linux-header"></a>

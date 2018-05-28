@@ -193,7 +193,10 @@ The initial construction of the package files was accomplished using:
  ````Mezzanine````
 
  ### 03- Teleop <a id="teleop"></a>
-The view widget came from [here](https://github.com/rosjava/android_core/tree/kinetic/android_15/src/org/ros/android/view).
+The base code for the joystick view widget came from [here](https://github.com/rosjava/android_core/tree/kinetic/android_15/src/org/ros/android/view). We have modified the control so that "up" always correlates to the
+front of the robot. The joystick control may be augmented with voice commands. Additionally there is a fail-safe mechanism that prevents 
+the robot from crashing into obstacles, no matter what the user does.
+
 
 On the robot we use a service for control. It simply transforms requests into ```/cmd_vel (Twist)``` messages. The service is required because, with ROS, remote publishers must be established before local (on robot) subscribers. In our design the application is started from the tablet.
 
@@ -204,7 +207,7 @@ On the robot we use a service for control. It simply transforms requests into ``
 ##### ----------------------- robot --------------------------<br/>
 **service:** /sb_serve_twist_command (TwistCommand)<br/>
 **subscribe:** /cmd_vel (Twist)<br/>
-**publish:**  /odom_throttle (Odometry)<br/>
+**publish:**  /sb_ (Odometry)<br/>
 
  ### 04- Follow <a id="follow"></a>
  The *follower* application is one of the ROBOTIS demonstrations. I chose the version from: https://github.com/NVIDIA-Jetson/turtlebot3/tree/master/turtlebot_apps/turtlebot_follower. I modified references from *turtlebot_msgs* to *turtlebot3_msgs*.
