@@ -21,7 +21,7 @@ INFINITY = 100000.
 
 # Specify all the args whether we use them or not.
 msg = ObstacleDistance('distance')
-pub = rospy.Publisher('sb_teleop',ObstacleDistance,queue_size=1)
+pub = rospy.Publisher('sb_obstacle_distance',ObstacleDistance,queue_size=1)
 rospy.init_node('sb_publish_obstacle_distance')
 
 count = 0
