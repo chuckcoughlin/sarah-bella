@@ -14,7 +14,8 @@ from std_msgs.msg import String
 from teleop_service.msg import ObstacleDistance
 	
 DEFAULT_WIDTH = 1000. # mm
-REFRESH_INTERVAL = 10
+REFRESH_INTERVAL = 2
+REPORT_INTERVAL  = 20
 INFINITY = 100000.
 
 
@@ -27,7 +28,7 @@ count = 0
 # Callback for every new LaserScan message
 def callback(laser):
 	count = count+1
-	if count%refreshInterval == 0:
+	if count%REFRESH_INTERVAL == 0:
 		width = float(rospy.get_param("/robot/width",DEFAULT_WIDTH))
 		distance = INFINITY
 		# Only consider -90 to 90. (0 is straight ahead)
@@ -42,7 +43,8 @@ def callback(laser):
 
 		msg.distance = distance
 		pub.publish(msg)
-		rospy.loginfo("Published obstacle distance %f "%(distance))
+		if count%REPORT_INTERVAL == 0:
+			rospy.loginfo("Published obstacle distance %f "%(distance))
 	
 
 sub = rospy.Subscriber("/sensor_msgs",LaserScan,callback)
