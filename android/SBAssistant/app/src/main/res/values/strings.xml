@@ -26,6 +26,9 @@
     <!-- Strings for System tab -->
     <string name="systemRobotLabel">Robot</string>
     <string name="systemTabletLabel">Tablet</string>
+    <!-- Strings for Teleop tab -->
+    <string name="teleopToggleOn">Speech Enabled</string>
+    <string name="teleopToggleOff">Press to Talk</string>
     <!-- Strings that are generically useful -->
     <string name="defaultMasterURI">http://192.168.1.113:11311</string>
     <string name="defaultSSID">g6-coughlin</string>
