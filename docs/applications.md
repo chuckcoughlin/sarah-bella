@@ -86,7 +86,22 @@ The photos show the "porch" add-on structure used to hold the headlamp and relay
 ```                        SB Assistant - Teleop Control ```</br>
 [toc](#table-of-contents)
 
-The **teleop** application provides remote-control of the robot via the virtual joystick. Pressing further from the center results in increasing speed in the direction pressed. Lifting the finger, stops the robot.
+The **teleop** application provides remote-control of the robot via the virtual joystick. Think of the control as the steering wheel of a car, where "up"
+corresponds to straight ahead. To turn move your finger off the center line. To
+increase speed move further from the center. Lifting the finger, stops the robot.
+
+Placing your finger exactly on the 90 or 270 deg line initiates a "turn-in-place".
+
+If speech is enabled, speaking to the tablet will control the robot. A conversation
+might go like this:
+```
+  go
+  faster
+  turn left
+  sharper
+  back up
+  stop
+```
 
 ******************************************************
 ### 04 - Follow <a id="follow"></a>

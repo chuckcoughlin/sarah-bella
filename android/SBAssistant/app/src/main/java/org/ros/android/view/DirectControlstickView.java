@@ -1,21 +1,14 @@
 /*
- * Copyright (C) 2011 Google Inc.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Copyright 2018 Charles Coughlin. All rights reserved.
+ * (MIT License)
+ *
+ * Code was derived from Google (Apache License) and heavily modified to separate control and graphics code.
+ * @See: https://github.com/rosjava/android_core/tree/kinetic/android_15/src/org/ros/android/view
  */
 
 package org.ros.android.view;
 
+import android.animation.Animator;
 import android.content.Context;
 import android.graphics.Point;
 import android.util.AttributeSet;
@@ -33,33 +26,16 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import chuckcoughlin.sb.assistant.R;
-import chuckcoughlin.sb.assistant.common.SBConstants;
-import teleop_service.ObstacleDistance;
-import teleop_service.TwistCommandRequest;
-import teleop_service.TwistCommandResponse;
-
-import org.ros.exception.RemoteException;
-import org.ros.exception.ServiceNotFoundException;
-import org.ros.internal.node.xmlrpc.XmlRpcTimeoutException;
-import org.ros.message.MessageFactory;
-import org.ros.message.MessageListener;
-import org.ros.namespace.GraphName;
-import org.ros.node.ConnectedNode;
-import org.ros.node.Node;
-import org.ros.node.NodeConfiguration;
-import org.ros.node.NodeMain;
-
-import org.ros.node.service.ServiceClient;
-import org.ros.node.service.ServiceResponseListener;
-import org.ros.node.topic.Subscriber;
-
 import java.util.Timer;
 import java.util.TimerTask;
 
+import chuckcoughlin.sb.assistant.R;
+import chuckcoughlin.sb.assistant.control.TwistCommandController;
+
 /**
  * The DirectControlstickView is derived from VirtualJoystickView. The major differences:
- * - Interfaces with the TwistCommand service
+ * - Direct ROS interactions have been delegated to a controller to allow secondary control of the
+ *   navigation (through speech).
  * - All coordinates are with respect to the direction in which the robot is currently facing and
  *       its current position (there is no use of Odometry). Animation is much like that of a car steering
  *       wheel where a turning action on the wheel gradually rights itself, even though the absolute
@@ -70,16 +46,13 @@ import java.util.TimerTask;
  * - Commands are derived from the distance between the current touch-point and the center button.
  * - Respects distance-to-obstacle.
  *
- * The OFFLINE flag is set if there is no connection to the robot. This allows testing of the widget.
  */
-public class DirectControlstickView extends RelativeLayout implements AnimationListener,NodeMain,
-                                            MessageListener<teleop_service.ObstacleDistance>, ServiceResponseListener<TwistCommandResponse> {
+public class DirectControlstickView extends RelativeLayout implements AnimationListener {
     private static final String CLSS = "DirectControlstickView";
 
 
 
-
-
+    // ============================= Graphic Constants ============================================
     /**
      * BOX_TO_CIRCLE_RATIO The dimensions of the square box that contains the
      * circle, rings, etc are 300x300. The circles, rings, etc have a diameter of
@@ -87,28 +60,16 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
      * stays the same regardless of the size of the virtual joystick.
      */
     private static final float BOX_TO_CIRCLE_RATIO = 1.363636f;
-
-    /**
-     * MAGNET_THETA The number of degrees before and after the major axes (0, 90,
-     * 180, and 270) where the orientation is automatically adjusted to 0, 90,
-     * 180, or 270. For example, if the contactTheta is 85 degrees and
-     * MAGNET_THETA is 10, the contactTheta will be changed to 90.
-     */
-    private float magnetTheta = 10.0f;
     /**
      * ORIENTATION_TACK_FADE_RANGE The range in degrees around the current
      * orientation where the {@link #orientationWidget}s will be visible.
      */
     private static final float ORIENTATION_TACK_FADE_RANGE = 40.0f;
     /**
-     * TURN_IN_PLACE_CONFIRMATION_DELAY Time (in milliseconds) to wait before
-     * visually changing to turn-in-place mode.
+     * POST_LOCK_MAGNET_THETA Replaces {@link #magnetTheta} once the contact has
+     * been magnetized/snapped around 90/270.
      */
-    private static final long TURN_IN_PLACE_CONFIRMATION_DELAY = 200L;
-    /**
-     * FLOAT_EPSILON Used for comparing float values.
-     */
-    private static final float FLOAT_EPSILON = 0.001f;
+    private static final float POST_LOCK_MAGNET_THETA = 20.0f;
     /**
      * THUMB_DIVET_RADIUS The radius of the {@link #thumbDivet}. This is also the
      * distance threshold around the {@link #contactUpLocation} that triggers the
@@ -117,58 +78,14 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
      */
     private static final float THUMB_DIVET_RADIUS = 16.5f;
     /**
-     * POST_LOCK_MAGNET_THETA Replaces {@link #magnetTheta} once the contact has
-     * been magnetized/snapped around 90/270.
+     * TURN_IN_PLACE_CONFIRMATION_DELAY Time (in milliseconds) to wait before
+     * visually changing to turn-in-place mode.
      */
-    private static final float POST_LOCK_MAGNET_THETA = 20.0f;
+    private static final long TURN_IN_PLACE_CONFIRMATION_DELAY = 200L;
+    // ============================================================================================
+    private static final float FLOAT_EPSILON = 0.001f;   // For float equality
     private static final int INVALID_POINTER_ID = -1;
 
-
-    private ServiceClient<TwistCommandRequest, TwistCommandResponse> serviceClient = null;
-    private Subscriber<teleop_service.ObstacleDistance> subscriber = null;
-
-    /**
-     * CONTACT_THETA The orientation of the virtual joystick in degrees after the current touch.
-     * For this class the value is always zero.
-     */
-    private float contactTheta;
-    /**
-     * intensity The intensity circle that is used to show the current magnitude.
-     */
-    private ImageView intensity;
-    /**
-     * thumbDivet The divet that is underneath the user's thumb. When there is no
-     * contact it moves to the center (over the center divet). An arrow inside it
-     * is used to indicate the orientation.
-     */
-    private ImageView thumbDivet;
-    /**
-     * lastVelocityDivet The divet that shows the location of last contact. If a
-     * contact is placed within ({@link #THUMB_DIVET_RADIUS}) to this, the
-     * {@link #previousVelocityMode} is triggered.
-     */
-    private ImageView lastVelocityDivet;
-    /**
-     * orientationWidget 4 long tacks on the major axes and 20 small tacks off of
-     * the major axes at 15 degree increments. These fade in and fade out to
-     * collectively indicate the current orientation.
-     */
-    private ImageView[] orientationWidget;
-    /**
-     * magnitudeIndicator Shows the current linear velocity as a percent value.
-     * This TextView will be on the opposite side of the contact to ensure that is
-     * it visible most of the time. The font size and distance from the center of
-     * the widget are automatically computed based on the size of parent
-     * container.
-     */
-    private TextView magnitudeText;
-
-    /**
-     * normalizedMagnitude This is the distance between the center divet and the
-     * point of contact normalized between 0 and 1. The linear velocity is based
-     * on this.
-     */
-    private float normalizedMagnitude;
     /**
      * contactRadius This is the distance between the center of the widget and the
      * point of contact normalized between 0 and 1. This is mostly used for
@@ -176,14 +93,23 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
      */
     private float contactRadius;
     /**
-     * deadZoneRatio ...
-     * <p>
-     * TODO(munjaldesai): Write a simple explanation for this. Currently not easy
-     * to immediately comprehend it's meaning.
-     * <p>
-     * TODO(munjaldesai): Omnigraffle this for better documentation.
+     * CONTACT_THETA The orientation of the virtual joystick in degrees after the current touch.
+     * For this class the value is always zero.
      */
-    private float deadZoneRatio = Float.NaN;
+    private float contactTheta;
+    /**
+     * contactUpLocation The location of the primary contact when it is lifted off
+     * of the screen.
+     */
+    private Point contactUpLocation;
+    private TwistCommandController controller = null;
+    /**
+     * currentRotationRange The (15 degree) green slice/arc used to indicate
+     * turn-in-place behavior.
+     */
+    private ImageView currentRotationRange;
+    private float deadZoneRatio = Float.NaN;  // size of the thumb divet in normalized units.
+    private ImageView intensity; // intensity circle used to show the current magnitude.
     /**
      * joystickRadius The center coordinates of the parent layout holding all the
      * elements of the virtual joystick. The coordinates are relative to the
@@ -192,10 +118,34 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
      */
     private float joystickRadius = Float.NaN;
     /**
-     * parentSize The length (width==height ideally) of a side of the parent
-     * container that holds the virtual joystick.
+     * lastVelocityDivet The divet that shows the location of last contact. If a
+     * contact is placed within ({@link #THUMB_DIVET_RADIUS}) to this, the
+     * {@link #previousVelocityMode} is triggered.
      */
-    private float parentSize = Float.NaN;
+    private ImageView lastVelocityDivet;
+    /**
+     * magnitudeIndicator Shows the current linear velocity as a percent value.
+     * This TextView will be on the opposite side of the contact to ensure that is
+     * it visible most of the time. The font size and distance from the center of
+     * the widget are automatically computed based on the size of parent
+     * container.
+     */
+    private TextView magnitudeText;
+    /**
+     * MAGNET_THETA The number of degrees before and after the major axes (0, 90,
+     * 180, and 270) where the orientation is automatically adjusted to 0, 90,
+     * 180, or 270. For example, if the contactTheta is 85 degrees and
+     * MAGNET_THETA is 10, the contactTheta will be changed to 90.
+     */
+    private float magnetTheta = 10.0f;
+    private boolean magnetizedXAxis;   // true when the contact snapped to x-axis, else false
+    private RelativeLayout mainLayout; // Parent layout containing all elements of the joystick.
+    /**
+     * normalizedMagnitude This is the distance between the center divet and the
+     * point of contact normalized between 0 and 1. The linear velocity is based
+     * on this.
+     */
+    private float normalizedMagnitude;
     /**
      * normalizingMultiplier Used to convert any distance from pixels to a
      * normalized value between 0 and 1. 0 is the center of widget and 1 is the
@@ -204,15 +154,42 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
      */
     private float normalizingMultiplier;
     /**
-     * currentRotationRange The (15 degree) green slice/arc used to indicate
-     * turn-in-place behavior.
+     * orientationWidget 4 long tacks on the major axes and 20 small tacks off of
+     * the major axes at 15 degree increments. These fade in and fade out to
+     * collectively indicate the current orientation.
      */
-    private ImageView currentRotationRange;
+    private ImageView[] orientationWidget;
+    /**
+     * parentSize The length (width==height ideally) of a side of the parent
+     * container that holds the virtual joystick.
+     */
+    private float parentSize = Float.NaN;
+    /**
+     * pointerId Used to keep track of the contact that initiated the interaction
+     * with the virtual joystick. All other contacts are ignored.
+     */
+    private int pointerId = INVALID_POINTER_ID;
     /**
      * previousRotationRange The (30 degree) green slice/arc used to indicate
      * turn-in-place behavior.
      */
     private ImageView previousRotationRange;
+    /**
+     * previousVelocityMode True when the new contact position is within
+     */
+    private boolean previousVelocityMode;
+    /**
+     * rightTurnOffset The rotation offset in degrees applied to
+     * {@link #currentRotationRange} and {@link #previousRotationRange} when the
+     * robot is turning clockwise (right) in turn-in-place mode.
+     */
+    private float rightTurnOffset;
+    /**
+     * thumbDivet The divet that is underneath the user's thumb. When there is no
+     * contact it moves to the center (over the center divet). An arrow inside it
+     * is used to indicate the orientation.
+     */
+    private ImageView thumbDivet;
     /**
      * turnInPlaceMode True when the virtual joystick is in turn-in-place mode.
      * False otherwise.
@@ -223,59 +200,12 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
      * mode is initiated.
      */
     private float turnInPlaceStartTheta = Float.NaN;
-    /**
-     * rightTurnOffset The rotation offset in degrees applied to
-     * {@link #currentRotationRange} and {@link #previousRotationRange} when the
-     * robot is turning clockwise (right) in turn-in-place mode.
-     */
-    private float rightTurnOffset;
-    /**
-     * currentOrientation The orientation of the robot in degrees.
-     */
-    // private volatile float currentOrientation;
-    /**
-     * pointerId Used to keep track of the contact that initiated the interaction
-     * with the virtual joystick. All other contacts are ignored.
-     */
-    private int pointerId = INVALID_POINTER_ID;
-    /**
-     * contactUpLocation The location of the primary contact when it is lifted off
-     * of the screen.
-     */
-    private Point contactUpLocation;
-    /**
-     * previousVelocityMode True when the new contact position is within
-     */
-    private boolean previousVelocityMode;
-    /**
-     * magnetizedXAxis True when the contact has been snapped to the x-axis, false
-     * otherwise.
-     */
-    private boolean magnetizedXAxis;
-
-
-
-
-    /**
-     * Velocity commands are published when this is true. Not published otherwise.
-     * This is to prevent spamming when finger is off screen.
-     */
-    private volatile boolean running;
-
-    private teleop_service.TwistCommandRequest currentVelocityRequest;
-    private double obstacleDistance;   // current distance to forward obstacle
-    private RelativeLayout mainLayout; // Parent layout that contains all the elements of the joystick.
-    private boolean offline = false;   // True if in test mode.
-    private Timer serviceTimer;        // Used to publish velocity commands at a constant rate.
-    private String serviceName = null;
-    private String subscribeTopic = null;
 
 
     public DirectControlstickView(Context context) {
         super(context);
         initVirtualJoystick(context);
     }
-
     public DirectControlstickView(Context context, AttributeSet attrs) {
         super(context, attrs);
         initVirtualJoystick(context);
@@ -283,7 +213,11 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
 
     public DirectControlstickView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        initVirtualJoystick(context);
     }
+
+    // This MUST be called soon after instantiation.
+    public void setController(TwistCommandController c) { this.controller=c; }
 
     /**
      * Sets up the visual elements of the virtual joystick.
@@ -337,7 +271,6 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
         animateIntensityCircle(0);
         // Initially the orientationWidgets should point to 0 degrees.
         contactTheta = 0;
-        obstacleDistance = Double.MAX_VALUE;
         animateOrientationWidgets();
         currentRotationRange = (ImageView) findViewById(R.id.top_angle_slice);
         previousRotationRange = (ImageView) findViewById(R.id.mid_angle_slice);
@@ -382,118 +315,8 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
     }
 
 
-    /*
-     * Set the service and subscription topics. This must be called before
-     * the widget is started.
-     */
-    public void setTopicNames(String srvName,String subTopic) {
-        this.serviceName = srvName;
-        this.subscribeTopic = subTopic;
-    }
 
     // ==========================================================================================================
-    /**
-     * Publish the velocity as a ROS Twist message.
-     *
-     * @param linearVelocityX  The normalized linear velocity (-1 to 1).
-     * @param angularVelocityZ The normalized angular velocity (-1 to 1).
-     */
-    private void commandVelocity(double linearVelocityX, double linearVelocityY,
-                                 double angularVelocityZ) {
-        if (currentVelocityRequest != null) {
-            currentVelocityRequest.setLinearX(linearVelocityX);
-            currentVelocityRequest.setLinearY(-linearVelocityY);
-            currentVelocityRequest.setLinearZ(0);
-            currentVelocityRequest.setAngularX(0);
-            currentVelocityRequest.setAngularY(0);
-            currentVelocityRequest.setAngularZ(-angularVelocityZ);
-        }
-    }
-
-    /**
-
-    @Override
-    public void onAnimationEnd(Animation animation) {
-        contactRadius = 0f;
-        normalizedMagnitude = 0f;
-        updateMagnitudeText();
-    }
-
-    @Override
-    public void onAnimationRepeat(Animation animation) {
-    }
-
-    @Override
-    public void onAnimationStart(Animation animation) {
-    }
-
-
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        final int action = event.getAction();
-        switch (action & MotionEvent.ACTION_MASK) {
-            case MotionEvent.ACTION_MOVE: {
-                // If the primary contact point is no longer on the screen then ignore
-                // the event.
-                if (pointerId != INVALID_POINTER_ID) {
-                    // If the virtual joystick is in resume-previous-velocity mode.
-                    if (previousVelocityMode) {
-                        // And the current contact is close to the contact location prior to
-                        // ContactUp.
-                        if (inLastContactRange(event.getX(event.getActionIndex()),
-                                event.getY(event.getActionIndex()))) {
-                            // Then use the previous velocity.
-                            onContactMove(contactUpLocation.x + joystickRadius, contactUpLocation.y
-                                    + joystickRadius);
-                        }
-                        // Since the current contact is not close to the prior location.
-                        else {
-                            // Exit the resume-previous-velocity mode.
-                            previousVelocityMode = false;
-                        }
-                    }
-                    // Since the resume-previous-velocity mode is not running generate
-                    // velocities based on current contact position.
-                    else {
-                        onContactMove(event.getX(event.findPointerIndex(pointerId)),
-                                event.getY(event.findPointerIndex(pointerId)));
-                    }
-                }
-                break;
-            }
-            case MotionEvent.ACTION_DOWN: {
-                // Get the coordinates of the pointer that is initiating the
-                // interaction.
-                pointerId = event.getPointerId(event.getActionIndex());
-                onContactDown();
-                // If the current contact is close to the location of the contact prior
-                // to contactUp.
-                if (inLastContactRange(event.getX(event.getActionIndex()), event.getY(event.getActionIndex()))) {
-                    // Trigger resume-previous-velocity mode.
-                    previousVelocityMode = true;
-                    // The animation calculations/operations are performed in
-                    // onContactMove(). If this is not called and the user's finger stays
-                    // perfectly still after the down event, no operation is performed.
-                    // Calling onContactMove avoids this.
-                    onContactMove(contactUpLocation.x + joystickRadius, contactUpLocation.y + joystickRadius);
-                } else {
-                    onContactMove(event.getX(event.getActionIndex()), event.getY(event.getActionIndex()));
-                }
-                break;
-            }
-            case MotionEvent.ACTION_POINTER_UP:
-            case MotionEvent.ACTION_UP: {
-                // Check if the contact that initiated the interaction is up.
-                if ((action & MotionEvent.ACTION_POINTER_ID_MASK) >> MotionEvent.ACTION_POINTER_ID_SHIFT == pointerId) {
-                    onContactUp();
-                }
-                break;
-            }
-        }
-        return true;
-    }
-
     /**
      * Allows the user the option to turn on the auto-snap feature.
      */
@@ -509,21 +332,6 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
     }
 
 
-
-    @Override
-    public void onAnimationEnd(Animation animation) {
-        contactRadius = 0f;
-        normalizedMagnitude = 0f;
-        updateMagnitudeText();
-    }
-
-    @Override
-    public void onAnimationRepeat(Animation animation) {
-    }
-
-    @Override
-    public void onAnimationStart(Animation animation) {
-    }
     /**
      * Scale and rotate the intensity circle instantaneously. The key difference
      * between this method and {@link #animateIntensityCircle(float, long)} is
@@ -638,7 +446,7 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
      * Update the virtual joystick to indicate a contact down has occurred.
      */
     private void onContactDown() {
-        if( offline ) Log.i(CLSS,"onContact DOWN");
+        Log.i(CLSS,"onContact DOWN");
         // The divets should be completely opaque indicating
         // the virtual joystick is running.
         thumbDivet.setAlpha(1.0f);
@@ -649,7 +457,6 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
         for (ImageView tack : orientationWidget) {
             tack.setVisibility(VISIBLE);
         }
-        running = true;
     }
 
     /**
@@ -660,7 +467,7 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
      * @param y The y coordinates of the contact relative to the parent container.
      */
     private void onContactMove(float x, float y) {
-        if( offline ) Log.i(CLSS,"onContact MOVE");
+        Log.i(CLSS,"onContact MOVE");
         // Get the coordinates of the contact relative to the center of the main
         // layout.
         float thumbDivetX = x - joystickRadius;
@@ -735,7 +542,7 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
         updateMagnitudeText();
         // Command the velocities. There are only two degrees of freedom. We choose velocity in x and rotation.
         // (The original called these holonomic/non-holonomic, but I disagree).
-        commandVelocity(normalizedMagnitude * Math.cos(contactTheta * Math.PI / 180.0), 0,
+        controller.commandVelocity(normalizedMagnitude * Math.cos(contactTheta * Math.PI / 180.0),
                     normalizedMagnitude * Math.sin(contactTheta * Math.PI / 180.0));
 
         // Check if the turn-in-place mode needs to be activated/deactivated.
@@ -752,12 +559,14 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
                 // then activate it for a left turn.
                 turnInPlaceMode = true;
                 rightTurnOffset = 0;
-            } else if (floatCompare(contactTheta, 90)) {
+            }
+            else if (floatCompare(contactTheta, 90)) {
                 // If the user is turning right and the turn-in-place mode is not running
                 // then activate it for a right turn.
                 turnInPlaceMode = true;
                 rightTurnOffset = 15;
-            } else {
+            }
+            else {
                 // Nothing to do while not in turn-in-place mode and not at 270/90.
                 return;
             }
@@ -783,7 +592,8 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
                     postInvalidate();
                 }
             }, TURN_IN_PLACE_CONFIRMATION_DELAY);
-        } else if (!(floatCompare(contactTheta, 270) || floatCompare(contactTheta, 90))) {
+        }
+        else if (!(floatCompare(contactTheta, 270) || floatCompare(contactTheta, 90))) {
             // If the user was in turn-in-place mode and is now no longer on the x
             // axis, then exit turn-in-place mode.
             endTurnInPlaceRotation();
@@ -795,7 +605,7 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
      * joystick is no longer running. The intensity circle is slowly scaled to 0.
      */
     private void onContactUp() {
-        if( offline ) Log.i(CLSS,"onContact UP");
+        Log.i(CLSS,"onContact UP");
         // TODO(munjaldesai): The 1000 should eventually be replaced with a number
         // that reflects the physical characteristics of the motor controller along
         // with the latency associated with the connection.
@@ -812,12 +622,9 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
         // Reset the pointer id.
         pointerId = INVALID_POINTER_ID;
         // The robot should stop moving.
-        commandVelocity(0, 0, 0);
+        controller.commandVelocity(0, 0);
         // Stop publishing the velocity since the contact is no longer on the
         // screen.
-        running = false;
-        // Make one last request to make sure the robot stops.
-        if (serviceClient != null) serviceClient.call(currentVelocityRequest,this);
         // Turn-in-place should not be running anymore.
         endTurnInPlaceRotation();
         // Hide the orientation tacks.
@@ -939,126 +746,6 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
         return false;
     }
 
-
-
-    @Override
-    public GraphName getDefaultNodeName() {
-        return GraphName.of("android_15/virtual_joystick_view");
-    }
-
-
-    // ======================================== Node Main =========================================
-    @Override
-    public void onStart(ConnectedNode connectedNode) {
-        final DirectControlstickView jv = this;
-        if( connectedNode!=null  ) {
-            this.offline = false;
-            new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        Log.i(CLSS, String.format("onStart: starting client for %s on %s", serviceName, connectedNode.getMasterUri().toString()));
-                        serviceClient = connectedNode.newServiceClient(serviceName, teleop_service.TwistCommand._TYPE);
-                        currentVelocityRequest = serviceClient.newMessage();
-                        subscriber = connectedNode.newSubscriber(subscribeTopic, teleop_service.ObstacleDistance._TYPE);
-                        subscriber.addMessageListener(DirectControlstickView.this);
-                        serviceTimer = new Timer();
-                        serviceTimer.schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                                if (running) {
-                                    Log.i(CLSS, String.format("onStart: command Twist(x,theta) %f %f",
-                                            currentVelocityRequest.getLinearX(), currentVelocityRequest.getAngularZ()));
-                                    serviceClient.call(currentVelocityRequest, jv);
-                                }
-                            }
-                        }, 40, 100);  // ~msecs
-                    }
-                    catch (ServiceNotFoundException snfe) {
-                        Log.e(CLSS, String.format("Exception while creating service client (%s)", snfe.getLocalizedMessage()));
-                    }
-                    catch (XmlRpcTimeoutException tex) {
-                        // With Bluetooth - UnresolvedAddressException creating service client.
-                        Log.e(CLSS, "Exception while creating service client");
-                    }
-                    catch (Throwable ex) {
-                        Log.e(CLSS, "Exception while creating parameter client ", ex);
-                    }
-                }
-            }).start();
-        }
-        else {
-            this.offline = true;
-            Log.i(CLSS, String.format("onStart: starting in OFFLINE test mode"));
-            NodeConfiguration nodeConfiguration = NodeConfiguration.newPrivate();
-            MessageFactory messageFactory = nodeConfiguration.getTopicMessageFactory();
-            currentVelocityRequest = messageFactory.newFromType(TwistCommandRequest._TYPE);
-            serviceTimer = new Timer();
-            serviceTimer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    if (running) {
-                        Log.i(CLSS, String.format("onStart: command Twist(x,theta) %f %f",currentVelocityRequest.getLinearX(), currentVelocityRequest.getAngularZ()));
-                    }
-                }
-            }, 40, 5000);  // ~msecs
-        }
-    }
-
-    @Override
-    public void onShutdown(Node node) {
-    }
-
-    @Override
-    public void onShutdownComplete(Node node) {
-        onShutdownComplete();
-    }
-
-    public void onShutdownComplete() {
-        if(serviceClient!=null)  {
-            serviceClient.shutdown();
-            serviceClient = null;
-        }
-        if(subscriber!=null) {
-            subscriber.shutdown();
-            subscriber = null;
-        }
-        if( serviceTimer !=null ) {
-            serviceTimer.cancel();
-            serviceTimer.purge();
-            serviceTimer = null;
-        }
-
-    }
-
-    @Override
-    public void onError(Node node, Throwable throwable) {
-    }
-
-    // ============================= Obstacle Distance Message Listener ===========================
-    // If we are too close, shut things down.
-    @Override
-    public void onNewMessage(final teleop_service.ObstacleDistance message) {
-        obstacleDistance = message.getDistance();
-        Log.i(CLSS,String.format("received ObstacleDistance = (%f)",obstacleDistance));
-        if( obstacleDistance< SBConstants.SB_ROBOT_CLOSEST_APPROACH ) {
-            commandVelocity(0.,0.,0);
-            running = false;
-        }
-    }
-    // =============================== ServiceResponseListener =====================================
-    // Use these methods to handle service responses. In general, the responses have no useful information.
-    // The framework requires that they be handled, however.
-    @Override
-    public void onSuccess(TwistCommandResponse response) {
-        //Log.i(CLSS, String.format("SUCCESS: TwistCommandResponse (%s)",response.getMsg()));
-    }
-
-    @Override
-    public void onFailure(RemoteException re) {
-        Log.w(CLSS,String.format("Exception returned from service request (%s)",re.getLocalizedMessage()));
-    }
-
-
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         Log.i(CLSS,String.format("received touch event"));
@@ -1123,5 +810,21 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
             }
         }
         return true;
+    }
+
+    // ===================================================== Animation Listener ===========================================================
+    @Override
+    public void onAnimationStart(Animation animation) {
+    }
+
+    @Override
+    public void onAnimationEnd(Animation animation) {
+        contactRadius = 0f;
+        normalizedMagnitude = 0f;
+        updateMagnitudeText();
+    }
+
+    @Override
+    public void onAnimationRepeat(Animation animation) {
     }
 }
