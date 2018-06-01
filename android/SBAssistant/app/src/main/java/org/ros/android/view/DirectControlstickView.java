@@ -446,7 +446,7 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
      * Update the virtual joystick to indicate a contact down has occurred.
      */
     private void onContactDown() {
-        Log.i(CLSS,"onContact DOWN");
+        //Log.i(CLSS,"onContact DOWN");
         // The divets should be completely opaque indicating
         // the virtual joystick is running.
         thumbDivet.setAlpha(1.0f);
@@ -615,6 +615,7 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
         lastVelocityDivet.setTranslationX(thumbDivet.getTranslationX());
         lastVelocityDivet.setTranslationY(thumbDivet.getTranslationY());
         lastVelocityDivet.setAlpha(0.4f);
+        Log.i(CLSS,String.format(".onContactUp (%3.0f,%3.0f)",thumbDivet.getTranslationX(),thumbDivet.getTranslationY()));
         contactUpLocation.x = (int) (thumbDivet.getTranslationX());
         contactUpLocation.y = (int) (thumbDivet.getTranslationY());
         // Move the thumb divet back to the center.
@@ -748,7 +749,6 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.i(CLSS,String.format("received touch event"));
         final int action = event.getAction();
         switch (action & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_MOVE: {
@@ -759,6 +759,8 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
                     if (previousVelocityMode) {
                         // And the current contact is close to the contact location prior to
                         // ContactUp.
+                        Log.i(CLSS,String.format("MOVE PREV (%3.0f,%3.0f)",event.getX(event.getActionIndex()),
+                                event.getY(event.getActionIndex())));
                         if (inLastContactRange(event.getX(event.getActionIndex()),
                                 event.getY(event.getActionIndex()))) {
                             // Then use the previous velocity.
@@ -774,6 +776,8 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
                     // Since the resume-previous-velocity mode is not active generate
                     // velocities based on current contact position.
                     else {
+                        Log.i(CLSS,String.format("MOVE (%3.0f,%3.0f)",event.getX(event.findPointerIndex(pointerId)),
+                                event.getY(event.findPointerIndex(pointerId))));
                         onContactMove(event.getX(event.findPointerIndex(pointerId)),
                                 event.getY(event.findPointerIndex(pointerId)));
                     }
@@ -789,13 +793,18 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
                 // to contactUp.
                 if (inLastContactRange(event.getX(event.getActionIndex()), event.getY(event.getActionIndex()))) {
                     // Trigger resume-previous-velocity mode.
+                    Log.i(CLSS,String.format("DOWN PREV (%3.0f,%3.0f)",event.getX(event.getActionIndex()),
+                            event.getY(event.getActionIndex())));
                     previousVelocityMode = true;
                     // The animation calculations/operations are performed in
                     // onContactMove(). If this is not called and the user's finger stays
                     // perfectly still after the down event, no operation is performed.
                     // Calling onContactMove avoids this.
                     onContactMove(contactUpLocation.x + joystickRadius, contactUpLocation.y + joystickRadius);
-                } else {
+                }
+                else {
+                    Log.i(CLSS,String.format("DOWN (%3.0f,%3.0f)",event.getX(event.getActionIndex()),
+                            event.getY(event.getActionIndex())));
                     onContactMove(event.getX(event.getActionIndex()), event.getY(event.getActionIndex()));
                 }
                 break;
@@ -804,6 +813,7 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
             case MotionEvent.ACTION_UP: {
                 // Check if the contact that initiated the interaction is up.
                 if ((action & MotionEvent.ACTION_POINTER_ID_MASK) >> MotionEvent.ACTION_POINTER_ID_SHIFT == pointerId) {
+                    Log.i(CLSS,String.format("UP "));
                     onContactUp();
                 }
                 break;

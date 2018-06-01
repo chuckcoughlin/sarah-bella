@@ -258,6 +258,9 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                 Log.i(CLSS,  String.format("SpeechRecognition: Error - no speech input"));
                 startRecognizer();  // Try again
                 break;
+            case SpeechRecognizer.ERROR_NETWORK:
+                Log.i(CLSS,  String.format("SpeechRecognition: Error network"));
+                break;
             case SpeechRecognizer.ERROR_CLIENT:
                 Log.i(CLSS,  String.format("SpeechRecognition: Error - in client"));
                 break;
@@ -345,7 +348,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                         serviceClient.call(currentRequest,thistimer);
                     }
                 }
-            }
+            };
             schedule(task,0,period);
         }
         // =============================== ServiceResponseListener =====================================
