@@ -16,14 +16,22 @@ import teleop_service.TwistCommandRequest;
  * Translates a stream of spoken words in TwistCommand updates.
  * In our word lists end words with a space to avoid false
  * embedded word matches.
+ *
+ *
  */
 
 public class TwistCommandInterpreter  {
     private final TwistCommandController controller;
+    private static final double MIN_ANGLE = 0.15;
     private static final double MIN_VELOCITY = 0.01;
-    private String[] backWords = {"back","reverse "};
-    private String[] goWords   = {"go ","proceed ","forward "};
-    private String[] stopWords = {"stop ","halt "};
+    // These are the array indices for the different languages.
+    private static int ENGLISH = 0;
+    private static int RUSSIAN = 1;
+    private String[][] backWords = {{"back","reverse "},{}};
+    private String[][] goWords   = {{"go ","proceed ","forward "},{}};
+    private String[][] stopWords = {{"stop ","halt ","pause ","paws "},{}};
+    private String[][] turnWords = {{"turn "},{}};
+    private String[][] turnDirectionWords = {{"right ","left "},{}};
     /**
      * The controller handles the TwistCommand after we update it.
      */
@@ -36,44 +44,50 @@ public class TwistCommandInterpreter  {
      * the interpreter will issue "commandVelocity" on the controller.
      * @param command current state of navigation
      * @param text space-delimited list of spoken words
-     * @return true if we've acted on the contents
+     * @return a language constant if we've made a match, else -1
      */
-    public boolean handleWordList(TwistCommandRequest command, String text){
+    public int handleWordList(TwistCommandRequest command, String text){
         String tokens = text.toLowerCase()+" ";   // Can always search for whole words
-        boolean success = false;
+        int result = -1;
+        int language = -1;
         // First check for stop words
-        if( listContains(tokens,stopWords) ) {
+        if( (language=listContains(tokens,stopWords))>=0 ) {
             controller.commandVelocity(0.,0.);
-            success = true;
+            result = language;
         }
         double velx = command.getLinearX();
         double angz = command.getAngularZ();
-        if( listContains(tokens,goWords) ) {
+        if( (language=listContains(tokens,goWords))>=0 ) {
             if( velx < MIN_VELOCITY ) velx = MIN_VELOCITY;
-            success = true;
+            result = language;
         }
-        else if( listContains(tokens,backWords) ) {
+        else if( (language=listContains(tokens,backWords))>=0 ) {
             if( velx > -MIN_VELOCITY ) velx = -MIN_VELOCITY;
-            success = true;
+            result = language;
         }
 
         // Success means that we've seen enough tokens to operate
-        if( success ) {
+        if( result>=0 ) {
             controller.commandVelocity(velx,angz);
         }
-        return success;
+        return result;
     }
 
     /**
      *
      * @param a input space-delimited list of raw tokens
      * @param b list of standard tokens
-     * @return true if any word from list b appears in a
+     * @return an integer corresponding to the language of the match.
+     *         -1 indicates no match.
      */
-    private boolean listContains(String a,String[] b) {
-        for(String bstring :b) {
-            if( a.indexOf(bstring)>-1 ) return true;
+    private int listContains(String a,String[][] b) {
+        String testString = "";
+        for (int outter = 0; outter < b.length; outter++) {
+            for (int inner = 0; inner < b[outter].length; inner++) {
+                testString = b[outter][inner];
+                if( a.indexOf(testString)>-1 ) return outter;
+            }
         }
-        return false;
+        return -1;
     }
 }

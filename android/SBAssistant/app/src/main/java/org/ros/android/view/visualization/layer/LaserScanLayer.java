@@ -30,7 +30,8 @@ import javax.microedition.khronos.opengles.GL10;
 import sensor_msgs.LaserScan;
 
 /**
- * A Layer that visualizes sensor_msgs/LaserScan messages.
+ * A Layer that visualizes sensor_msgs/LaserScan messages. Rotate 90 deg
+ * clockwise so that the top of the screen corresponds to straight ahead.
  *
  * @author munjaldesai@google.com (Munjal Desai)
  * @author damonkohler@google.com (Damon Kohler)
@@ -120,7 +121,9 @@ public class LaserScanLayer extends AbstractLayer  {
         vertexCount++;
         float minimumRange = laserScan.getRangeMin();
         float maximumRange = laserScan.getRangeMax();
-        float angle = laserScan.getAngleMin();
+        // The raw angular data has 0 deg to the left.
+        // Modify so that 0 deg is straight ahead.
+        float angle = (float)(laserScan.getAngleMin() - Math.PI/2.);
         float angleIncrement = laserScan.getAngleIncrement();
         // Calculate the coordinates of the laser range values.
         for (int i = 0; i < ranges.length; i += stride) {

@@ -17,6 +17,7 @@
     <string name="discoveryButtonDisconnect">Disconnect</string>
     <string name="discoveryToggleOn">ON</string>
     <string name="discoveryToggleOff">OFF</string>
+    <string name="discoveryButtonTerminate">Quit</string>
     <string name="discoveryButtonView">View</string>
     <string name="discoveryViewPopupTitle">Robot Attributes</string>
     <!-- Strings for Log tab-->

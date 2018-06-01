@@ -541,7 +541,7 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
         updateMagnitudeText();
         // Command the velocities. There are only two degrees of freedom. We choose velocity in x and rotation.
         // (The original called these holonomic/non-holonomic, but I disagree).
-        controller.commandVelocity(normalizedMagnitude * Math.cos(contactTheta * Math.PI / 180.0),
+        controller.commandVelocity(-normalizedMagnitude * Math.cos(contactTheta * Math.PI / 180.0),
                     normalizedMagnitude * Math.sin(contactTheta * Math.PI / 180.0));
 
         // Check if the turn-in-place mode needs to be activated/deactivated.

@@ -101,6 +101,13 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
                 viewRobotClicked();
             }
         });
+        button = (Button) contentView.findViewById(R.id.terminateButton);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getActivity().finish();
+            }
+        });
         return contentView;
     }
 

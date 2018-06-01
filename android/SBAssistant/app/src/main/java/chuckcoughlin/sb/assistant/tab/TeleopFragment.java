@@ -67,7 +67,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     private static final long TIMER_PERIOD         = 100;   // ~msecs
 
 
-    private static final boolean OFFLINE = true;
+    private static final boolean OFFLINE = false;
     private SBApplicationManager applicationManager;
     private TwistCommandRequest currentRequest = null;    // Most recent state
     private TwistCommandRequest targetRequest = null;     // Desired state
@@ -136,6 +136,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     // if the robot is OFFLINE.  Inform the obstacle detector of the width of the robot.
     public void applicationStarted(String appName) {
         Log.i(CLSS, String.format("applicationStarted: %s ...", appName));
+        final TwistCommandController controller = this;
         if (appName.equalsIgnoreCase(SBConstants.APPLICATION_TELEOP)) {
             ConnectedNode node = applicationManager.getCurrentApplication().getConnectedNode();
             if (node != null) {
@@ -147,11 +148,12 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                             URI masterUri = new URI(uriString);
                             ParameterClient paramClient = new ParameterClient(new NodeIdentifier(GraphName.of("/TeleopFragment"),masterUri),masterUri);
                             paramClient.setParam(GraphName.of(SBConstants.ROS_WIDTH_PARAM),SBConstants.SB_ROBOT_WIDTH);
-                            serviceClient = node.newServiceClient("sb_serve_twist_command", teleop_service.TwistCommand._TYPE);
+                            serviceClient = node.newServiceClient("/sb_serve_twist_command", teleop_service.TwistCommand._TYPE);
                             currentRequest = serviceClient.newMessage();
                             currentRequest.setLinearX(0.0);  // Stopped
                             currentRequest.setAngularZ(0.0);
                             distanceListener.subscribe(node,"/sb_teleop");
+                            serviceTimer = new ServiceTimer(controller);
                         }
                         catch(URISyntaxException uriex) {
                             Log.e(CLSS,String.format("URI Syntax Exception setting parameter (%s)",uriex.getLocalizedMessage()));
@@ -167,12 +169,17 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                             Log.e(CLSS, "Exception while creating parameter client ", ex);
                         }
                     }
-                });
+                }).start();
             }
             else {
                 Log.i(CLSS, String.format("applicationStarted: %s has no connected node", appName));
             }
-            speechToggle.setEnabled(true);
+            getActivity().runOnUiThread(new Runnable() {
+                public void run() {
+                    speechToggle.setEnabled(true);
+                }
+            });
+
         }
     }
 
@@ -180,7 +187,11 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         if (appName.equalsIgnoreCase(SBConstants.APPLICATION_TELEOP)) {
             Log.i(CLSS, String.format("applicationShutdown"));
 
-            speechToggle.setEnabled(false);
+            getActivity().runOnUiThread(new Runnable() {
+                public void run() {
+                    speechToggle.setEnabled(false);
+                }
+            });;
             if (serviceTimer != null) {
                 serviceTimer.cancel();
                 serviceTimer.purge();
@@ -281,7 +292,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         //display results. The zeroth result is usually the space-separated one.
         for (int i = 0; i < matches.size(); i++) {
             Log.i(CLSS, "result " + matches.get(i));
-            if( interpreter.handleWordList(currentRequest,matches.get(i)) ) break;
+            if( interpreter.handleWordList(currentRequest,matches.get(i))>=0  ) break;
         }
         startRecognizer();   // restart
     }
@@ -349,9 +360,10 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                     current.setLinearX(rampedVelocity(current,target));
                     current.setAngularZ(rampedAngle(current,target));
                     if (OFFLINE) {
-                        //Log.i(CLSS, String.format("call: %f %f", current.getLinearX(), current.getAngularZ()));
+                        Log.i(CLSS, String.format("call: %f %f", current.getLinearX(), current.getAngularZ()));
                     }
                     else {
+                        Log.i(CLSS, String.format("call: %f %f", current.getLinearX(), current.getAngularZ()));
                         serviceClient.call(current,thistimer);
                     }
                 }
