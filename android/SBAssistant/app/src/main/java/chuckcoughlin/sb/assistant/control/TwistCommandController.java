@@ -25,6 +25,8 @@ public interface TwistCommandController {
      * @param angz change in direction ~ radians
      */
     public void commandVelocity(double velx,double angz);
+    public TwistCommandRequest getCurrentRequest();
+    public TwistCommandRequest getTargetRequest();
     /**
      * @return the maximum robot speed in m/src.
      */

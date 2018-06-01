@@ -75,7 +75,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     private DirectControlstickView joystick = null;
     private double obstacleDistance = Double.MAX_VALUE;
     private ServiceClient<TwistCommandRequest, TwistCommandResponse> serviceClient = null;
-    private ServiceTimer serviceTimer;       // Publish velocity commands at a constant rate.
+    private ServiceTimer serviceTimer = null;       // Publish velocity commands at a constant rate.
     private DistanceListener distanceListener = null;
     private SpeechRecognizer sr = null;
     private ToggleButton speechToggle = null;
@@ -116,6 +116,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
             currentRequest = messageFactory.newFromType(TwistCommandRequest._TYPE);
             currentRequest.setLinearX(0.0);  // Stopped
             currentRequest.setAngularZ(0.0);
+            serviceTimer = new ServiceTimer(this);
         }
 
         sr = SpeechRecognizer.createSpeechRecognizer(getActivity());
@@ -206,8 +207,9 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
             sr.stopListening();
         }
     }
-    // start or restart recognizer
+    // start or restart recognizer if the speech recognizer button is checked
     private void startRecognizer() {
+        if( !speechToggle.isChecked()) return;
         getActivity().runOnUiThread(new Runnable() {
             public void run() {
                 sr.cancel();
@@ -286,8 +288,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     public void onPartialResults(Bundle partialResults) {
         Log.i(CLSS, "onPartialResults");
     }
-    public void onEvent(int eventType, Bundle params)
-    {
+    public void onEvent(int eventType, Bundle params) {
         Log.i(CLSS, "onEvent " + eventType);
     }
 
@@ -305,6 +306,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
      * @param angularVelocityZ normalized angular velocity (-1 to 1).
      */
     public void commandVelocity(double linearVelocityX,double angularVelocityZ) {
+        //Log.i(CLSS, String.format("commandVelocity: %f %f", linearVelocityX, angularVelocityZ));
         if (targetRequest != null) {
             targetRequest.setLinearX(linearVelocityX);
             targetRequest.setLinearY(0);
@@ -314,7 +316,8 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
             targetRequest.setAngularZ(angularVelocityZ);
         }
     }
-
+    public TwistCommandRequest getCurrentRequest()  { return this.currentRequest; }
+    public TwistCommandRequest getTargetRequest()   { return this.targetRequest;  }
     // Used to calibrate the speed in the UI.
     @Override
     public double getMaxSpeed() {
@@ -332,20 +335,24 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
      */
     private class ServiceTimer extends Timer implements ServiceResponseListener<TwistCommandResponse> {
         private final static String TAG = "ServiceTimer";
-        public ServiceTimer() {
+        private final TwistCommandController controller;
+        public ServiceTimer(TwistCommandController c) {
+            this.controller = c;
             final ServiceTimer thistimer = this;
             long period = TIMER_PERIOD;
             if( OFFLINE ) period = OFFLINE_TIMER_PERIOD;
             TimerTask task = new TimerTask() {
                 @Override
                 public void run() {
-                    currentRequest.setLinearX(rampedVelocity(currentRequest,targetRequest));
-                    currentRequest.setAngularZ(rampedAngle(currentRequest,targetRequest));
+                    TwistCommandRequest current = controller.getCurrentRequest();
+                    TwistCommandRequest target = controller.getTargetRequest();
+                    current.setLinearX(rampedVelocity(current,target));
+                    current.setAngularZ(rampedAngle(current,target));
                     if (OFFLINE) {
-                        Log.i(CLSS, String.format("commandVelocity: %f %f", currentRequest.getLinearX(), currentRequest.getAngularZ()));
+                        //Log.i(CLSS, String.format("call: %f %f", current.getLinearX(), current.getAngularZ()));
                     }
                     else {
-                        serviceClient.call(currentRequest,thistimer);
+                        serviceClient.call(current,thistimer);
                     }
                 }
             };
@@ -365,15 +372,16 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         }
 
         private double rampedAngle(TwistCommandRequest current,TwistCommandRequest target) {
-            double error = Math.abs(current.getAngularX() - target.getAngularX() );
-            if( error<DELTA_ANGLE ) return target.getAngularZ();
+            double error = current.getAngularX() - target.getAngularX();
+            if( Math.abs(error)<DELTA_ANGLE ) return target.getAngularZ();
             else if(error<0.)  return current.getAngularZ() + DELTA_ANGLE;
             else return current.getAngularZ() - DELTA_ANGLE;
         }
 
         private double rampedVelocity(TwistCommandRequest current,TwistCommandRequest target) {
-            double error = Math.abs(current.getLinearX() - target.getLinearX() );
-            if( error<DELTA_VELOCITY ) return target.getLinearX();
+            double error = current.getLinearX() - target.getLinearX();
+            //Log.i(CLSS, String.format("rampedVelocity: %f %3.2f %3.2f", error, current.getLinearX(),target.getLinearX()));
+            if( Math.abs(error) < DELTA_VELOCITY ) return target.getLinearX();
             else if(error<0.)  return current.getLinearX() + DELTA_VELOCITY;
             else return current.getLinearX() - DELTA_VELOCITY;
         }

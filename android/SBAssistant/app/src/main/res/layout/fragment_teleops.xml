@@ -10,7 +10,7 @@
         android:id="@+id/fragmentTeleopsText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="1dp"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:layout_marginTop="@dimen/activity_vertical_margin"
@@ -18,36 +18,24 @@
         android:gravity="center"
         android:textAppearance="@style/TabTitle" />
 
-    <ToggleButton
-        android:id="@+id/speech_toggle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_gravity="center_vertical|end"
-        android:button="@drawable/toggle"
-        android:textSize="20sp"
-        android:textAlignment="textEnd"
-        android:textOn="@string/teleopToggleOn"
-        android:textOff="@string/teleopToggleOff"
-        android:background="@null"
-        android:textAppearance="@style/TabTitle" />
+
+
 
     <!-- Layout so that control is square -->
     <LinearLayout
         android:id="@+id/main_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal">
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:layout_marginBottom="0dp">
         <LinearLayout
             android:id="@+id/side_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:orientation="vertical" >
-            <View
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
+            android:orientation="vertical"
+            android:layout_marginBottom="0dp">
 
             <org.ros.android.view.DirectControlstickView
                 android:id="@+id/virtual_joystick"
@@ -55,13 +43,23 @@
                 android:layout_height="600dp"
                 android:layout_gravity="center"
                 android:layout_weight="8"
-                android:adjustViewBounds="true" />
+                android:adjustViewBounds="true"/>
 
-            <View
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
+            <ToggleButton
+                android:id="@+id/speech_toggle"
+                android:layout_width="wrap_content"
+                android:layout_height="180dp"
+                android:layout_marginBottom="0dp"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="0dp"
+                android:layout_gravity="center"
+                android:button="@drawable/toggle"
+                android:textSize="20sp"
+                android:textOn="@string/teleopToggleOn"
+                android:textOff="@string/teleopToggleOff"
+                android:background="@null"
+                android:textAppearance="@style/TabTitle" />
         </LinearLayout>
     </LinearLayout>
-
 </LinearLayout>

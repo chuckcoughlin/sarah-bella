@@ -66,7 +66,7 @@ public class SBApplicationManager {
      *      Get the URI from the database.
      */
     private SBApplicationManager() {
-        this.applicationListeners = new ListenerGroup(Executors.newSingleThreadExecutor());
+        this.applicationListeners = new ListenerGroup<SBApplicationStatusListener>(Executors.newSingleThreadExecutor());
         this.errorListeners = new ListenerGroup(Executors.newSingleThreadExecutor());
         // Run an async task to deth the node configuration
         new NodeConfigurationTask().execute();

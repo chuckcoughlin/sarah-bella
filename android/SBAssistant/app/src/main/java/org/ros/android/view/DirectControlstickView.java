@@ -292,7 +292,7 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         // Call the parent's onLayout to setup the views.
         super.onLayout(changed, l, t, r, b);
-        // Log.i(CLSS,String.format("On Layout ..... pads %d %d %d %d",l,t,r,b));
+
         // The parent container must be a square. A square container simplifies the
         // code. A non-square container does not provide any benefit over a
         // square. Size is in dp.
@@ -446,7 +446,7 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
      * Update the virtual joystick to indicate a contact down has occurred.
      */
     private void onContactDown() {
-        //Log.i(CLSS,"onContact DOWN");
+
         // The divets should be completely opaque indicating
         // the virtual joystick is running.
         thumbDivet.setAlpha(1.0f);
@@ -467,7 +467,6 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
      * @param y The y coordinates of the contact relative to the parent container.
      */
     private void onContactMove(float x, float y) {
-        Log.i(CLSS,"onContact MOVE");
         // Get the coordinates of the contact relative to the center of the main
         // layout.
         float thumbDivetX = x - joystickRadius;
@@ -605,7 +604,6 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
      * joystick is no longer running. The intensity circle is slowly scaled to 0.
      */
     private void onContactUp() {
-        Log.i(CLSS,"onContact UP");
         // TODO(munjaldesai): The 1000 should eventually be replaced with a number
         // that reflects the physical characteristics of the motor controller along
         // with the latency associated with the connection.
@@ -615,9 +613,10 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
         lastVelocityDivet.setTranslationX(thumbDivet.getTranslationX());
         lastVelocityDivet.setTranslationY(thumbDivet.getTranslationY());
         lastVelocityDivet.setAlpha(0.4f);
-        Log.i(CLSS,String.format(".onContactUp (%3.0f,%3.0f)",thumbDivet.getTranslationX(),thumbDivet.getTranslationY()));
         contactUpLocation.x = (int) (thumbDivet.getTranslationX());
         contactUpLocation.y = (int) (thumbDivet.getTranslationY());
+        //Log.i(CLSS,String.format(".onContactUp last velocity divet (%d,%d)",contactUpLocation.x,contactUpLocation.y));
+
         // Move the thumb divet back to the center.
         updateThumbDivet(0, 0);
         // Reset the pointer id.
@@ -720,6 +719,7 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
         thumbDivet.setRotation(contactTheta);
         thumbDivet.setTranslationX(x);
         thumbDivet.setTranslationY(y);
+        //Log.i(CLSS,String.format(".updateThumbDivet (%3.0f,%3.0f)",thumbDivet.getTranslationX(),thumbDivet.getTranslationY()));
     }
 
     /**
@@ -738,10 +738,12 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
         }
     }
 
+    // x,y are in screen coordinates of the cursor
+    // contactUpLocation are the last
     private boolean inLastContactRange(float x, float y) {
-        if (Math.sqrt((x - contactUpLocation.x - joystickRadius)
-                * (x - contactUpLocation.x - joystickRadius) + (y - contactUpLocation.y - joystickRadius)
-                * (y - contactUpLocation.y - joystickRadius)) < THUMB_DIVET_RADIUS) {
+        //Log.i(CLSS,String.format("inLastContactRange %3.0f %3.0f (%3.0f,%3.0f) (%d,%d)",joystickRadius,THUMB_DIVET_RADIUS,x,y,contactUpLocation.x,contactUpLocation.y));
+        if( (x - contactUpLocation.x - joystickRadius) * (x - contactUpLocation.x - joystickRadius) +
+                (y - contactUpLocation.y - joystickRadius) * (y - contactUpLocation.y - joystickRadius) < THUMB_DIVET_RADIUS*THUMB_DIVET_RADIUS) {
             return true;
         }
         return false;
@@ -776,8 +778,8 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
                     // Since the resume-previous-velocity mode is not active generate
                     // velocities based on current contact position.
                     else {
-                        Log.i(CLSS,String.format("MOVE (%3.0f,%3.0f)",event.getX(event.findPointerIndex(pointerId)),
-                                event.getY(event.findPointerIndex(pointerId))));
+                        //Log.i(CLSS,String.format("MOVE (%3.0f,%3.0f)",event.getX(event.findPointerIndex(pointerId)),
+                        //      event.getY(event.findPointerIndex(pointerId))));
                         onContactMove(event.getX(event.findPointerIndex(pointerId)),
                                 event.getY(event.findPointerIndex(pointerId)));
                     }
@@ -803,8 +805,8 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
                     onContactMove(contactUpLocation.x + joystickRadius, contactUpLocation.y + joystickRadius);
                 }
                 else {
-                    Log.i(CLSS,String.format("DOWN (%3.0f,%3.0f)",event.getX(event.getActionIndex()),
-                            event.getY(event.getActionIndex())));
+                    //Log.i(CLSS,String.format("DOWN (%3.0f,%3.0f)",event.getX(event.getActionIndex()),
+                    //     event.getY(event.getActionIndex())));
                     onContactMove(event.getX(event.getActionIndex()), event.getY(event.getActionIndex()));
                 }
                 break;
@@ -813,7 +815,6 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
             case MotionEvent.ACTION_UP: {
                 // Check if the contact that initiated the interaction is up.
                 if ((action & MotionEvent.ACTION_POINTER_ID_MASK) >> MotionEvent.ACTION_POINTER_ID_SHIFT == pointerId) {
-                    Log.i(CLSS,String.format("UP "));
                     onContactUp();
                 }
                 break;

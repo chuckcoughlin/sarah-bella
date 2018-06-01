@@ -74,7 +74,7 @@ class BasicMessage implements RawMessage, GetInstance {
     }
 
     public List<Duration> getDurationList(String name) {
-        return (List) this.messageFields.getFieldValue(name);
+        return (List<Duration>) this.messageFields.getFieldValue(name);
     }
 
     public float getFloat32(String name) {
@@ -145,7 +145,7 @@ class BasicMessage implements RawMessage, GetInstance {
 
 
     public List<String> getStringList(String name) {
-        return (List) this.messageFields.getFieldValue(name);
+        return (List<String>) this.messageFields.getFieldValue(name);
     }
 
     public Time getTime(String name) {
@@ -154,7 +154,7 @@ class BasicMessage implements RawMessage, GetInstance {
 
 
     public List<Time> getTimeList(String name) {
-        return (List) this.messageFields.getFieldValue(name);
+        return (List<Time>) this.messageFields.getFieldValue(name);
     }
 
     public short getUInt16(String name) {
