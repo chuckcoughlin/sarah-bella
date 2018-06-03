@@ -244,13 +244,18 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         getActivity().runOnUiThread(new Runnable() {
             public void run() {
                 sr.cancel();
+                String locale =  "us-UK";
+                if( language==RUSSIAN) locale =  "ru-RU";
+                else if( language==FRENCH ) locale = "fr-FR";
+
                 Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
                 intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,getClass().getPackage().getName());
                 intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS,false);  // Partials are always empty
                 //Give a hint to the recognizer about what the user is going to say
                 intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-                intent.putExtra(RecognizerIntent.EXTRA_SUPPORTED_LANGUAGES, "ru_RU");
-                intent.putExtra("android.speech.extra.EXTRA_ADDITIONAL_LANGUAGES", new String[]{"ru"});
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, language);
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, language);
+                intent.putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, language);
                 // Max number of results. This is three attempts at deciphering, not a 3-word limit.
                 intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,3);
                 sr.startListening(intent);
@@ -271,7 +276,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         //Log.i(CLSS, "onReadyForSpeech");
     }
     public void onBeginningOfSpeech(){
-        Log.i(CLSS, "onBeginningOfSpeech");
+        //Log.i(CLSS, "onBeginningOfSpeech");
     }
     // Background level changed ...
     public void onRmsChanged(float rmsdB){
@@ -280,7 +285,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         Log.i(CLSS, "onBufferReceived");
     }
     public void onEndOfSpeech()  {
-        Log.i(CLSS, "onEndofSpeech");
+        //Log.i(CLSS, "onEndofSpeech");
     }
     public void onError(int error)  {
         switch (error) {
@@ -313,7 +318,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
 
     }
     public void onResults(Bundle results) {
-        Log.i(CLSS, "onResults " + results);
+        //Log.i(CLSS, "onResults \n" + results);
         // Fill the list view with the strings the recognizer thought it could have heard, there should be 5, based on the call
         ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
         //display results. The zeroth result is usually the space-separated one.

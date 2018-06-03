@@ -23,15 +23,15 @@ public class ObstacleErrorAnnunciator extends TextToSpeech {
     private String[][] phrases = {
             // English
             {       "There is a wall ahead. I'm stopping/",
-                    "I'm about to hit a wall.",
-                    "Stopping due to obstacle.",
+                    "I'm about to hit a wall. Back me up!",
+                    "Stopping before I hit the obstacle.",
                     "I'm stopping before I crash.",
                     "Wall ahead. Back up.",
-                    "I cannot proceed. Back up."},
+                    "I cannot proceed. Reverse."},
             // Russian
-            {},
+            {"Там в стене. Остановка."},
             // French
-            {}
+            {"Il y a un mur. S'arrêter."}
     };
 
     /**
