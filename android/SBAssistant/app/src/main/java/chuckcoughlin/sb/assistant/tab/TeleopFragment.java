@@ -71,11 +71,11 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     private static final double DELTA_ANGLE               = 0.02;  // Max normalized angle change in a step
     private static final double DELTA_VELOCITY            = 0.02;  // Max normalized velocity change in a step
     private static final double MIN_OBSTACLE_DISTANCE     = 20.;
-    private static final long OFFLINE_TIMER_PERIOD = 2000;  // ~msecs
+    private static final long OFFLINE_TIMER_PERIOD = 3000;  // ~msecs
     private static final long TIMER_PERIOD         = 100;   // ~msecs
 
 
-    private static final boolean OFFLINE = true;
+    private static final boolean OFFLINE = false;
     private SBApplicationManager applicationManager;
     private TwistCommandRequest currentRequest = null;    // Most recent state
     private TwistCommandRequest targetRequest = null;     // Desired state
@@ -110,7 +110,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         speechToggle.setEnabled(false);
         Spinner languageSpinner = (Spinner)view.findViewById(R.id.languages_spinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getActivity(),
-                R.array.languages_array, android.R.layout.simple_spinner_item);
+                R.array.languages_array, R.layout.spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         languageSpinner.setAdapter(adapter);
 
@@ -398,15 +398,20 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                     TwistCommandRequest current = controller.getCurrentRequest();
                     TwistCommandRequest target = controller.getTargetRequest();
                     current.setLinearX(rampedVelocity(current,target));
-                    current.setAngularZ(rampedAngle(current,target));
-
+                    double raz = rampedAngle(current,target);
+                    double delta = current.getAngularZ()-raz;
+                    current.setAngularZ(raz);
                     if (OFFLINE) {
-                        Log.i(CLSS, String.format("call: %f %f", current.getLinearX(), current.getAngularZ()));
+                        Log.i(CLSS, String.format("call: target: %3.2f %3.2f, current: %3.2f %3.2f", target.getLinearX(),target.getAngularZ(),current.getLinearX(),current.getAngularZ()));
                     }
                     else {
-                        Log.i(CLSS, String.format("call: %f %f", current.getLinearX(), current.getAngularZ()));
+                        //Log.i(CLSS, String.format("call: %f %f", current.getLinearX(), current.getAngularZ()));
                         serviceClient.call(current,thistimer);
                     }
+                    // Change our current and target by our delta. Aim for straight again.
+                    current.setAngularZ(straighten(current));
+                    target.setAngularZ(straighten(target));
+
                 }
             };
             schedule(task,0,period);
@@ -430,6 +435,12 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
             else if(error<0.)  return current.getAngularZ() + DELTA_ANGLE;
             else return current.getAngularZ() - DELTA_ANGLE;
         }
+        private double straighten(TwistCommandRequest req) {
+            double error = req.getAngularZ();
+            if( Math.abs(error)<DELTA_ANGLE ) return 0.;
+            else if(error<0.)  return req.getAngularZ() + DELTA_ANGLE;
+            else return req.getAngularZ() - DELTA_ANGLE;
+        }
 
         private double rampedVelocity(TwistCommandRequest current,TwistCommandRequest target) {
             double error = current.getLinearX() - target.getLinearX();
@@ -452,7 +463,8 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
             obstacleDistance = message.getDistance();
             Log.i(CLSS,String.format("received ObstacleDistance = (%f)",obstacleDistance));
             if( obstacleDistance< SBConstants.SB_ROBOT_CLOSEST_APPROACH ) {
-                commandVelocity(0.,0);
+                // We know this will fail ...
+                commandVelocity(targetRequest.getLinearX(),targetRequest.getAngularZ());
             }
         }
     }

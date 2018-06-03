@@ -69,8 +69,7 @@
                     android:id="@+id/languages_spinner"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:paddingLeft="@dimen/teleop_horizontal_padding"
-                    android:textSize="20sp"/>
+                    android:paddingLeft="@dimen/teleop_horizontal_padding"/>
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

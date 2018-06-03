@@ -96,12 +96,12 @@ public class TwistCommandInterpreter  {
                 result = true;
             }
 
-            if( listContains(tokens, leftWords,language) ) {
+            if( listContains(tokens, rightWords,language) ) {
                 if( angz<= SMALLEST_ANGLE ) angz = SMALLEST_ANGLE;
                 turning = true;
                 result = true;
             }
-            else if( listContains(tokens, rightWords,language) ) {
+            else if( listContains(tokens, leftWords,language) ) {
                 if( angz>= -SMALLEST_ANGLE ) angz = -SMALLEST_ANGLE;
                 turning = true;
                 result = true;
