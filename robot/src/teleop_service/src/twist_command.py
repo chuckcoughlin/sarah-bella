@@ -5,6 +5,9 @@
 # remote always starts after the robot is running. The subscriber cannot 
 # be started before the publisher.
 #
+# We only care about the straight ahead velocity (x) and rotation on the plane (z).
+# Updates are nominally every 100ms, Log every 2 seconds.
+#
 # Package: teleop. Define the Twist message as a command.
 #
 import sys
@@ -12,7 +15,9 @@ import rospy
 from geometry_msgs.msg import Twist
 from teleop_service.srv import TwistCommand,TwistCommandRequest,TwistCommandResponse
 
+REPORT_INTERVAL = 20
 pub = rospy.Publisher('/cmd_vel',Twist,queue_size=1)
+count = 0
 
 def handleTwist(request):
 	response = TwistCommandResponse()
@@ -24,9 +29,11 @@ def handleTwist(request):
 	twist.angular.y= request.angular_y
 	twist.angular.z= request.angular_z
 	response.msg = ""
-	rospy.loginfo("Twist Command: %2.2f,%2.2f,%2.2f %2.2f,%2.2f,%2.2f"%(twist.linear.x,twist.linear.y,twist.linear.z,twist.angular.x,twist.angular.y,twist.angular.z) )
 	# Publish Twist
 	pub.publish(twist)
+	count = count+1
+	if count%REPORT_INTERVAL==0:
+		rospy.loginfo("Twist Command: %3.2f,%3.2f",twist.linear.x,twist.angular.z) )
 	return response
 
 
