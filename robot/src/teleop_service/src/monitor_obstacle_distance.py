@@ -44,7 +44,7 @@ def callback(laser):
 		msg.distance = distance
 		pub.publish(msg)
 		if count%REPORT_INTERVAL == 0:
-			rospy.loginfo("Published obstacle distance %f "%(distance))
+			rospy.loginfo("Obstacle distance: %4.2f "%(distance))
 	
 
 sub = rospy.Subscriber("/sensor_msgs",LaserScan,callback)
