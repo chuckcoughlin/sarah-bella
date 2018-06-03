@@ -17,4 +17,5 @@
     <dimen name="gpio_text_field_margin">5dp</dimen>
     <dimen name="log_field_padding">1dp</dimen>
     <dimen name="log_transition_z">2dp</dimen>
+    <dimen name="teleop_horizontal_padding">8dp</dimen>
 </resources>

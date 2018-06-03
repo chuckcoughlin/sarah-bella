@@ -13,11 +13,11 @@ import teleop_service.TwistCommandRequest;
  * commands are derived from both visual and speech sources.
  */
 public interface TwistCommandController {
-    /**
-     * The TwistCommand contains current state of the navigation.
-     * @return A twist command shared with the controller.
-     */
-    public TwistCommandRequest getTwistCommand();
+    // These are the array indices for the different languages.
+    public static int ENGLISH = 0;
+    public static int RUSSIAN = 1;
+    public static int FRENCH = 2;
+
     /**
      * Notify the controller to execute a twist command.
      * The controller may have some additional checks.

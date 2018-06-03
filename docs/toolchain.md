@@ -149,8 +149,11 @@ To transfer non-apk files download and install Android File Transfer from http:/
 
 #### Voice Commands <a id="voice-commands"></a>
 Voice commands are implemented purely via the Android tablet using the builtin
-speech-to-text features of the Android. For intelligent analysis of what is spoken, we use Google's DialogFlow service. Signup is available [here](https://console.dialogflow.com/api-client/#/login). Your Google account is
-required. DialogFlow is free if usage is less that 1000 requests per day.
+speech-to-text features of the Android. On the tablet, go to "settings" Apps and give
+SBAssistant microphone permissions.
+
+In the other direction, text-to-speech parameters can be configured in the settings under "Accessibility". These include languages supported, characteristics of the
+speaker and volume.
 ***************************************************************
 
 ## Linux Build System <a id="linux-header"></a>

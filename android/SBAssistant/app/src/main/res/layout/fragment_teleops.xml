@@ -45,6 +45,11 @@
                 android:layout_weight="8"
                 android:adjustViewBounds="true"/>
 
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|center_horizontal"
+                android:orientation="horizontal">
             <ToggleButton
                 android:id="@+id/speech_toggle"
                 android:layout_width="wrap_content"
@@ -53,13 +58,20 @@
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:layout_marginTop="0dp"
-                android:layout_gravity="center"
+
                 android:button="@drawable/toggle"
                 android:textSize="20sp"
                 android:textOn="@string/teleopToggleOn"
                 android:textOff="@string/teleopToggleOff"
                 android:background="@null"
                 android:textAppearance="@style/TabTitle" />
+                <Spinner
+                    android:id="@+id/languages_spinner"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="@dimen/teleop_horizontal_padding"
+                    android:textSize="20sp"/>
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

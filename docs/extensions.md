@@ -147,7 +147,7 @@ those input/output channels that have changed state. However, on every 100th cyc
 entire list of 40 pins. The GPIOState topic is designed to have a response
 time on the order of 0.1 seconds.
 
-Each GPIOPin sub-message consists of:
+Each *GPIOPin* sub-message consists of:
 
 ```
 GPIOPin
@@ -194,20 +194,27 @@ The initial construction of the package files was accomplished using:
 
  ### 03- Teleop <a id="teleop"></a>
 The base code for the joystick view widget came from [here](https://github.com/rosjava/android_core/tree/kinetic/android_15/src/org/ros/android/view). We have modified the control so that "up" always correlates to the
-front of the robot. The joystick control may be augmented with voice commands. Additionally there is a fail-safe mechanism that prevents 
+front of the robot. The joystick control may be augmented with voice commands. Additionally there is a fail-safe mechanism that prevents
 the robot from crashing into obstacles, no matter what the user does.
 
 
 On the robot we use a service for control. It simply transforms requests into ```/cmd_vel (Twist)``` messages. The service is required because, with ROS, remote publishers must be established before local (on robot) subscribers. In our design the application is started from the tablet.
 
+The robot publishes custom *ObstacleDistance* messages. The distance returned is the minimum distance to an object detected by *Lidar* within a rectangular area in front of the robot. The
+width is set by the parameter ```/robot/width```.
+
+```
+ObstacleDistance
+  float4 distance
+```
+
 ##### ----------------------- tablet --------------------------<br/>
 **action:** /sb_serve_twist_command (TwistCommandRequest)<br/>
-**subscribe:**  /odom_throttle (Odometry)<br/>
+**subscribe:**  /sb_teleop (ObstacleDistance)<br/>
 
 ##### ----------------------- robot --------------------------<br/>
 **service:** /sb_serve_twist_command (TwistCommand)<br/>
-**subscribe:** /cmd_vel (Twist)<br/>
-**publish:**  /sb_ (Odometry)<br/>
+**publish:**  /sb_obstacle_distance (ObstacleDistance)<br/>
 
  ### 04- Follow <a id="follow"></a>
  The *follower* application is one of the ROBOTIS demonstrations. I chose the version from: https://github.com/NVIDIA-Jetson/turtlebot3/tree/master/turtlebot_apps/turtlebot_follower. I modified references from *turtlebot_msgs* to *turtlebot3_msgs*.
@@ -223,5 +230,5 @@ On the robot we use a service for control. It simply transforms requests into ``
 
 
 
-##### 05 - Park <a id="park"></a>
+### 05 - Park <a id="park"></a>
 See Turtlebot3 Automatic Parking at: https://github.com/ROBOTIS-GIT/turtlebot3_applications

@@ -11,10 +11,14 @@ import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -34,12 +38,14 @@ import org.ros.node.service.ServiceResponseListener;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import chuckcoughlin.sb.assistant.R;
 import chuckcoughlin.sb.assistant.common.AbstractMessageListener;
 import chuckcoughlin.sb.assistant.common.SBConstants;
+import chuckcoughlin.sb.assistant.control.ObstacleErrorAnnunciator;
 import chuckcoughlin.sb.assistant.control.TwistCommandController;
 import chuckcoughlin.sb.assistant.control.TwistCommandInterpreter;
 import chuckcoughlin.sb.assistant.ros.SBApplicationManager;
@@ -57,17 +63,19 @@ import teleop_service.TwistCommandResponse;
  */
 
 public class TeleopFragment extends BasicAssistantFragment implements SBApplicationStatusListener,
-                                                TwistCommandController, RecognitionListener    {
+                                                TwistCommandController, RecognitionListener,
+                                                TextToSpeech.OnInitListener, AdapterView.OnItemSelectedListener  {
     private static final String CLSS = "TeleopFragment";
 
     // ================================== Timing Constants ===========================
     private static final double DELTA_ANGLE               = 0.02;  // Max normalized angle change in a step
     private static final double DELTA_VELOCITY            = 0.02;  // Max normalized velocity change in a step
+    private static final double MIN_OBSTACLE_DISTANCE     = 20.;
     private static final long OFFLINE_TIMER_PERIOD = 2000;  // ~msecs
     private static final long TIMER_PERIOD         = 100;   // ~msecs
 
 
-    private static final boolean OFFLINE = false;
+    private static final boolean OFFLINE = true;
     private SBApplicationManager applicationManager;
     private TwistCommandRequest currentRequest = null;    // Most recent state
     private TwistCommandRequest targetRequest = null;     // Desired state
@@ -77,7 +85,10 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     private ServiceClient<TwistCommandRequest, TwistCommandResponse> serviceClient = null;
     private ServiceTimer serviceTimer = null;       // Publish velocity commands at a constant rate.
     private DistanceListener distanceListener = null;
+    private boolean errorAnnunciated = false;      // Prevents repeated error announcements
+    private int language = TwistCommandController.ENGLISH;
     private SpeechRecognizer sr = null;
+    private ObstacleErrorAnnunciator speechSynthesizer = null;
     private ToggleButton speechToggle = null;
 
 
@@ -97,6 +108,11 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
             }
         });
         speechToggle.setEnabled(false);
+        Spinner languageSpinner = (Spinner)view.findViewById(R.id.languages_spinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getActivity(),
+                R.array.languages_array, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        languageSpinner.setAdapter(adapter);
 
         joystick = (DirectControlstickView)view.findViewById(R.id.virtual_joystick);
         joystick.setController(this);
@@ -179,7 +195,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                     speechToggle.setEnabled(true);
                 }
             });
-
+            speechSynthesizer = new ObstacleErrorAnnunciator(getActivity(),this);
         }
     }
 
@@ -203,6 +219,10 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                 sr.destroy();
             }
             sr = null;
+            if( speechSynthesizer!=null ) {
+                speechSynthesizer.stop();
+                speechSynthesizer = null;
+            }
         }
     }
 
@@ -230,7 +250,6 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                 //Give a hint to the recognizer about what the user is going to say
                 intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
                 intent.putExtra(RecognizerIntent.EXTRA_SUPPORTED_LANGUAGES, "ru_RU");
-                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ru");
                 intent.putExtra("android.speech.extra.EXTRA_ADDITIONAL_LANGUAGES", new String[]{"ru"});
                 // Max number of results. This is three attempts at deciphering, not a 3-word limit.
                 intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,3);
@@ -238,6 +257,14 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                 Log.i(CLSS,"SpeechRecognizer: listening ...");
             }
         });
+    }
+    // ======================================= onInitListener ==================================
+    @Override
+    public void onInit(int status) {
+        if( status!=TextToSpeech.SUCCESS ) {
+            Log.w(CLSS,String.format("onInit: Error initializing speech synthesis (%d)",status));
+            speechSynthesizer = null;   // Do not use
+        }
     }
     // ========================================= RecognitionListener ============================
     public void onReadyForSpeech(Bundle params)  {
@@ -292,7 +319,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         //display results. The zeroth result is usually the space-separated one.
         for (int i = 0; i < matches.size(); i++) {
             Log.i(CLSS, "result " + matches.get(i));
-            if( interpreter.handleWordList(currentRequest,matches.get(i))>=0  ) break;
+            if( interpreter.handleWordList(currentRequest,matches.get(i),language)) break;
         }
         startRecognizer();   // restart
     }
@@ -304,10 +331,6 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     }
 
     // ========================================= TwistCommandController ============================
-    @Override
-    public TwistCommandRequest getTwistCommand() {
-        return null;
-    }
 
     @Override
     /**
@@ -325,6 +348,19 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
             targetRequest.setAngularX(0);
             targetRequest.setAngularY(0);
             targetRequest.setAngularZ(angularVelocityZ);
+
+            if( obstacleDistance<MIN_OBSTACLE_DISTANCE && targetRequest.getLinearX()>0.  ) {
+                targetRequest.setLinearX(0.0);
+                targetRequest.setAngularZ(0.0);
+                Log.i(CLSS,String.format("commandVelocity: Too close %3.0f vs %3.0f",obstacleDistance,MIN_OBSTACLE_DISTANCE));
+                if( !errorAnnunciated && speechToggle.isChecked() && speechSynthesizer!=null ) {
+                    speechSynthesizer.annunciateError(language,obstacleDistance);
+                    errorAnnunciated = true;
+                }
+            }
+            else {
+                errorAnnunciated = false;
+            }
         }
     }
     public TwistCommandRequest getCurrentRequest()  { return this.currentRequest; }
@@ -334,8 +370,6 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     public double getMaxSpeed() {
         return 0;
     }
-
-
 
     // ===================================== ServiceTimer ========================================
     /**
@@ -347,6 +381,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     private class ServiceTimer extends Timer implements ServiceResponseListener<TwistCommandResponse> {
         private final static String TAG = "ServiceTimer";
         private final TwistCommandController controller;
+
         public ServiceTimer(TwistCommandController c) {
             this.controller = c;
             final ServiceTimer thistimer = this;
@@ -359,6 +394,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                     TwistCommandRequest target = controller.getTargetRequest();
                     current.setLinearX(rampedVelocity(current,target));
                     current.setAngularZ(rampedAngle(current,target));
+
                     if (OFFLINE) {
                         Log.i(CLSS, String.format("call: %f %f", current.getLinearX(), current.getAngularZ()));
                     }
@@ -414,5 +450,15 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                 commandVelocity(0.,0);
             }
         }
+    }
+    // ====================================== OnItemSelectedListener ===============================
+    // Listener for the languages pull-down
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        this.language = position;
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
     }
 }
