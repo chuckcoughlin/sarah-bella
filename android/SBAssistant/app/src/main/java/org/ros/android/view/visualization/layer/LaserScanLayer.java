@@ -43,7 +43,8 @@ public class LaserScanLayer extends AbstractLayer  {
     private static final Color OCCUPIED_SPACE_COLOR = Color.fromHexAndAlpha("377dfa", 0.3f);
     private static final float LASER_SCAN_LINE_WIDTH = 1.f;   // The only supported width?
     private static final float LASER_SCAN_POINT_SIZE = 10.f;
-    private static final int LASER_SCAN_STRIDE = 15;
+    //private static final int LASER_SCAN_STRIDE = 15;    // Show every 15th data point
+    private static final int LASER_SCAN_STRIDE = 1;     // Show all data points
 
     private GraphName frame;
     private LaserScan message = null;    // Save prior message

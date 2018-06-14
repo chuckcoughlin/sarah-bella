@@ -57,7 +57,12 @@ public class SBConstants {
     // Platform Types
     public static final String PLATFORM_LINUX="Linux";
     public static final String PLATFORM_RASPBERRYPI="RaspberryPy";
-
+    // Behavior types (teleop fragment)
+    public static final String ROS_BEHAVIOR_PARAM = "/robot/behavior";
+    public static final String SB_BEHAVIOR_COME     = "come";
+    public static final String SB_BEHAVIOR_FOLLOW   = "follow";
+    public static final String SB_BEHAVIOR_JOYSTICK = "joystick";
+    public static final String SB_BEHAVIOR_PARK     = "park";
 
     // Dialog transaction key
     public static final String DIALOG_TRANSACTION_KEY = "dialog";

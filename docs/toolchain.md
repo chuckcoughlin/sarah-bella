@@ -23,6 +23,7 @@ We use the kinetic version of ROS. This is the current version used by ROBOTIS f
   * [Linux Build System](#linux-header)
     * [Virtualbox Setup](#virtualbox-setup)
     * [ROS Development Setup](#ros-development-setup)
+    * [ROS Development Setup (Melodic)](#ros-development-setup-Melodic)
     * [Source Repository](#source-repository)
     * [Turtlebot3 Support](#turtlebot3-support)
     * [OpenCR Firmware](#opencr-firmware)
@@ -166,12 +167,15 @@ Python (mostly) and C++ code for the entire repertoire of applications and suppo
 #### VirtualBox Setup <a id="virtualbox-setup"></a>
 We use VirtualBox on an iMac host to implement our Linux virtual machines. The application may be downloaded from http://www.oracle.com/technetwork/server-storage/virtualbox/downloads/index.html.
 
-The VirtualBox installation requires an additional package in order to support a file system shared with the host. From https://www.virtualbox.org/wiki/Downloads download, then from the VirtualBox "devices" menu,
-mount the VirtualBox Extension Packaage.  Either let the script run automatically or
-navigate to /media/<username>VBOXADDITIONS_5.1.28_117968 and execute:
+ Create a virtual machine "ROSDev" to house ROS development activities. Download the initial boot image from http://releases.ubuntu.com/16.04.4-desktop-amd64.iso. Place it in ~/robotics/linux on the host OSX system.  
+ Create a virtual machine sized at 6gb of RAM and 50gb of disk. Note that Ubuntu 16.04 is required. Other versions will not work.
+
+The VirtualBox installation requires an additional package in order to support a file system shared with the host. From https://download.virtualbox.org/virtualbox/5.2.12 (or more recent version) download, then from the VirtualBox "devices" menu,
+mount the VirtualBox Extension Package (guest additions).  Either let the script run automatically or
+navigate to /media/<username>VBox_GAs_5.2.12 and execute:
 
 ```
-		./VBoxLinuxAdditions.run
+		sudo ./VBoxLinuxAdditions.run
 ```
 
 Manipulate the VirtualBox menu until "Devices" shows. Under "Shared Folders" create a virtual device, say "share" pointing to an existing directory on the host system, say "/Users/<username>/robotics/share".
@@ -180,7 +184,7 @@ This provides a way to transfer our build products to the host so that it can fl
 Then within the virtual machine:
 
 ```
-		sudo mkdir /home/<username>/robotics/share
+		sudo mkdir -p /home/<username>/robotics/share
 		sudo echo 'share /home/<username>/robotics/share vboxsf umask=0022,uid=1000,gid=1000'>>/etc/fstab
 ```
 
@@ -192,24 +196,39 @@ on startup. In this case 'sudo umount share' and mount manually. The equivalent 
 The VirtualBox additions also provide for a shared clipboard.
 
 #### ROS Development Setup <a id="ros-development-setup"></a>
-On the host OSX system, create a virtual machine "ROSDev" to house ROS development activities. These activities include package development as well as construction of the entire suite of
+
+Next, install the Robot Operation System (ROS) build environment. These activities include package development as well as construction of the entire suite of
 applications that will eventually run on the robot.
-Use an Unbuntu 16.04 boot image downloaded from https://www.ubuntu.com/download/desktop/contribute?version=16.04.3&architecture=amd64r.
-Create a virtual machine sized at 6gb of RAM and 50gb of disk.
 
-Next, install the Robot Operation System (ROS) build environment.
-For details, see http://emanual.robotis.com/docs/en/platform/turtlebot3/pc_setup/#pc-setup. Complete the steps in sections 6.2 and 6.3.
+For details, see  http://wiki.ros.org/kinetic/Installation/Ubuntu#Initialize_rosdep steps 1.2-1.7 and then http://emanual.robotis.com/docs/en/platform/turtlebot3/pc_setup/#pc-setup. Complete the steps in 6.1.3.
 
-Now install dependent packages for Turtlebot3 control and Java message generation:
+This last step installed dependent packages for Turtlebot3 control and Java message generation. Install the following additional packages:
 ```
-    sudo apt-get install ros-kinetic-joy ros-kinetic-teleop-twist-joy ros-kinetic-teleop-twist-keyboard ros-kinetic-laser-proc ros-kinetic-rgbd-launch \
-		ros-kinetic-depthimage-to-laserscan ros-kinetic-rosserial-arduino ros-kinetic-rosserial-python ros-kinetic-rosserial-server ros-kinetic-rosserial-client \
-		ros-kinetic-rosserial-msgs ros-kinetic-amcl ros-kinetic-map-server ros-kinetic-move-base ros-kinetic-urdf ros-kinetic-xacro ros-kinetic-compressed-image-transport \
-		ros-kinetic-rqt-image-view ros-kinetic-gmapping ros-kinetic-navigation
     sudo apt-get install ros-kinetic-hls-lfcd-lds-driver
     sudo apt-get install ros-kinetic-turtlebot-teleop
     sudo apt-get install ros-kinetic-interactive-markers
     sudo apt-get install ros-kinetic-laser-filters
+```
+
+Add the followng environment variables to ~/.bashrc
+```
+  export ROS_MASTER_URI=http://localhost:11311
+  export ROS_HOSTNAME=localhost
+  export OPENCR_PORT=/dev/ttyACM0
+  export OPENCR_MODEL=burger
+```
+
+#### ROS Development Setup (Melodic) <a id="ros-development-setup-melodic"></a>
+
+This is a, currently, experimental setup using the ROS Melodic distribution. Prepare a virtual machine as before, except upgrade to Ubuntu 18.04. The ISO image is available at http://releases.ubuntu.com/18.04-desktop-amd64.iso.
+
+To install the Robot Operation System (ROS) build environment see  http://wiki.ros.org/melodic/installation/Ubuntu, sections 1.1-1.7.
+
+and then http://emanual.robotis.com/docs/en/platform/turtlebot3/pc_setup/#pc-setup. Complete the steps in 6.1.3.
+
+Now install dependent packages for Turtlebot3 control and Java message generation:
+```
+    NOTE: The turtlebot3 packages for Ubuntu 18.04 and ROS Melodic have not been published yet.
 ```
 
 Add the followng environment variables to ~/.bashrc
@@ -241,11 +260,8 @@ This step describes the initial installation of source code for turtlebot ROS su
 successful build, but have not been checked into the *sara-bella* repository. <a id="message-packages"></a>
 
 ```
-    cd ~/catkin_ws/src
-    git clone https://github.com/ROBOTIS-GIT/turtlebot3_msgs.git
-    git clone https://github.com/ROBOTIS-GIT/turtlebot3.git
-    git clone https://github.com/ROBOTIS-GIT/hls_lfcd_lds_driver.git
-    cd .. && catkin_make
+    cd ~/catkin_ws
+    catkin_make
 ```
 Note: If building after a repository checkout, the ```catkin_make``` command may have to be executed twice to resolve build dependencies.
 
@@ -393,8 +409,8 @@ ROS package downloads.
 ```
 
 Like the main development system, the Raspberry Pi requires the ROS development libraries. Follow the instructions at:
-http://emanual.robotis.com/docs/en/platform/turtlebot3/sbc_setup/#sbc-setup, sections 7.1.1 and 7.1.2. These steps can be expected to
-take an hour or more. Make sure the robot's battery is charged. Additionally the packages listed [here](#message-packages) must also be installed.
+http://emanual.robotis.com/docs/en/platform/turtlebot3/sbc_setup/#sbc-setup, sections 6.2 and 7.1.2. These steps can be expected to
+take an hour or more. Make sure the robot's battery is charged. Additionally the packages liste6.3d [here](#message-packages) must also be installed.
 
 After I executed the "sudo apt upgrade", I discovered that my Firefox now crashed on start. To revert to a prior version:
 ```

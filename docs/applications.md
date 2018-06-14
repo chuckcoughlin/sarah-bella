@@ -102,6 +102,14 @@ might go like this:
   back up
   stop
 ```
+Additionally, a "behavior" can be specified. This is equivalent to running one of the following applications in parallel
+with the joystick. Choices are:
+```
+  joystick (run the joystick application alone)
+  follow
+  park
+  come
+```
 
 ******************************************************
 ### 04 - Follow <a id="follow"></a>
@@ -110,3 +118,7 @@ With the *follow* application running, walk in front of the TurtleBot3. Then, sl
 ******************************************************
 ### 05 - Auto-park <a id="follow"></a>
 When this application is running, the robot will search for a white tag that marks its intended parking space.
+
+******************************************************
+### 06 - Call <a id="follow"></a>
+The *call* capability demonstrates the use of microphones to locate a sound-source. Use "Hey, Sarah", or "Come, Sarah" to direct the robot to yourself.

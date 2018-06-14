@@ -30,6 +30,10 @@
     <!-- Strings for Teleop tab -->
     <string name="teleopToggleOn">Speech Enabled</string>
     <string name="teleopToggleOff">Press to Talk</string>
+    <string name="teleopCome">Come</string>
+    <string name="teleopFollow">Follow</string>
+    <string name="teleopJoystick">Joystick</string>
+    <string name="teleopPark">Park</string>
     <string-array name="languages_array">
         <item>English</item>
         <item>Русский</item>

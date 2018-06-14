@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -64,7 +65,8 @@ import teleop_service.TwistCommandResponse;
 
 public class TeleopFragment extends BasicAssistantFragment implements SBApplicationStatusListener,
                                                 TwistCommandController, RecognitionListener,
-                                                TextToSpeech.OnInitListener, AdapterView.OnItemSelectedListener  {
+                                                TextToSpeech.OnInitListener, AdapterView.OnItemSelectedListener,
+                                                RadioGroup.OnCheckedChangeListener  {
     private static final String CLSS = "TeleopFragment";
 
     // ================================== Timing Constants ===========================
@@ -90,6 +92,8 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     private SpeechRecognizer sr = null;
     private ObstacleErrorAnnunciator speechSynthesizer = null;
     private ToggleButton speechToggle = null;
+    private RadioGroup behaviorGroup = null;
+    ParameterClient paramClient = null;
 
 
     // Inflate the view. It displays a virtual joystick
@@ -100,6 +104,8 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         View view = inflater.inflate(R.layout.fragment_teleops, container, false);
         TextView label = view.findViewById(R.id.fragmentTeleopsText);
         label.setText(R.string.fragmentTeleopLabel);
+        behaviorGroup = view.findViewById(R.id.behaviorRadioGroup);
+        behaviorGroup.setOnCheckedChangeListener(this);
         speechToggle = view.findViewById(R.id.speech_toggle);
         speechToggle.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -147,6 +153,34 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         super.onDestroyView();
     }
 
+    // ======================================== OnCheckedChangeListener ===============================
+    public void onCheckedChanged(RadioGroup group, int checkedId) {
+        setBehavior(checkedId);
+    }
+
+    private void setBehavior(int checkedId) {
+        // checkedId is the RadioButton selected
+        if( paramClient!=null ) {
+            switch (checkedId) {
+                case R.id.joystick:
+                    paramClient.setParam(GraphName.of(SBConstants.ROS_BEHAVIOR_PARAM),SBConstants.SB_BEHAVIOR_JOYSTICK);
+                    break;
+                case R.id.come:
+                    paramClient.setParam(GraphName.of(SBConstants.ROS_BEHAVIOR_PARAM),SBConstants.SB_BEHAVIOR_COME);
+                    break;
+                case R.id.follow:
+                    paramClient.setParam(GraphName.of(SBConstants.ROS_BEHAVIOR_PARAM),SBConstants.SB_BEHAVIOR_FOLLOW);
+                    break;
+                case R.id.park:
+                    paramClient.setParam(GraphName.of(SBConstants.ROS_BEHAVIOR_PARAM),SBConstants.SB_BEHAVIOR_PARK);
+                    break;
+                default:
+                    Log.i(CLSS, String.format("handleInitialState: Unrecognized selection"));
+            }
+        }
+    }
+
+
     // ========================================= SBApplicationStatusListener ============================
     // This may be called immediately on establishment of the listener. It will not get called
     // if the robot is OFFLINE.  Inform the obstacle detector of the width of the robot.
@@ -162,7 +196,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                             SBRobotManager robotManager = SBRobotManager.getInstance();
                             String uriString = robotManager.getRobot().getRobotId().getMasterUri();
                             URI masterUri = new URI(uriString);
-                            ParameterClient paramClient = new ParameterClient(new NodeIdentifier(GraphName.of("/TeleopFragment"),masterUri),masterUri);
+                            paramClient = new ParameterClient(new NodeIdentifier(GraphName.of("/TeleopFragment"),masterUri),masterUri);
                             paramClient.setParam(GraphName.of(SBConstants.ROS_WIDTH_PARAM),SBConstants.SB_ROBOT_WIDTH);
                             serviceClient = node.newServiceClient("/sb_serve_twist_command", teleop_service.TwistCommand._TYPE);
                             currentRequest = serviceClient.newMessage();
@@ -170,7 +204,8 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                             currentRequest.setAngularZ(0.0);
                             distanceListener.subscribe(node,"/sb_teleop");
                             serviceTimer = new ServiceTimer(controller);
-                        }
+                            setBehavior(behaviorGroup.getCheckedRadioButtonId());
+                    }
                         catch(URISyntaxException uriex) {
                             Log.e(CLSS,String.format("URI Syntax Exception setting parameter (%s)",uriex.getLocalizedMessage()));
                         }

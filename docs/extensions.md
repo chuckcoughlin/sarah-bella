@@ -60,26 +60,27 @@ The lidar panel displays output from the Lidar device. The *VisualizationView* i
 ```
 LaserScan
 # Single scan from a planar laser range-finder
-   Header header         # timestamp in the header is the acquisition time of
-                         # the first ray in the scan.
-                         #
-                         # in frame frame_id, angles are measured around
-                         # the positive Z axis (counterclockwise, if Z is up)
-                         # with zero angle being forward along the x axis
+# Frame = frame_id, angles are measured around
+# the positive Z axis (counterclockwise, if Z is up)
+# with zero angle being forward along the x axis
+   Header header            # timestamp is the acquisition
+                            # time of the first ray
 
-   float32 angle_min        # start angle of the scan [radians]
-   float32 angle_max        # end angle of the scan [radians]
-   float32 angle_increment  # angular distance between measurements [radians]
+   float32 angle_min        # 0. - start angle of the scan [radians]
+   float32 angle_max        # 2π - end angle of the scan [radians]
+   float32 angle_increment  # 0.12 - angular distance between
+                            # measurements [radians]
 
-   float32 time_increment   # time between measurements [seconds] - if your scanner
-                            # is moving, this will be used in interpolating position
+   float32 time_increment   # time between measurements [seconds]
+                            # if scanner is moving, this
+                            # will be used in interpolating position
                             # of 3d points
    float32 scan_time        # time between scans [seconds]
+   float32 range_min        # 0.  - min range value [m]
+   float32 range_max        # 3.5 - max range value [m]
 
-   float32 range_min        # minimum range value [m]
-   float32 range_max        # maximum range value [m]
-
-   float32[] ranges         # range data [m] (Note: values < range_min or >
+   float32[] ranges         # range data [m] (360 values)
+                            # Note: values < range_min or >
                             # range_max should be discarded)
    float32[] intensities    # intensity data [device-specific units].
 ```

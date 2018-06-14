@@ -32,8 +32,7 @@ import sensor_msgs.LaserScan;
 import tf.tfMessage;
 
 /**
- * This fragment handles robot control during its SLAM
- * mapping sequence.
+ * This fragment the robot LIDAR output.
  */
 
 public class LidarFragment extends BasicAssistantFragment implements SBApplicationStatusListener, SeekBar.OnSeekBarChangeListener {

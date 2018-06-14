@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="chuckcoughlin.sb.assistant.tab.TeleopFragment">
-
     <TextView
         android:id="@+id/fragmentTeleopsText"
         android:layout_width="match_parent"
@@ -17,18 +16,49 @@
         android:layout_weight="0"
         android:gravity="center"
         android:textAppearance="@style/TabTitle" />
-
-
-
+    <RadioGroup
+        android:id="@+id/behaviorRadioGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/text"
+        android:layout_marginLeft="@dimen/margin_medium"
+        android:orientation="horizontal"
+        android:checkedButton="@+id/joystick">
+        <RadioButton
+            android:id="@+id/joystick"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:text="@string/teleopJoystick" />
+        <RadioButton
+            android:id="@+id/come"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:text="@string/teleopCome" />
+        <RadioButton
+            android:id="@+id/follow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:text="@string/teleopFollow" />
+        <RadioButton
+            android:id="@+id/park"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:text="@string/teleopPark" />
+    </RadioGroup>
 
     <!-- Layout so that control is square -->
     <LinearLayout
         android:id="@+id/main_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="0dp"
         android:layout_weight="1"
-        android:orientation="horizontal"
-        android:layout_marginBottom="0dp">
+        android:orientation="horizontal">
+
         <LinearLayout
             android:id="@+id/side_layout"
             android:layout_width="match_parent"
@@ -71,6 +101,8 @@
                     android:layout_height="wrap_content"
                     android:paddingLeft="@dimen/teleop_horizontal_padding"/>
             </LinearLayout>
+
         </LinearLayout>
+
     </LinearLayout>
 </LinearLayout>
