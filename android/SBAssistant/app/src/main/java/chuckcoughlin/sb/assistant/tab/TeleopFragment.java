@@ -77,7 +77,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     private static final long TIMER_PERIOD         = 100;   // ~msecs
 
 
-    private static final boolean OFFLINE = false;
+    private static final boolean OFFLINE = true;
     private SBApplicationManager applicationManager;
     private TwistCommandRequest currentRequest = null;    // Most recent state
     private TwistCommandRequest targetRequest = null;     // Desired state
