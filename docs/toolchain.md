@@ -2,7 +2,7 @@
 
 This document summarizes the tools and build procedures required to build the Sarah-Bella application suite. Current hardware consists of the following:
   * Host system - iMac running OSX High Sierra (10.13).
-  * Tablet - Samsung Galaxy S3 - 10" Android 7.0 (SDK version 24).
+  * Tablet - Samsung Galaxy S3 - 10" Android 8.0.0 (SDK version 26).
   * Robot - ROBOTIS Turtlebot3, monitor, USB keyboard
 
 We use the kinetic version of ROS. This is the current version used by ROBOTIS for Turtlebot3.
