@@ -1,105 +1,95 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="chuckcoughlin.sb.assistant.tab.TeleopFragment"
     tools:layout_editor_absoluteX="8dp"
-    tools:layout_editor_absoluteY="8dp"
-    tools:context="chuckcoughlin.sb.assistant.tab.TeleopFragment">
+    tools:layout_editor_absoluteY="8dp">
     <TextView
         android:id="@+id/fragmentTeleopsText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="5"
-        android:gravity="center"
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="100dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
         android:textAppearance="@style/TabTitle" />
-<RadioGroup
-  android:id="@+id/behaviorRadioGroup"
-  android:layout_width="match_parent"
-  android:layout_height="wrap_content"
-  android:layout_below="@+id/text"
-  android:layout_marginLeft="@dimen/margin_medium"
-  android:orientation="vertical"
-  android:checkedButton="@+id/joystick">
-  <RadioButton
-      android:id="@+id/joystick"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:textSize="24sp"
-      android:text="@string/teleopJoystick" />
-  <RadioButton
-      android:id="@+id/come"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:textSize="24sp"
-      android:text="@string/teleopCome" />
-  <RadioButton
-      android:id="@+id/follow"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:textSize="24sp"
-      android:text="@string/teleopFollow" />
-  <RadioButton
-      android:id="@+id/park"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:textSize="24sp"
-      android:text="@string/teleopPark" />
-</RadioGroup>
-    <!-- Layout so that control is square -->
-    <LinearLayout
-        android:id="@+id/main_layout"
-        android:layout_width="match_parent"
+    <RadioGroup
+        android:id="@+id/behaviorRadioGroup"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="0dp"
-        android:layout_weight="2"
-        android:orientation="horizontal">
-
-        <LinearLayout
-            android:id="@+id/side_layout"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="@dimen/margin_medium"
+        android:layout_marginRight="@dimen/margin_medium"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:checkedButton="@+id/joystick"
+        android:orientation="vertical">
+        <RadioButton
+            android:id="@+id/joystick"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="2"
-            android:orientation="vertical"
-            android:layout_marginBottom="0dp">
+            android:layout_height="wrap_content"
+            android:text="@string/teleopJoystick"
+            android:textSize="22sp" />
+        <RadioButton
+            android:id="@+id/come"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/teleopCome"
+            android:textSize="22sp" />
+        <RadioButton
+            android:id="@+id/follow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/teleopFollow"
+            android:textSize="22sp" />
+        <RadioButton
+            android:id="@+id/park"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/teleopPark"
+            android:textSize="22sp" />
+    </RadioGroup>
 
-            <org.ros.android.view.DirectControlstickView
-                android:id="@+id/virtual_joystick"
-                android:layout_width="400dp"
-                android:layout_height="400dp"
+    <org.ros.android.view.DirectControlstickView
+        android:id="@+id/virtual_joystick"
+        android:layout_width="600dp"
+        android:layout_height="600dp"
+        android:layout_below="@+id/fragmentTeleopsText"
+        android:layout_weight="8"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:adjustViewBounds="true"/>
 
-                android:layout_weight="8"
-                android:adjustViewBounds="true"/>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_below="@+id/virtual_joystick"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:orientation="horizontal">
+        <ToggleButton
+            android:id="@+id/speech_toggle"
+            android:layout_width="wrap_content"
+            android:layout_height="180dp"
+            android:layout_marginBottom="0dp"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="0dp"
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="top|center_horizontal"
-                android:orientation="horizontal">
-            <ToggleButton
-                android:id="@+id/speech_toggle"
-                android:layout_width="wrap_content"
-                android:layout_height="180dp"
-                android:layout_marginBottom="0dp"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="0dp"
-
-                android:button="@drawable/toggle"
-                android:textSize="20sp"
-                android:textOn="@string/teleopToggleOn"
-                android:textOff="@string/teleopToggleOff"
-                android:background="@null"
-                android:textAppearance="@style/TabTitle" />
-                <Spinner
-                    android:id="@+id/languages_spinner"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="@dimen/teleop_horizontal_padding"/>
-            </LinearLayout>
-
-        </LinearLayout>
-
+            android:background="@null"
+            android:button="@drawable/toggle"
+            android:textAppearance="@style/TabTitle"
+            android:textOff="@string/teleopToggleOff"
+            android:textOn="@string/teleopToggleOn"
+            android:textSize="20sp" />
+        <Spinner
+            android:id="@+id/languages_spinner"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/teleop_horizontal_padding"/>
     </LinearLayout>
+
 </RelativeLayout>
