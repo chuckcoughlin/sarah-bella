@@ -104,8 +104,8 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         View view = inflater.inflate(R.layout.fragment_teleops, container, false);
         TextView label = view.findViewById(R.id.fragmentTeleopsText);
         label.setText(R.string.fragmentTeleopLabel);
-        behaviorGroup = view.findViewById(R.id.behaviorRadioGroup);
-        behaviorGroup.setOnCheckedChangeListener(this);
+        //behaviorGroup = view.findViewById(R.id.behaviorRadioGroup);
+        //behaviorGroup.setOnCheckedChangeListener(this);
         speechToggle = view.findViewById(R.id.speech_toggle);
         speechToggle.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -160,6 +160,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
 
     private void setBehavior(int checkedId) {
         // checkedId is the RadioButton selected
+        /*
         if( paramClient!=null ) {
             switch (checkedId) {
                 case R.id.joystick:
@@ -178,6 +179,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                     Log.i(CLSS, String.format("handleInitialState: Unrecognized selection"));
             }
         }
+        */
     }
 
 
