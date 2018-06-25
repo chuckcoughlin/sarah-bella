@@ -47,5 +47,5 @@ def callback(laser):
 			rospy.loginfo("Obstacle distance: %4.2f "%(distance))
 	
 
-sub = rospy.Subscriber("/sensor_msgs",LaserScan,callback)
+sub = rospy.Subscriber("/scan_throttle",LaserScan,callback)
 rospy.spin()
