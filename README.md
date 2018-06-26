@@ -11,7 +11,7 @@ debugged and added to the repository on the development system.  From there the 
 2) android: An Android tablet provides the robot user interface, communicating via wi-fi and ROS messaging. The Android application
  "SBAssistant" makes use of ROSJava. The device is assumed to be Android 8.0 or higher. This single application may be used to execute any of the robot packages.
 
- As of June, 2018 this project is under active development. In general, documentation precedes completed features. The following major features can be considered "done":
+ As of July, 2018 this project is under active development. In general, documentation precedes completed features. The following major features can be considered "done":
   * SBAssistant: android controller, panel navigation, robot Bluetooth or WiFi connection, select/change active robot application.
   * system: tablet displays robot status - CPU, memory, battery and GPIO configuration. Tablet gets, sets and subscribes to GPIO values.
   * logging: tablet displays ROS log messages generated on the robot.

@@ -233,3 +233,7 @@ ObstacleDistance
 
 ### 05 - Park <a id="park"></a>
 See Turtlebot3 Automatic Parking at: https://github.com/ROBOTIS-GIT/turtlebot3_applications
+
+### 06 - Come <a id="come"></a>
+
+The 3D printed ears are derived from [Human Ear](https://www.thingiverse.com/thing:304657) by Lance Andrew modified to accept the microphone and mount on our mezzanine.
