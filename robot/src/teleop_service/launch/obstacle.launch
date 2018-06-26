@@ -11,7 +11,6 @@
   <!-- Make a slower lidar feed available; only required if we use android client -->
   <node pkg="topic_tools" type="throttle" name="scan_throttle"
         args="messages /scan 1" output="log"/>
-  <node pkg="teleop_service" type="twist_command.py" name="sb_serve_twist_command" output="log" />
   <node pkg="teleop_service" type="monitor_obstacle_distance.py" name="sb_publish_obstacle_distance" output="log" />
 />
 </launch>

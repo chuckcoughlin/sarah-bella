@@ -17,6 +17,7 @@ DEFAULT_WIDTH = 1000. # mm
 REFRESH_INTERVAL = 2
 REPORT_INTERVAL  = 20
 INFINITY = 100000.
+count = 0
 
 
 # Specify all the args whether we use them or not.
@@ -24,9 +25,9 @@ msg = ObstacleDistance('distance')
 pub = rospy.Publisher('sb_obstacle_distance',ObstacleDistance,queue_size=1)
 rospy.init_node('sb_publish_obstacle_distance')
 
-count = 0
 # Callback for every new LaserScan message
 def callback(laser):
+	global count
 	count = count+1
 	if count%REFRESH_INTERVAL == 0:
 		width = float(rospy.get_param("/robot/width",DEFAULT_WIDTH))
@@ -37,7 +38,7 @@ def callback(laser):
 		for d in laser.ranges:
 			angle = angle + delta
 			if angle>-math.pi/2 and angle<math.pi/2:
-				obstacle = width/2*cos(angle)
+				obstacle = width/2*math.cos(angle)
 				if obstacle<distance:
 					distance = obstacle
 
@@ -47,5 +48,5 @@ def callback(laser):
 			rospy.loginfo("Obstacle distance: %4.2f "%(distance))
 	
 
-sub = rospy.Subscriber("/sensor_msgs",LaserScan,callback)
+sub = rospy.Subscriber("/scan_throttle",LaserScan,callback)
 rospy.spin()

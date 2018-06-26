@@ -8,6 +8,11 @@
 # We only care about the straight ahead velocity (x) and rotation on the plane (z).
 # Updates are nominally every 100ms, Log every 2 seconds.
 #
+# We always respond to requests with no regard to the current behavior. If the 
+# robot is given a behavior, like say "park", then it is up to the controller
+# to suppress joystick commands (if appropriate). Likewise, we leave it to the
+# tablet controller to pay attention to obstacle alerts.
+#
 # Package: teleop. Define the Twist message as a command.
 #
 import sys
@@ -16,10 +21,11 @@ from geometry_msgs.msg import Twist
 from teleop_service.srv import TwistCommand,TwistCommandRequest,TwistCommandResponse
 
 REPORT_INTERVAL = 20
-pub = rospy.Publisher('/cmd_vel',Twist,queue_size=1)
 count = 0
+pub = rospy.Publisher('/cmd_vel',Twist,queue_size=1)
 
 def handleTwist(request):
+	global count
 	response = TwistCommandResponse()
 	twist = Twist()
 	twist.linear.x = request.linear_x

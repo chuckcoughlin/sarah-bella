@@ -14,10 +14,13 @@ fi
 #
 # ===========================================================================================
 # Options:
-#   diagnostics, follow, gpio, park, `system, teleop
+#   diagnostics, follow, gpio, obstacle, park, system, teleop
 # ===========================================================================================
 #
 APP=$1
+# ========================================================
+# DIAGNOSTICS -
+# ========================================================
 if [ ${APP} = "diagnostics" ]
 then
     echo "LAUNCH_PKG=turtlebot3_bringup" > ${CONFIG}
@@ -44,6 +47,16 @@ elif [ ${APP} = "headlamp" ]
 then
     echo "LAUNCH_PKG=system_check" > ${CONFIG}
     echo "LAUNCH_FILE=system.launch" >> ${CONFIG}
+# ========================================================
+#   OBSTACLE - test of obstacle detection only, no teleop
+# ========================================================
+elif [ ${APP} = "obstacle" ]
+then
+    echo "LAUNCH_PKG=teleop_service" > ${CONFIG}
+    echo "LAUNCH_FILE=obstacle.launch" >> ${CONFIG}
+# ========================================================
+#   PARK - 
+# ========================================================
 elif [ ${APP} = "park" ]
 then
     echo "LAUNCH_PKG=automatic_parking" > ${CONFIG}
@@ -52,6 +65,10 @@ elif [ ${APP} = "system" ]
 then
     echo "LAUNCH_PKG=system_check" > ${CONFIG}
     echo "LAUNCH_FILE=system.launch" >> ${CONFIG}
+# ========================================================
+#   TELEOP - includes obstacle detection, switch to park, 
+#            follow or come modes
+# ========================================================
 elif [ ${APP} = "teleop" -o ${APP} = "teleops" ]
 then
     echo "LAUNCH_PKG=teleop_service" > ${CONFIG}
