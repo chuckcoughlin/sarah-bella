@@ -21,10 +21,11 @@ from geometry_msgs.msg import Twist
 from teleop_service.srv import TwistCommand,TwistCommandRequest,TwistCommandResponse
 
 REPORT_INTERVAL = 20
-pub = rospy.Publisher('/cmd_vel',Twist,queue_size=1)
 count = 0
+pub = rospy.Publisher('/cmd_vel',Twist,queue_size=1)
 
 def handleTwist(request):
+	global count
 	response = TwistCommandResponse()
 	twist = Twist()
 	twist.linear.x = request.linear_x
