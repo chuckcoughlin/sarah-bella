@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -18,6 +19,7 @@ import org.ros.android.view.VerticalSeekBar;
 import org.ros.android.view.visualization.VisualizationView;
 import org.ros.android.view.visualization.layer.LaserScanLayer;
 import org.ros.android.view.visualization.layer.Layer;
+import org.ros.namespace.GraphName;
 import org.ros.node.ConnectedNode;
 
 import java.util.ArrayList;
@@ -35,13 +37,16 @@ import tf.tfMessage;
  * This fragment the robot LIDAR output.
  */
 
-public class LidarFragment extends BasicAssistantFragment implements SBApplicationStatusListener, SeekBar.OnSeekBarChangeListener {
+public class LidarFragment extends BasicAssistantFragment implements SBApplicationStatusListener,
+                                    RadioGroup.OnCheckedChangeListener ,
+                                    SeekBar.OnSeekBarChangeListener {
     private final static String CLSS = "LidarFragment";
     private static final String LASER_SCAN_LAYER = "LASER_SCAN_LAYER";
     private String appName = null;
     private LaserListener laserListener = null;
     private TransformListener transformListener = null;
     private SBApplicationManager applicationManager;
+    private RadioGroup layerGroup = null;
     VisualizationView vizView = null;
 
     // Inflate the view. It shows Lidar output
@@ -62,6 +67,9 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
         layers.add(new LaserScanLayer(LASER_SCAN_LAYER));
         vizView.onCreate(layers);
         vizView.init();
+
+        layerGroup = view.findViewById(R.id.layerRadioGroup);
+        layerGroup.setOnCheckedChangeListener(this);
 
         transformListener = new TransformListener();
         laserListener = new LaserListener();
@@ -152,6 +160,25 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
             });
         }
     }
+    // ======================================== OnCheckedChangeListener ===============================
+    public void onCheckedChanged(RadioGroup group, int checkedId) {
+        setLayer(checkedId);
+    }
+
+    private void setLayer(int checkedId) {
+        // checkedId is true if the RadioButton is selected
+
+            switch (checkedId) {
+                case R.id.range:
+                    break;
+                case R.id.intensity:
+                    break;
+                default:
+                    Log.i(CLSS, String.format("setLayer: Unrecognized selection"));
+            }
+
+    }
+
 
     //===================================== OnSeekBarChangeListener ================================
     @Override

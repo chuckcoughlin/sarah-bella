@@ -1,45 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="chuckcoughlin.sb.assistant.tab.LidarFragment">
+    tools:context="chuckcoughlin.sb.assistant.tab.LidarFragment"
+    tools:layout_editor_absoluteX="8dp"
+    tools:layout_editor_absoluteY="8dp">
 
     <TextView
         android:id="@+id/fragmentLidarText"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:layout_weight="0"
-        android:gravity="center"
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="100dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
         android:textAppearance="@style/TabTitle" />
 
-
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
         <!-- bar is rotated 270deg when drawn. Does not show on device with scaleX>2.  -->
         <org.ros.android.view.VerticalSeekBar
             android:id="@+id/verticalSeekbar"
             android:layout_width="80dp"
             android:layout_height="500dp"
+            android:layout_marginTop="160dp"
             android:paddingTop="10dp"
             android:paddingRight="200dp"
             android:paddingLeft="200dp"
             android:paddingBottom="10dp"
+            android:layout_alignParentLeft="true"
             android:thumb="@drawable/thumb"
             android:scaleX="2"
             android:progress="50" />
-        <org.ros.android.view.visualization.VisualizationView
-            android:id="@+id/fragmentLidarImage"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-
-    </LinearLayout>
-</LinearLayout>
+        <RadioGroup
+            android:id="@+id/layerRadioGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/verticalSeekbar"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="@dimen/margin_medium"
+            android:layout_marginRight="@dimen/margin_medium"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:orientation="vertical"
+            android:checkedButton="@+id/range">
+            <RadioButton
+                android:id="@+id/range"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/lidarRange"
+                android:textSize="22sp" />
+            <RadioButton
+                android:id="@+id/intensity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/lidarIntensity"
+                android:textSize="22sp" />
+        </RadioGroup>
+    <org.ros.android.view.visualization.VisualizationView
+        android:id="@+id/fragmentLidarImage"
+        android:layout_width="600dp"
+        android:layout_height="600dp"
+        android:layout_below="@+id/fragmentLidarText"
+        android:layout_weight="8"
+        android:layout_toRightOf="@+id/layerRadioGroup"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:adjustViewBounds="true"/>
+</RelativeLayout>

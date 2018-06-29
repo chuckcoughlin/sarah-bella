@@ -104,8 +104,8 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         View view = inflater.inflate(R.layout.fragment_teleops, container, false);
         TextView label = view.findViewById(R.id.fragmentTeleopsText);
         label.setText(R.string.fragmentTeleopLabel);
-        //behaviorGroup = view.findViewById(R.id.behaviorRadioGroup);
-        //behaviorGroup.setOnCheckedChangeListener(this);
+        behaviorGroup = view.findViewById(R.id.behaviorRadioGroup);
+        behaviorGroup.setOnCheckedChangeListener(this);
         speechToggle = view.findViewById(R.id.speech_toggle);
         speechToggle.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -159,9 +159,8 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     }
 
     private void setBehavior(int checkedId) {
-        // checkedId is the RadioButton selected
-        /*
-        if( paramClient!=null ) {
+        // checkedId is true if the RadioButton is selected
+        if( paramClient!=null && !OFFLINE ) {
             switch (checkedId) {
                 case R.id.joystick:
                     paramClient.setParam(GraphName.of(SBConstants.ROS_BEHAVIOR_PARAM),SBConstants.SB_BEHAVIOR_JOYSTICK);
@@ -176,10 +175,9 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                     paramClient.setParam(GraphName.of(SBConstants.ROS_BEHAVIOR_PARAM),SBConstants.SB_BEHAVIOR_PARK);
                     break;
                 default:
-                    Log.i(CLSS, String.format("handleInitialState: Unrecognized selection"));
+                    Log.i(CLSS, String.format("setBehavior: Unrecognized selection"));
             }
         }
-        */
     }
 
 

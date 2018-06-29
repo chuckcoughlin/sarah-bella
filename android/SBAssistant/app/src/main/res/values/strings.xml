@@ -20,6 +20,9 @@
     <string name="discoveryButtonTerminate">Quit</string>
     <string name="discoveryButtonView">View</string>
     <string name="discoveryViewPopupTitle">Robot Attributes</string>
+    <!-- Strings for Lidar Tab -->
+    <string name="lidarIntensity">Intensity</string>
+    <string name="lidarRange">Range</string>
     <!-- Strings for Log tab-->
     <string name="logButtonClear">Clear</string>
     <string name="logButtonFreeze">Freeze</string>
