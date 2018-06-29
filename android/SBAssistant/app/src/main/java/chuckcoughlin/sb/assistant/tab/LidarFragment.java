@@ -19,7 +19,6 @@ import org.ros.android.view.VerticalSeekBar;
 import org.ros.android.view.visualization.VisualizationView;
 import org.ros.android.view.visualization.layer.LaserScanLayer;
 import org.ros.android.view.visualization.layer.Layer;
-import org.ros.namespace.GraphName;
 import org.ros.node.ConnectedNode;
 
 import java.util.ArrayList;
@@ -47,6 +46,8 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
     private TransformListener transformListener = null;
     private SBApplicationManager applicationManager;
     private RadioGroup layerGroup = null;
+    private LaserScanLayer layer = null;
+    private TextView label = null;
     VisualizationView vizView = null;
 
     // Inflate the view. It shows Lidar output
@@ -55,8 +56,8 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
         this.applicationManager = SBApplicationManager.getInstance();
 
         View view = inflater.inflate(R.layout.fragment_lidar, container, false);
-        TextView label = view.findViewById(R.id.fragmentLidarText);
-        label.setText(R.string.lidar_title);
+        label = view.findViewById(R.id.fragmentLidarText);
+        label.setText(R.string.fragmentLidarRangeLabel);
 
         VerticalSeekBar seekBar = view.findViewById(R.id.verticalSeekbar);
         seekBar.setMax(100);
@@ -64,12 +65,14 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
 
         vizView = view.findViewById(R.id.fragmentLidarImage);
         List<Layer> layers = new ArrayList<>();
-        layers.add(new LaserScanLayer(LASER_SCAN_LAYER));
+        layer = new LaserScanLayer(LASER_SCAN_LAYER);
+        layers.add(layer);
         vizView.onCreate(layers);
         vizView.init();
 
         layerGroup = view.findViewById(R.id.layerRadioGroup);
         layerGroup.setOnCheckedChangeListener(this);
+        setLayerMode(layerGroup.getCheckedRadioButtonId());
 
         transformListener = new TransformListener();
         laserListener = new LaserListener();
@@ -162,16 +165,20 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
     }
     // ======================================== OnCheckedChangeListener ===============================
     public void onCheckedChanged(RadioGroup group, int checkedId) {
-        setLayer(checkedId);
+        setLayerMode(checkedId);
     }
 
-    private void setLayer(int checkedId) {
+    private void setLayerMode(int checkedId) {
         // checkedId is true if the RadioButton is selected
 
             switch (checkedId) {
                 case R.id.range:
+                    layer.setMode(LaserScanLayer.LASERSCAN_MODE_RANGE);
+                    label.setText(R.string.fragmentLidarRangeLabel);
                     break;
                 case R.id.intensity:
+                    layer.setMode(LaserScanLayer.LASERSCAN_MODE_INTENSITY);
+                    label.setText(R.string.fragmentLidarIntensityLabel);
                     break;
                 default:
                     Log.i(CLSS, String.format("setLayer: Unrecognized selection"));

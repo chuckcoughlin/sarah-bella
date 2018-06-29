@@ -33,11 +33,17 @@ import sensor_msgs.LaserScan;
  * A Layer that visualizes sensor_msgs/LaserScan messages. Rotate 90 deg
  * clockwise so that the top of the screen corresponds to straight ahead.
  *
+ * There are two modes.
+ *   1) range - plot hte measured range centered around the robot
+ *   3) intensity - plot the measured intensity centered around the robot.
+ *
  * @author munjaldesai@google.com (Munjal Desai)
  * @author damonkohler@google.com (Damon Kohler)
  */
 public class LaserScanLayer extends AbstractLayer  {
     private static final String CLSS = "LaserScanLayer";
+    public final static String LASERSCAN_MODE_INTENSITY = "INTENSITY";
+    public final static String LASERSCAN_MODE_RANGE     = "RANGE";
     private static final Color BORDER_COLOR = Color.fromHexAndAlpha("303f9f", 0.9f);
     private static final Color FREE_SPACE_COLOR = Color.fromHexAndAlpha("377dfa", 0.1f);
     private static final Color OCCUPIED_SPACE_COLOR = Color.fromHexAndAlpha("377dfa", 0.3f);
@@ -48,6 +54,7 @@ public class LaserScanLayer extends AbstractLayer  {
 
     private GraphName frame;
     private LaserScan message = null;    // Save prior message
+    private String mode = LASERSCAN_MODE_RANGE;
     private FloatBuffer vertexFrontBuffer;
     private FloatBuffer vertexBackBuffer;
 
@@ -56,7 +63,7 @@ public class LaserScanLayer extends AbstractLayer  {
         this.frame = GraphName.of(CLSS);  // temporary
     }
 
-
+    public void setMode(String m) { this.mode = m; }
     /**
      * We count on the Visualization view to properly disseminate by class
      * @param m a LaserScan message
@@ -103,8 +110,9 @@ public class LaserScanLayer extends AbstractLayer  {
         if(laserScan==null) return;
 
         int vertexCount = 0;
-        float[] ranges = laserScan.getRanges();
-        int size = ((ranges.length / stride) + 2) * 3;
+        float[] measurements = laserScan.getRanges();
+        if( mode.equalsIgnoreCase(LASERSCAN_MODE_INTENSITY)) measurements = laserScan.getIntensities();
+        int size = ((measurements.length / stride) + 2) * 3;
         if (vertexBackBuffer == null || vertexBackBuffer.capacity() < size) {
             vertexBackBuffer = Vertices.allocateBuffer(size);
         }
@@ -127,8 +135,8 @@ public class LaserScanLayer extends AbstractLayer  {
         float angle = (float)(laserScan.getAngleMin() - Math.PI/2.);
         float angleIncrement = laserScan.getAngleIncrement();
         // Calculate the coordinates of the laser range values.
-        for (int i = 0; i < ranges.length; i += stride) {
-            float range = ranges[i];
+        for (int i = 0; i < measurements.length; i += stride) {
+            float range = measurements[i];
             // Ignore ranges that are outside the defined range. We are not overly
             // concerned about the accuracy of the visualization and this is makes it
             // look a lot nicer.

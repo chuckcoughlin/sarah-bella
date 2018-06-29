@@ -76,7 +76,7 @@ public class SystemFragment extends BasicAssistantFragment implements SBApplicat
 
         mainView = inflater.inflate(R.layout.fragment_system, container, false);
         TextView label = mainView.findViewById(R.id.fragmentSystemText);
-        label.setText(R.string.system_title);
+        label.setText(R.string.fragmentSystemLabel);
 
         // Add views to the arrays. The "pinContainer" is a list of linear layouts containing text-image-image-text.
         LinearLayout pinContainer = (LinearLayout)mainView.findViewById(R.id.gpio_pins);
