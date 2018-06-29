@@ -38,9 +38,12 @@ def callback(laser):
 		for d in laser.ranges:
 			angle = angle + delta
 			if angle>-math.pi/2 and angle<math.pi/2:
-				obstacle = width/2*math.cos(angle)
-				if obstacle<distance:
-					distance = obstacle
+				# Test for distance to edge.
+				# If we're beyond the edge, no worries.
+				offset = math.cos(angle)
+				if offset<width and offset>-width:
+					if obstacle<distance:
+						distance = obstacle
 
 		msg.distance = distance
 		pub.publish(msg)
