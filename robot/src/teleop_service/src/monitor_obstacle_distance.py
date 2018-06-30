@@ -33,18 +33,19 @@ def callback(laser):
 		width = float(rospy.get_param("/robot/width",DEFAULT_WIDTH))
 		distance = INFINITY
 		# Only consider -90 to 90. 
-		# Raw angles are 0->2*PI. Translate so 0 is straight ahead.
+		# Raw angles are 0->2*PI. 0 is straight ahead.
+		# Angles go counter-clockwise
 		delta = laser.angle_increment
-		angle = laser.angle_min - delta -3*math.pi/2
+		angle = laser.angle_min - delta
 		oangle = math.pi
 		# Sometimes we get bogus readings of 0.0. Ignore
 		for d in laser.ranges:
 			angle = angle + delta
-			if d>0.001 and angle>-math.pi/2 and angle<math.pi/2:
+			if d>0.001 and (angle<math.pi/2. or angle>3.*math.pi/2.):
 				# Test for distance to edge.
 				# If we're beyond the edge, no worries.
-				offset = math.cos(angle)
-				if offset<width and offset>-width:
+				offset = d*math.cos(angle)
+				if offset<width/2. and offset>-width/2.:
 					if d<distance:
 						distance = d
 						oangle   = angle
