@@ -30,8 +30,8 @@ import javax.microedition.khronos.opengles.GL10;
 import sensor_msgs.LaserScan;
 
 /**
- * A Layer that visualizes sensor_msgs/LaserScan messages. Rotate 90 deg
- * clockwise so that the top of the screen corresponds to straight ahead.
+ * A Layer that visualizes sensor_msgs/LaserScan messages. Raw angles are:
+ * zero to 2*PI.
  *
  * There are two modes.
  *   1) range - plot hte measured range centered around the robot
@@ -51,6 +51,7 @@ public class LaserScanLayer extends AbstractLayer  {
     private static final float LASER_SCAN_POINT_SIZE = 10.f;
     //private static final int LASER_SCAN_STRIDE = 15;    // Show every 15th data point
     private static final int LASER_SCAN_STRIDE = 1;     // Show all data points
+    private static final float LASER_INTENSITY_SCALE_FACTOR = 1000f;
 
     private GraphName frame;
     private LaserScan message = null;    // Save prior message
@@ -129,21 +130,23 @@ public class LaserScanLayer extends AbstractLayer  {
         vertexBackBuffer.put(0);
         vertexCount++;
         float minimumRange = laserScan.getRangeMin();
+        if( minimumRange<=0.0 ) minimumRange = 0.001f;  // Have seen junk zeroes
         float maximumRange = laserScan.getRangeMax();
-        // The raw angular data has 0 deg to the left.
-        // Modify so that 0 deg is straight ahead.
-        float angle = (float)(laserScan.getAngleMin() - Math.PI/2.);
+        // The raw angular data has 0 deg straight ahead,
+        // the lidar pulley is toward the front.
+        float angle = (float)(laserScan.getAngleMin());
         float angleIncrement = laserScan.getAngleIncrement();
         // Calculate the coordinates of the laser range values.
         for (int i = 0; i < measurements.length; i += stride) {
-            float range = measurements[i];
+            float measurement = measurements[i];
+            if( mode.equalsIgnoreCase(LASERSCAN_MODE_INTENSITY)) measurement = measurement/LASER_INTENSITY_SCALE_FACTOR;  // 1000
             // Ignore ranges that are outside the defined range. We are not overly
             // concerned about the accuracy of the visualization and this is makes it
             // look a lot nicer.
-            if (minimumRange < range && range < maximumRange) {
+            if (minimumRange < measurement && measurement < maximumRange) {
                 // x, y, z
-                vertexBackBuffer.put(originx + (float)(range * scale * Math.cos(angle)));
-                vertexBackBuffer.put(originy + (float)(range * scale * Math.sin(angle)));
+                vertexBackBuffer.put(originx + (float)(measurement * scale * Math.cos(angle)));
+                vertexBackBuffer.put(originy + (float)(measurement * scale * Math.sin(angle)));
                 vertexBackBuffer.put(0);
                 vertexCount++;
             }

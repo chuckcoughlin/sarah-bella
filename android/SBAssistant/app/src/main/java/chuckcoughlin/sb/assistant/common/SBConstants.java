@@ -42,8 +42,8 @@ public class SBConstants {
     // Number of GPIO pins on Raspberry Pi
     public static final int GPIO_PIN_COUNT = 40;
     public static final String ROS_WIDTH_PARAM = "/robot/width";
-    public static final double SB_ROBOT_CLOSEST_APPROACH = 10.;   // ~mm
-    public static final double SB_ROBOT_WIDTH = 1000.;   // ~mm
+    public static final double SB_ROBOT_CLOSEST_APPROACH = 0.2;   // ~m
+    public static final double SB_ROBOT_WIDTH = 0.2;              // ~m
 
     // Number of log messages to store/display
     public static final int NUM_LOG_MESSAGES = 100;
