@@ -39,7 +39,7 @@ def handleTwist(request):
 	pub.publish(twist)
 	count = count+1
 	if count%REPORT_INTERVAL==0:
-		rospy.loginfo("Twist Command: %3.2f,%3.2f",twist.linear.x,twist.angular.z) )
+		rospy.loginfo("Twist Command: %3.2f,%3.2f",twist.linear.x,twist.angular.z)
 	return response
 
 
