@@ -71,7 +71,7 @@ public class LaserScanLayer extends AbstractLayer  {
      */
     @Override
     public void onNewMessage(Message m) {
-        Log.i(CLSS, "LaserScan got new message ------------------------------------");
+        //Log.i(CLSS, "LaserScan got new message ------------------------------------");
         message = (LaserScan) m;
         frame = GraphName.of(message.getHeader().getFrameId());
         updateVertexBuffer(message, LASER_SCAN_STRIDE);
@@ -132,8 +132,8 @@ public class LaserScanLayer extends AbstractLayer  {
         float minimumRange = laserScan.getRangeMin();
         if( minimumRange<=0.0 ) minimumRange = 0.001f;  // Have seen junk zeroes
         float maximumRange = laserScan.getRangeMax();
-        // The raw angular data has 0 deg straight ahead,
-        // the lidar pulley is toward the front.
+        // The raw angular data has 0 deg straight ahead, 0->2PI, counter-clockwise.
+        // the lidar pulley is toward the front of the assembly.
         float angle = (float)(laserScan.getAngleMin());
         float angleIncrement = laserScan.getAngleIncrement();
         // Calculate the coordinates of the laser range values.

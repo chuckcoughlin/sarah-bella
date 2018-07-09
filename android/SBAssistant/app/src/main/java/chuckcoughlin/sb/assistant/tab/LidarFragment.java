@@ -126,7 +126,7 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
 
         @Override
         public void onNewMessage(LaserScan scan) {
-            Log.i(CLSS, String.format("Got a scan Message %s=%s",LaserScan._TYPE,scan.getClass().getCanonicalName()));
+            //Log.i(CLSS, String.format("Got a scan Message %s=%s",LaserScan._TYPE,scan.getClass().getCanonicalName()));
             Activity mainActivity = getActivity();
             if (mainActivity == null) {
                 Log.i(CLSS, String.format("LaserListener: Main Activity no longer available"));
@@ -148,7 +148,7 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
 
         @Override
         public void onNewMessage(tfMessage tf) {
-            Log.i(CLSS, String.format("Got a Transform Message"));
+            //Log.i(CLSS, String.format("Got a Transform Message"));
             Activity mainActivity = getActivity();
             if (mainActivity == null) {
                 Log.i(CLSS, String.format("TransformListener: Main Activity no longer available"));

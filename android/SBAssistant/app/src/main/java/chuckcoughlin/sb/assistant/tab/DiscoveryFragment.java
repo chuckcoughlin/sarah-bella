@@ -337,15 +337,17 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
     public void receiveApplication(String appName) {
         Log.w(CLSS, "receiveApplication: " + appName);
         applicationManager.setApplication(appName);
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                RobotApplicationsAdapter adapter = (RobotApplicationsAdapter)getListAdapter();
-                ListView listView = getListView();
-                listView.setEnabled(true);
-                updateUI();
-            }
-        });
+        if( getActivity()!=null ) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    RobotApplicationsAdapter adapter = (RobotApplicationsAdapter)getListAdapter();
+                    ListView listView = getListView();
+                    listView.setEnabled(true);
+                    updateUI();
+                }
+            });
+        }
     }
 
     // The basic network connection is made. Now interrogate for robot characteristics.
