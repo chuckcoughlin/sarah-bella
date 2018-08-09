@@ -34,22 +34,24 @@ def callback(laser):
 		distance = INFINITY
 		# Only consider -90 to 90 (left,right). 
 		# Raw angles are 0->2*PI. 0 is straight ahead.
-		# Angles go counter-clockwise
+		# Angles go counter-clockwise, delta is one degree
 		delta = laser.angle_increment
 		angle = laser.angle_max + delta
-		oangle = math.pi
+		oangle = 0.
 		# Sometimes we get bogus readings of 0.0. Ignore
 		for d in laser.ranges:
 			angle = angle - delta
 			if d>0.001 and (angle<math.pi/2. or angle>3.*math.pi/2.):
 				# Test for distance to edge.
 				# If we're beyond the edge, no worries.
-				offset = d*math.cos(angle)
+				offset = d*math.sin(angle)
 				if offset<width/2. and offset>-width/2.:
 					if d<distance:
 						distance = d
 						oangle   = angle
 
+		if oangle>math.pi:
+			oangle = oangle-2.*math.pi
 		msg.distance = distance
 		msg.angle    = oangle
 		pub.publish(msg)
