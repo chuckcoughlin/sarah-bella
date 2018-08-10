@@ -28,12 +28,12 @@ def handleTwist(request):
 	global count
 	response = TwistCommandResponse()
 	twist = Twist()
-	twist.linear.x = request.linear_x
-	twist.linear.y = request.linear_y
-	twist.linear.z = request.linear_z
-	twist.angular.x= request.angular_x
-	twist.angular.y= request.angular_y
-	twist.angular.z= request.angular_z
+	twist.linear.x = -request.linear_x
+	twist.linear.y = -request.linear_y
+	twist.linear.z = -request.linear_z
+	twist.angular.x= -request.angular_x
+	twist.angular.y= -request.angular_y
+	twist.angular.z= -request.angular_z
 	response.msg = ""
 	# Publish Twist
 	pub.publish(twist)
