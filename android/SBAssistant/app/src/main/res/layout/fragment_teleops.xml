@@ -54,8 +54,8 @@
 
     <org.ros.android.view.DirectControlstickView
         android:id="@+id/virtual_joystick"
-        android:layout_width="600dp"
-        android:layout_height="600dp"
+        android:layout_width="550dp"
+        android:layout_height="550dp"
         android:layout_below="@+id/fragmentTeleopsText"
         android:layout_weight="8"
         android:layout_centerHorizontal="true"

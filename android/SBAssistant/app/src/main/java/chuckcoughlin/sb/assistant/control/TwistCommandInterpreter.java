@@ -4,21 +4,23 @@
  */
 package chuckcoughlin.sb.assistant.control;
 
+import android.util.Log;
+
 import teleop_service.TwistCommandRequest;
 
 /**
  * Translates a stream of spoken words in TwistCommand updates.
  * In our word lists end words with a space to avoid false
  * embedded word matches.
- *
- *
  */
 
 public class TwistCommandInterpreter  {
+    private static final String CLSS = "TwistCommandInterpreter";
+
     private final TwistCommandController controller;
     private static final double ANGLE_FACTOR = 1.5;       // a factor
     private static final double MAX_ANGLE = 1.0;  // or negative for left
-    private static final double SMALLEST_ANGLE = 0.15;
+    private static final double SMALLEST_ANGLE = 0.2;
     private static final double VELOCITY_FACTOR = 2.0;    // a factor
     private static final double MAX_VELOCITY = 1.0;      // or negative for backward
     private static final double SMALLEST_VELOCITY = 0.1;
@@ -59,6 +61,10 @@ public class TwistCommandInterpreter  {
         String tokens = text.toLowerCase()+" ";   // Can always search for whole words
         boolean result = false;
 
+        if( command==null ) {
+            Log.i(CLSS,String.format("handleWordList: Null command, text=%s",text));
+            return false;
+        }
         double velx = command.getLinearX();
         double angz = command.getAngularZ();
 
@@ -98,11 +104,13 @@ public class TwistCommandInterpreter  {
 
             if( listContains(tokens, rightWords,language) ) {
                 if( angz<= SMALLEST_ANGLE ) angz = SMALLEST_ANGLE;
+                angz = angz*ANGLE_FACTOR;
                 turning = true;
                 result = true;
             }
             else if( listContains(tokens, leftWords,language) ) {
                 if( angz>= -SMALLEST_ANGLE ) angz = -SMALLEST_ANGLE;
+                angz = angz*ANGLE_FACTOR;
                 turning = true;
                 result = true;
             }

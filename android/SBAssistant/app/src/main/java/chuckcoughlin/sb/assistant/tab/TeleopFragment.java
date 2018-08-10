@@ -72,12 +72,12 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     // ================================== Timing Constants ===========================
     private static final double DELTA_ANGLE               = 0.02;  // Max normalized angle change in a step
     private static final double DELTA_VELOCITY            = 0.02;  // Max normalized velocity change in a step
-    private static final double MIN_OBSTACLE_DISTANCE     = 20.;
+    private static final double MIN_OBSTACLE_DISTANCE     = 0.2;
     private static final long OFFLINE_TIMER_PERIOD = 3000;  // ~msecs
     private static final long TIMER_PERIOD         = 100;   // ~msecs
 
 
-    private static final boolean OFFLINE = false;
+    private static final boolean ONLINE  = true;          // If false, no msgs to robot, logs results
     private SBApplicationManager applicationManager;
     private TwistCommandRequest currentRequest = null;    // Most recent state
     private TwistCommandRequest targetRequest = null;     // Desired state
@@ -129,7 +129,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         targetRequest.setLinearX(0.0);  // Stopped
         targetRequest.setAngularZ(0.0);
 
-        if( !OFFLINE ) {
+        if( ONLINE ) {
             applicationManager.addListener(this);
         }
         else {
@@ -140,9 +140,6 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
             currentRequest.setAngularZ(0.0);
             serviceTimer = new ServiceTimer(this);
         }
-
-        sr = SpeechRecognizer.createSpeechRecognizer(getActivity());
-        sr.setRecognitionListener(this);
         return view;
     }
 
@@ -160,7 +157,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
 
     private void setBehavior(int checkedId) {
         // checkedId is true if the RadioButton is selected
-        if( paramClient!=null && !OFFLINE ) {
+        if( paramClient!=null && ONLINE ) {
             switch (checkedId) {
                 case R.id.joystick:
                     paramClient.setParam(GraphName.of(SBConstants.ROS_BEHAVIOR_PARAM),SBConstants.SB_BEHAVIOR_JOYSTICK);
@@ -186,6 +183,10 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     // if the robot is OFFLINE.  Inform the obstacle detector of the width of the robot.
     public void applicationStarted(String appName) {
         Log.i(CLSS, String.format("applicationStarted: %s ...", appName));
+
+        sr = SpeechRecognizer.createSpeechRecognizer(getActivity());
+        sr.setRecognitionListener(TeleopFragment.this);
+
         final TwistCommandController controller = this;
         if (appName.equalsIgnoreCase(SBConstants.APPLICATION_TELEOP)) {
             ConnectedNode node = applicationManager.getCurrentApplication().getConnectedNode();
@@ -270,7 +271,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         }
         else {
             Log.i(CLSS,"speech toggle OFF");
-            sr.stopListening();
+            if(sr!=null) sr.stopListening();
         }
     }
     // start or restart recognizer if the speech recognizer button is checked
@@ -278,7 +279,12 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         if( !speechToggle.isChecked()) return;
         getActivity().runOnUiThread(new Runnable() {
             public void run() {
-                sr.cancel();
+                if(sr!=null) sr.cancel();
+                else {
+                    sr = SpeechRecognizer.createSpeechRecognizer(getActivity());
+                    sr.setRecognitionListener(TeleopFragment.this);
+                }
+
                 String locale =  "us-UK";
                 if( language==RUSSIAN) locale =  "ru-RU";
                 else if( language==FRENCH ) locale = "fr-FR";
@@ -327,6 +333,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
             case SpeechRecognizer.ERROR_AUDIO:
                 Log.i(CLSS,  String.format("SpeechRecognition: Audio recording error"));
                 break;
+                // On the Android device, settings, go to SBAssistant and enable the microphone
             case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
                 Log.i(CLSS,  String.format("SpeechRecognition: INSUFFICIENT PERMISSION - Enable microphone in app"));
                 break;
@@ -426,7 +433,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
             this.controller = c;
             final ServiceTimer thistimer = this;
             long period = TIMER_PERIOD;
-            if( OFFLINE ) period = OFFLINE_TIMER_PERIOD;
+            if( !ONLINE ) period = OFFLINE_TIMER_PERIOD;
             TimerTask task = new TimerTask() {
                 @Override
                 public void run() {
@@ -436,12 +443,15 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                     double raz = rampedAngle(current,target);
                     double delta = current.getAngularZ()-raz;
                     current.setAngularZ(raz);
-                    if (OFFLINE) {
-                        Log.i(CLSS, String.format("call: target: %3.2f %3.2f, current: %3.2f %3.2f", target.getLinearX(),target.getAngularZ(),current.getLinearX(),current.getAngularZ()));
+                    if (ONLINE) {
+                        serviceClient.call(current,thistimer);
+                        //Log.i(CLSS, String.format("call: %f %f", current.getLinearX(), current.getAngularZ()));
                     }
                     else {
-                        //Log.i(CLSS, String.format("call: %f %f", current.getLinearX(), current.getAngularZ()));
-                        serviceClient.call(current,thistimer);
+                        Log.i(CLSS, String.format("call: target: %3.2f %3.2f, current: %3.2f %3.2f", target.getLinearX(),target.getAngularZ(),
+                                current.getLinearX(),current.getAngularZ()));
+
+
                     }
                     // Change our current and target by our delta. Aim for straight again.
                     current.setAngularZ(straighten(current));
