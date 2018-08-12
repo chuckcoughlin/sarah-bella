@@ -295,10 +295,10 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
 
         // The parent container must be a square. A square container simplifies the
         // code. A non-square container does not provide any benefit over a
-        // square. Size is in dp.
+        // square. Size is in dp. With our current layout squareness does not hold in landscape mode.
         if (mainLayout.getWidth() != mainLayout.getHeight()) {
             Log.i(CLSS,String.format("On Layout NO SQUARE: %d vs %d",mainLayout.getWidth(),mainLayout.getHeight()));
-            throw new IllegalArgumentException(String.format("On Layout NO SQUARE: %d vs %d",mainLayout.getWidth(),mainLayout.getHeight()));
+            // throw new IllegalArgumentException(String.format("On Layout NO SQUARE: %d vs %d",mainLayout.getWidth(),mainLayout.getHeight()));
         }
         parentSize = mainLayout.getWidth();
         if (parentSize < 200 || parentSize > 2000) {

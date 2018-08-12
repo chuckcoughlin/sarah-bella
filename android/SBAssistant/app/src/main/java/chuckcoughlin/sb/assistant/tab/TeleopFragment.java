@@ -72,7 +72,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     // ================================== Timing Constants ===========================
     private static final double DELTA_ANGLE               = 0.02;  // Max normalized angle change in a step
     private static final double DELTA_VELOCITY            = 0.02;  // Max normalized velocity change in a step
-    private static final double MIN_OBSTACLE_DISTANCE     = 0.2;
+    private static final double MIN_OBSTACLE_DISTANCE     = 0.40;
     private static final long OFFLINE_TIMER_PERIOD = 3000;  // ~msecs
     private static final long TIMER_PERIOD         = 100;   // ~msecs
 
@@ -87,7 +87,6 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     private ServiceClient<TwistCommandRequest, TwistCommandResponse> serviceClient = null;
     private ServiceTimer serviceTimer = null;       // Publish velocity commands at a constant rate.
     private DistanceListener distanceListener = null;
-    private boolean errorAnnunciated = false;      // Prevents repeated error announcements
     private int language = TwistCommandController.ENGLISH;
     private SpeechRecognizer sr = null;
     private ObstacleErrorAnnunciator speechSynthesizer = null;
@@ -140,6 +139,10 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
             currentRequest.setAngularZ(0.0);
             serviceTimer = new ServiceTimer(this);
         }
+        sr = SpeechRecognizer.createSpeechRecognizer(getActivity());
+        sr.setRecognitionListener(TeleopFragment.this);
+        speechSynthesizer = new ObstacleErrorAnnunciator(getActivity(),this);
+
         return view;
     }
 
@@ -148,6 +151,11 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         Log.i(CLSS, "onDestroyView");
         applicationShutdown(SBConstants.APPLICATION_TELEOP);
         super.onDestroyView();
+        if (sr != null) {
+            sr.stopListening();
+            sr.destroy();
+        }
+        sr = null;
     }
 
     // ======================================== OnCheckedChangeListener ===============================
@@ -184,9 +192,6 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     public void applicationStarted(String appName) {
         Log.i(CLSS, String.format("applicationStarted: %s ...", appName));
 
-        sr = SpeechRecognizer.createSpeechRecognizer(getActivity());
-        sr.setRecognitionListener(TeleopFragment.this);
-
         final TwistCommandController controller = this;
         if (appName.equalsIgnoreCase(SBConstants.APPLICATION_TELEOP)) {
             ConnectedNode node = applicationManager.getCurrentApplication().getConnectedNode();
@@ -203,7 +208,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                             currentRequest = serviceClient.newMessage();
                             currentRequest.setLinearX(0.0);  // Stopped
                             currentRequest.setAngularZ(0.0);
-                            distanceListener.subscribe(node,"/sb_teleop");
+                            distanceListener.subscribe(node,"/sb_obstacle_distance");
                             serviceTimer = new ServiceTimer(controller);
                             setBehavior(behaviorGroup.getCheckedRadioButtonId());
                     }
@@ -231,7 +236,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                     speechToggle.setEnabled(true);
                 }
             });
-            speechSynthesizer = new ObstacleErrorAnnunciator(getActivity(),this);
+
         }
     }
 
@@ -250,11 +255,6 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                 serviceTimer = null;
             }
 
-            if (sr != null) {
-                sr.stopListening();
-                sr.destroy();
-            }
-            sr = null;
             if( speechSynthesizer!=null ) {
                 speechSynthesizer.stop();
                 speechSynthesizer = null;
@@ -280,10 +280,6 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         getActivity().runOnUiThread(new Runnable() {
             public void run() {
                 if(sr!=null) sr.cancel();
-                else {
-                    sr = SpeechRecognizer.createSpeechRecognizer(getActivity());
-                    sr.setRecognitionListener(TeleopFragment.this);
-                }
 
                 String locale =  "us-UK";
                 if( language==RUSSIAN) locale =  "ru-RU";
@@ -382,6 +378,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     @Override
     /**
      * Request a new velocity / direction. This becomes the target.
+     * The actual command to the robot is performed on a timer.
      *
      * @param linearVelocityX  normalized linear velocity (-1 to 1).
      * @param angularVelocityZ normalized angular velocity (-1 to 1).
@@ -395,19 +392,6 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
             targetRequest.setAngularX(0);
             targetRequest.setAngularY(0);
             targetRequest.setAngularZ(angularVelocityZ);
-
-            if( obstacleDistance<MIN_OBSTACLE_DISTANCE && targetRequest.getLinearX()>0.  ) {
-                targetRequest.setLinearX(0.0);
-                targetRequest.setAngularZ(0.0);
-                Log.i(CLSS,String.format("commandVelocity: Too close %3.0f vs %3.0f",obstacleDistance,MIN_OBSTACLE_DISTANCE));
-                if( !errorAnnunciated && speechToggle.isChecked() && speechSynthesizer!=null ) {
-                    speechSynthesizer.annunciateError(language,obstacleDistance);
-                    errorAnnunciated = true;
-                }
-            }
-            else {
-                errorAnnunciated = false;
-            }
         }
     }
     public TwistCommandRequest getCurrentRequest()  { return this.currentRequest; }
@@ -428,10 +412,12 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     private class ServiceTimer extends Timer implements ServiceResponseListener<TwistCommandResponse> {
         private final static String TAG = "ServiceTimer";
         private final TwistCommandController controller;
+        private boolean errorAnnunciated;      // Prevents repeated error announcements
 
         public ServiceTimer(TwistCommandController c) {
             this.controller = c;
             final ServiceTimer thistimer = this;
+            errorAnnunciated = false;
             long period = TIMER_PERIOD;
             if( !ONLINE ) period = OFFLINE_TIMER_PERIOD;
             TimerTask task = new TimerTask() {
@@ -439,24 +425,34 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                 public void run() {
                     TwistCommandRequest current = controller.getCurrentRequest();
                     TwistCommandRequest target = controller.getTargetRequest();
+                    if( obstacleDistance<MIN_OBSTACLE_DISTANCE && targetRequest.getLinearX()>0.  ) {
+                        targetRequest.setLinearX(0.0);
+                        targetRequest.setAngularZ(0.0);
+                        Log.i(TAG,String.format("ServiceTimer: Too close %3.0f vs %3.0f",obstacleDistance,MIN_OBSTACLE_DISTANCE));
+                        if( !errorAnnunciated && speechToggle.isChecked() && speechSynthesizer!=null ) {
+                            speechSynthesizer.annunciateError(language,obstacleDistance);
+                            errorAnnunciated = true;
+                        }
+                    }
+                    else {
+                        errorAnnunciated = false;
+                    }
+
                     current.setLinearX(rampedVelocity(current,target));
                     double raz = rampedAngle(current,target);
                     double delta = current.getAngularZ()-raz;
                     current.setAngularZ(raz);
                     if (ONLINE) {
                         serviceClient.call(current,thistimer);
-                        //Log.i(CLSS, String.format("call: %f %f", current.getLinearX(), current.getAngularZ()));
                     }
                     else {
-                        Log.i(CLSS, String.format("call: target: %3.2f %3.2f, current: %3.2f %3.2f", target.getLinearX(),target.getAngularZ(),
+                        Log.i(TAG, String.format("call: target: %3.2f %3.2f, current: %3.2f %3.2f", target.getLinearX(),target.getAngularZ(),
                                 current.getLinearX(),current.getAngularZ()));
-
 
                     }
                     // Change our current and target by our delta. Aim for straight again.
                     current.setAngularZ(straighten(current));
                     target.setAngularZ(straighten(target));
-
                 }
             };
             schedule(task,0,period);

@@ -13,7 +13,6 @@ import android.util.Log;
 
 import chuckcoughlin.sb.assistant.tab.AssistantFragment;
 import chuckcoughlin.sb.assistant.tab.AudioFragment;
-import chuckcoughlin.sb.assistant.tab.CameraFragment;
 import chuckcoughlin.sb.assistant.tab.CoverFragment;
 import chuckcoughlin.sb.assistant.tab.DiscoveryFragment;
 import chuckcoughlin.sb.assistant.tab.LogsFragment;
@@ -38,7 +37,7 @@ public class MainActivityPagerAdapter extends FragmentStatePagerAdapter {
         tabTitles = new String[] {
                 ctx.getString(R.string.cover_tab_label), ctx.getString(R.string.discovery_tab_label), ctx.getString(R.string.settings_tab_label),ctx.getString(R.string.system_tab_label),
                 ctx.getString(R.string.lidar_tab_label),ctx.getString(R.string.audio_tab_label),
-                ctx.getString(R.string.camera_tab_label),ctx.getString(R.string.teleop_tab_label),ctx.getString(R.string.log_tab_label)};
+                ctx.getString(R.string.teleop_tab_label),ctx.getString(R.string.log_tab_label)};
         Log.i(CLSS,"Constructor ...");
     }
 
@@ -71,12 +70,9 @@ public class MainActivityPagerAdapter extends FragmentStatePagerAdapter {
                 frag = new AudioFragment();
                 break;
             case 6:
-                frag = new CameraFragment();
-                break;
-            case 7:
                 frag = new TeleopFragment();
                 break;
-            case 8:
+            case 7:
                 frag = new LogsFragment();
                 break;
             default:

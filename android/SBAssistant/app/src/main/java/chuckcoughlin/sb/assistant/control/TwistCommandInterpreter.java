@@ -37,8 +37,8 @@ public class TwistCommandInterpreter  {
     private String[][] pivotWords   = {{"pivot ","rotate "},{}};
     private String[][] sharpWords   = {{"sharp"},{"четкость"},{}};
     private String[][] shallowWords   = {{"shallow","not so sharp "},{}};
-    private String[][] slowWords   = {{"slower ","not so fast "},{"медленно","медленнее"}};
-    private String[][] stopWords = {{"stop ","halt ","pause ","paws "},{"остановить","стоп"}};
+    private String[][] slowWords   = {{"slower ","not so fast "},{"медленно","медленнее"},{}};
+    private String[][] stopWords = {{"stop ","halt ","pause ","paws "},{"остановить","стоп"},{}};
     private String[][] turnWords = {{"turn "},{"повернуть"},{"tournez"}};
     private String[][] leftWords = {{"left "},{"налево"},{"gauche"}};
     private String[][] rightWords = {{"right "},{"направо"},{"droite"}};

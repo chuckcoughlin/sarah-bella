@@ -3,7 +3,6 @@
     <string name="app_name">SBAssistant</string>
     <string name="cover_tab_label">Cover</string>
     <string name="audio_tab_label">Audio</string>
-    <string name="camera_tab_label">Camera</string>
     <string name="discovery_tab_label">Discovery</string>
     <string name="lidar_tab_label">Lidar</string>
     <string name="log_tab_label">Log</string>
@@ -14,7 +13,6 @@
     <!-- Titles as they appear at the top of each page -->
     <string name="action_settings">Settings</string>
     <string name="fragmentAudioLabel">Audio Inputs</string>
-    <string name="fragmentCameraLabel">View from Robot Camera</string>
     <string name="fragmentCoverLabel">Turtlebot3 \"Sarah-Bella\"</string>
     <string name="fragmentDiscoveryLabel">Robot Discovery</string>
     <string name="fragmentLidarIntensityLabel">Lidar - Intensity</string>
