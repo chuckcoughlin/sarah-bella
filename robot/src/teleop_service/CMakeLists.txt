@@ -13,12 +13,14 @@ find_package(catkin
 add_message_files(
   DIRECTORY msg
   FILES
+	Behavior.msg
     ObstacleDistance.msg
 )
 
 add_service_files(
   DIRECTORY srv
   FILES
+	BehaviorCommand.srv
     TwistCommand.srv
 )
 

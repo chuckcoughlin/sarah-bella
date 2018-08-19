@@ -18,26 +18,22 @@ fi
 # ===========================================================================================
 #
 APP=$1
+# ===== Enable all Teleop-type apps =======
+if [ ${APP} = "all" ]
+then
+    echo "LAUNCH_PKG=teleop_service" > ${CONFIG}
+    echo "LAUNCH_FILE=all.launch" >> ${CONFIG}
 # ========================================================
 # DIAGNOSTICS -
 # ========================================================
-if [ ${APP} = "diagnostics" ]
+elif [ ${APP} = "diagnostics" ]
 then
     echo "LAUNCH_PKG=turtlebot3_bringup" > ${CONFIG}
     echo "LAUNCH_FILE=turtlebot3_robot.launch" >> ${CONFIG}
-# ===== C++ =======
 elif [ ${APP} = "follow" -o ${APP} = "follower" ]
 then
     echo "LAUNCH_PKG=follower" > ${CONFIG}
     echo "LAUNCH_FILE=follower.launch" >> ${CONFIG}
-# ===== Python =======
-elif [ ${APP} = "follow3" -o ${APP} = "follower3" ]
-then
-	# Configure the correct LIDAR option
-	LAUNCH=${SRC}/turtlebot3/turtlebot3_bringup/launch
-	cp ${LAUNCH}/turtlebot3_lidar_odom.launch ${LAUNCH}/turtlebot3_lidar.launch
-    echo "LAUNCH_PKG=turtlebot3_follow_filter" > ${CONFIG}
-    echo "LAUNCH_FILE=turtlebot3_follow_filter.launch" >> ${CONFIG}
 elif [ ${APP} = "gpio" -o ${APP} = "gpio_msgs" ]
 then
     echo "LAUNCH_PKG=gpio_msgs" > ${CONFIG}

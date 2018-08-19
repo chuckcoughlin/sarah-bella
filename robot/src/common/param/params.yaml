@@ -3,3 +3,4 @@ robot/name: SarahBella
 robot/type: turtlebot3
 robot/platform: RaspberryPi
 robot/behavior: joystick
+robot/reset: false

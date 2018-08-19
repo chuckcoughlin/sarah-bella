@@ -1,4 +1,5 @@
-<package>
+<?xml version="1.0"?>
+<package format="2">
   <name>follower</name>
   <version>2.3.7</version>
   <description>
@@ -6,9 +7,9 @@
        following the centroid of a box points in front of the turtlebot.
   </description>
 
+  <maintainer email="chuck_coughlin@comcast.net">chuckc</maintainer>
   <license>BSD</license>
 
-  <author email="alex.hubers.cornellcollege,edu">Alex Hubers</author> 
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>rospy</build_depend>

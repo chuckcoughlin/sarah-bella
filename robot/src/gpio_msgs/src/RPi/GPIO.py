@@ -4,6 +4,8 @@
 BOARD = 0
 IN = 1
 OUT= 0
+HIGH= 1
+LOW = 0
 
 def gpio_function(chan):
 	if chan in [4,11,27]:
