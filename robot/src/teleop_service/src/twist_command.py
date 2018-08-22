@@ -13,19 +13,16 @@
 # to suppress joystick commands (if appropriate). Likewise, we leave it to the
 # tablet controller to pay attention to obstacle alerts.
 #
-# Package: teleop. Define the Twist message as a command.
+# Package: teleop_service. Define the Twist message as a command.
 #
 import sys
 import rospy
 from geometry_msgs.msg import Twist
 from teleop_service.srv import TwistCommand,TwistCommandRequest,TwistCommandResponse
 
-REPORT_INTERVAL = 20
-count = 0
 pub = rospy.Publisher('/cmd_vel',Twist,queue_size=1)
 
 def handleTwist(request):
-	global count
 	response = TwistCommandResponse()
 	twist = Twist()
 	twist.linear.x = -request.linear_x
@@ -37,8 +34,7 @@ def handleTwist(request):
 	response.msg = ""
 	# Publish Twist
 	pub.publish(twist)
-	count = count+1
-	if count%REPORT_INTERVAL==0:
+	if twist.linear.x!=0.:
 		rospy.loginfo("Twist Command: %3.2f,%3.2f",twist.linear.x,twist.angular.z)
 	return response
 

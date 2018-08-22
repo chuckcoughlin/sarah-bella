@@ -4,16 +4,15 @@ project(follower)
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
   rospy
-  turtlebot3_msgs
   sensor_msgs
   geometry_msgs
-  message_generation
+  teleop_service
 )
 
-catkin_package(
+catkin_package( CATKIN_DEPENDS
   rospy
   geometry_msgs
   sensor_msgs
+  teleop_service
   message_runtime
-  std_msgs
 )

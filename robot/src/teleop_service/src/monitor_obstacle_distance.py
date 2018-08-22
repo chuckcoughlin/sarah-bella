@@ -15,7 +15,7 @@ from teleop_service.msg import ObstacleDistance
 	
 DEFAULT_WIDTH = 0.2 # m
 REFRESH_INTERVAL = 2
-REPORT_INTERVAL  = 20
+REPORT_INTERVAL  = 50
 INFINITY = 100000.
 count = 0
 
@@ -25,7 +25,7 @@ msg = ObstacleDistance('distance','angle')
 pub = rospy.Publisher('sb_obstacle_distance',ObstacleDistance,queue_size=1)
 rospy.init_node('sb_publish_obstacle_distance')
 
-# Callback for every new LaserScan message
+# Callback for every new (throttled) LaserScan message
 def callback(laser):
 	global count
 	count = count+1
@@ -55,8 +55,9 @@ def callback(laser):
 		msg.distance = distance
 		msg.angle    = oangle
 		pub.publish(msg)
-		if count%REPORT_INTERVAL == 0:
-			rospy.loginfo("Obstacle distance: %4.2f "%(distance))
+	if count%REPORT_INTERVAL == 0:
+		rospy.loginfo("Obstacle distance: %4.2f "%(distance))
+		count = 0
 	
 
 sub = rospy.Subscriber("/scan_throttle",LaserScan,callback)
