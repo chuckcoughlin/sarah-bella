@@ -50,8 +50,6 @@ import chuckcoughlin.sb.assistant.control.TwistCommandController;
 public class DirectControlstickView extends RelativeLayout implements AnimationListener {
     private static final String CLSS = "DirectControlstickView";
 
-
-
     // ============================= Graphic Constants ============================================
     /**
      * BOX_TO_CIRCLE_RATIO The dimensions of the square box that contains the
