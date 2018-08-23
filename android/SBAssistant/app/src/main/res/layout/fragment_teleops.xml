@@ -87,9 +87,25 @@
             android:textSize="20sp" />
         <Spinner
             android:id="@+id/languages_spinner"
-            android:layout_width="fill_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingLeft="@dimen/teleop_horizontal_padding"/>
+        <ToggleButton
+            android:id="@+id/online_toggle"
+            android:layout_width="145dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="0dp"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="0dp"
+
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_gravity="center_vertical|right"
+            android:background="@drawable/rounded_button"
+            android:textAppearance="@style/TabTitle"
+            android:textOff="@string/teleopToggleDisconnected"
+            android:textOn="@string/teleopToggleConnected"
+            android:textSize="20sp" />
     </LinearLayout>
 
 </RelativeLayout>

@@ -44,6 +44,8 @@
     <!-- Strings for Teleop tab -->
     <string name="teleopToggleOn">Speech Enabled</string>
     <string name="teleopToggleOff">Press to Talk</string>
+    <string name="teleopToggleConnected">Live</string>
+    <string name="teleopToggleDisconnected">Offline</string>
     <string name="teleopCome">Come</string>
     <string name="teleopFollow">Follow</string>
     <string name="teleopJoystick">Joystick</string>

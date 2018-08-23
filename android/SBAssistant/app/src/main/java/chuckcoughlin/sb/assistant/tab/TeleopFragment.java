@@ -39,7 +39,6 @@ import org.ros.node.service.ServiceResponseListener;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -52,6 +51,8 @@ import chuckcoughlin.sb.assistant.control.TwistCommandInterpreter;
 import chuckcoughlin.sb.assistant.ros.SBApplicationManager;
 import chuckcoughlin.sb.assistant.ros.SBApplicationStatusListener;
 import chuckcoughlin.sb.assistant.ros.SBRobotManager;
+import teleop_service.BehaviorCommandRequest;
+import teleop_service.BehaviorCommandResponse;
 import teleop_service.ObstacleDistance;
 import teleop_service.TwistCommandRequest;
 import teleop_service.TwistCommandResponse;
@@ -64,6 +65,7 @@ import teleop_service.TwistCommandResponse;
  */
 
 public class TeleopFragment extends BasicAssistantFragment implements SBApplicationStatusListener,
+                                                ServiceResponseListener<BehaviorCommandResponse>,
                                                 TwistCommandController, RecognitionListener,
                                                 TextToSpeech.OnInitListener, AdapterView.OnItemSelectedListener,
                                                 RadioGroup.OnCheckedChangeListener  {
@@ -76,20 +78,21 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     private static final long OFFLINE_TIMER_PERIOD = 3000;  // ~msecs
     private static final long TIMER_PERIOD         = 100;   // ~msecs
 
-
-    private static final boolean ONLINE  = true;          // If false, no msgs to robot, logs results
     private SBApplicationManager applicationManager;
     private TwistCommandRequest currentRequest = null;    // Most recent state
     private TwistCommandRequest targetRequest = null;     // Desired state
     private TwistCommandInterpreter interpreter = new TwistCommandInterpreter(this);
     private DirectControlstickView joystick = null;
+    private boolean isOnline = true;    // Offline is a debug mode, no commands sent to robot
     private double obstacleDistance = Double.MAX_VALUE;
-    private ServiceClient<TwistCommandRequest, TwistCommandResponse> serviceClient = null;
+    private ServiceClient<BehaviorCommandRequest, BehaviorCommandResponse> behaviorServiceClient = null;
+    private ServiceClient<TwistCommandRequest, TwistCommandResponse> twistServiceClient = null;
     private ServiceTimer serviceTimer = null;       // Publish velocity commands at a constant rate.
     private DistanceListener distanceListener = null;
     private int language = TwistCommandController.ENGLISH;
     private SpeechRecognizer sr = null;
     private ObstacleErrorAnnunciator speechSynthesizer = null;
+    private ToggleButton onlineToggle = null;
     private ToggleButton speechToggle = null;
     private RadioGroup behaviorGroup = null;
     ParameterClient paramClient = null;
@@ -105,6 +108,15 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         label.setText(R.string.fragmentTeleopLabel);
         behaviorGroup = view.findViewById(R.id.behaviorRadioGroup);
         behaviorGroup.setOnCheckedChangeListener(this);
+        onlineToggle = view.findViewById(R.id.online_toggle);
+        onlineToggle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onlineToggleClicked();
+            }
+        });
+        onlineToggle.setChecked(isOnline);
+
         speechToggle = view.findViewById(R.id.speech_toggle);
         speechToggle.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -128,17 +140,13 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         targetRequest.setLinearX(0.0);  // Stopped
         targetRequest.setAngularZ(0.0);
 
-        if( ONLINE ) {
-            applicationManager.addListener(this);
-        }
-        else {
-            speechToggle.setEnabled(true);
-            Log.i(CLSS, String.format("onCreateView: starting in OFFLINE test mode"));
-            currentRequest = messageFactory.newFromType(TwistCommandRequest._TYPE);
-            currentRequest.setLinearX(0.0);  // Stopped
-            currentRequest.setAngularZ(0.0);
-            serviceTimer = new ServiceTimer(this);
-        }
+        applicationManager.addListener(this);
+        speechToggle.setEnabled(true);
+        currentRequest = messageFactory.newFromType(TwistCommandRequest._TYPE);
+        currentRequest.setLinearX(0.0);  // Stopped
+        currentRequest.setAngularZ(0.0);
+        serviceTimer = new ServiceTimer(isOnline,this);
+
         sr = SpeechRecognizer.createSpeechRecognizer(getActivity());
         sr.setRecognitionListener(TeleopFragment.this);
         speechSynthesizer = new ObstacleErrorAnnunciator(getActivity(),this);
@@ -150,38 +158,48 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     public void onDestroyView() {
         Log.i(CLSS, "onDestroyView");
         applicationShutdown(SBConstants.APPLICATION_TELEOP);
+        if( speechSynthesizer!=null) speechSynthesizer.shutdown();
         super.onDestroyView();
         if (sr != null) {
             sr.stopListening();
             sr.destroy();
         }
         sr = null;
+        if( serviceTimer!=null ) {
+            serviceTimer.cancel();
+            serviceTimer.purge();
+            serviceTimer= null;
+        }
     }
 
     // ======================================== OnCheckedChangeListener ===============================
     public void onCheckedChanged(RadioGroup group, int checkedId) {
         setBehavior(checkedId);
     }
-
+    // Inform the behavior service of the new desired behavior.
     private void setBehavior(int checkedId) {
         // checkedId is true if the RadioButton is selected
-        if( paramClient!=null && ONLINE ) {
+        if( behaviorServiceClient!=null && isOnline ) {
+            BehaviorCommandRequest request = behaviorServiceClient.newMessage();
             switch (checkedId) {
                 case R.id.joystick:
-                    paramClient.setParam(GraphName.of(SBConstants.ROS_BEHAVIOR_PARAM),SBConstants.SB_BEHAVIOR_JOYSTICK);
+                    request.setBehavior(SBConstants.SB_BEHAVIOR_JOYSTICK);
                     break;
                 case R.id.come:
-                    paramClient.setParam(GraphName.of(SBConstants.ROS_BEHAVIOR_PARAM),SBConstants.SB_BEHAVIOR_COME);
+                    request.setBehavior(SBConstants.SB_BEHAVIOR_COME);
                     break;
                 case R.id.follow:
-                    paramClient.setParam(GraphName.of(SBConstants.ROS_BEHAVIOR_PARAM),SBConstants.SB_BEHAVIOR_FOLLOW);
+                    request.setBehavior(SBConstants.SB_BEHAVIOR_FOLLOW);
                     break;
                 case R.id.park:
-                    paramClient.setParam(GraphName.of(SBConstants.ROS_BEHAVIOR_PARAM),SBConstants.SB_BEHAVIOR_PARK);
+                    request.setBehavior(SBConstants.SB_BEHAVIOR_PARK);
                     break;
                 default:
                     Log.i(CLSS, String.format("setBehavior: Unrecognized selection"));
+                    request.setBehavior(SBConstants.SB_BEHAVIOR_JOYSTICK);
             }
+
+            behaviorServiceClient.call(request,this);
         }
     }
 
@@ -204,14 +222,15 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                             URI masterUri = new URI(uriString);
                             paramClient = new ParameterClient(new NodeIdentifier(GraphName.of("/TeleopFragment"),masterUri),masterUri);
                             paramClient.setParam(GraphName.of(SBConstants.ROS_WIDTH_PARAM),SBConstants.SB_ROBOT_WIDTH);
-                            serviceClient = node.newServiceClient("/sb_serve_twist_command", teleop_service.TwistCommand._TYPE);
-                            currentRequest = serviceClient.newMessage();
+                            behaviorServiceClient = node.newServiceClient("/sb_serve_behavior_command", teleop_service.BehaviorCommand._TYPE);
+                            twistServiceClient = node.newServiceClient("/sb_serve_twist_command", teleop_service.TwistCommand._TYPE);
+                            currentRequest = twistServiceClient.newMessage();
                             currentRequest.setLinearX(0.0);  // Stopped
                             currentRequest.setAngularZ(0.0);
                             distanceListener.subscribe(node,"/sb_obstacle_distance");
-                            serviceTimer = new ServiceTimer(controller);
+                            restartServiceTimer(isOnline);
                             setBehavior(behaviorGroup.getCheckedRadioButtonId());
-                    }
+                        }
                         catch(URISyntaxException uriex) {
                             Log.e(CLSS,String.format("URI Syntax Exception setting parameter (%s)",uriex.getLocalizedMessage()));
                         }
@@ -248,8 +267,8 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                 public void run() {
                     speechToggle.setEnabled(false);
                 }
-            });;
-            if (serviceTimer != null) {
+            });
+            if (serviceTimer != null && isOnline) {
                 serviceTimer.cancel();
                 serviceTimer.purge();
                 serviceTimer = null;
@@ -261,8 +280,26 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
             }
         }
     }
+    //  Toggle the debug state. When "offline" we don't send messages to the robot.
+    public void onlineToggleClicked() {
+        isOnline = onlineToggle.isChecked();
+        if( isOnline ) {
+            Log.i(CLSS,"Mode is ONLINE");
+        }
+        else {
+            Log.i(CLSS,"Mode is OFFLINE");
+        }
+        restartServiceTimer(isOnline);
+    }
 
-    //  Start/stop toggle for speech entry clicked. This button is only enabled when
+    private void restartServiceTimer(boolean online) {
+        if( serviceTimer!=null) {
+            serviceTimer.cancel();
+            serviceTimer.purge();
+        }
+        serviceTimer = new ServiceTimer(online,this);
+    }
+    //  Start/stop toggle for speech entry cli cked. This button is only enabled when
     // an application is running. The initial state is OFF.
     public void speechToggleClicked() {
         if( speechToggle.isChecked() ) {
@@ -402,6 +439,15 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         return 0;
     }
 
+    // ================================= ServiceResponseListener ====================
+    @Override
+    public void onSuccess(BehaviorCommandResponse behaviorCommandResponse) {
+    }
+
+    @Override
+    public void onFailure(RemoteException e) {
+    }
+
     // ===================================== ServiceTimer ========================================
     /**
      * NEED TO VERIFY
@@ -413,14 +459,14 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         private final static String TAG = "ServiceTimer";
         private final TwistCommandController controller;
         private boolean errorAnnunciated;      // Prevents repeated error announcements
+        private boolean online;
+        private TimerTask task;
 
-        public ServiceTimer(TwistCommandController c) {
+        public ServiceTimer(boolean online,TwistCommandController c) {
             this.controller = c;
             final ServiceTimer thistimer = this;
-            errorAnnunciated = false;
-            long period = TIMER_PERIOD;
-            if( !ONLINE ) period = OFFLINE_TIMER_PERIOD;
-            TimerTask task = new TimerTask() {
+            this.errorAnnunciated = false;
+            this.task = new TimerTask() {
                 @Override
                 public void run() {
                     TwistCommandRequest current = controller.getCurrentRequest();
@@ -437,13 +483,16 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                     else {
                         errorAnnunciated = false;
                     }
-
+                    double currentX = current.getLinearX();
+                    double currentZ = current.getAngularZ();
                     current.setLinearX(rampedVelocity(current,target));
                     double raz = rampedAngle(current,target);
-                    double delta = current.getAngularZ()-raz;
                     current.setAngularZ(raz);
-                    if (ONLINE) {
-                        serviceClient.call(current,thistimer);
+                    if (online) {
+                        // Only call if there has been a change
+                        if( currentX!=current.getLinearX() || currentZ!=current.getAngularZ()) {
+                            twistServiceClient.call(current,thistimer);
+                        }
                     }
                     else {
                         Log.i(TAG, String.format("call: target: %3.2f %3.2f, current: %3.2f %3.2f", target.getLinearX(),target.getAngularZ(),
@@ -455,8 +504,14 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                     target.setAngularZ(straighten(target));
                 }
             };
-            schedule(task,0,period);
+            if( online ) {
+                schedule(task,0,TIMER_PERIOD);
+            }
+            else {
+                schedule(task,0,OFFLINE_TIMER_PERIOD);
+            }
         }
+
         // =============================== ServiceResponseListener =====================================
         // Use these methods to handle service responses. In general, the responses have no useful information.
         // The framework requires that they be handled, however.
