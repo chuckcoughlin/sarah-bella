@@ -42,10 +42,10 @@ class follower:
 	# Follow the closest object until the reset parameter becomes false.
 	def start(self):
 		self.stopped = False
-        # Subscribe to the laser data
-        #self.sub = rospy.Subscriber('scan', LaserScan, self.laser_callback)
-        # Publish movement commands to the turtlebot's base
-        #self.pub = rospy.Publisher('/cmd_vel', Twist,queue_size=1)
+		# Subscribe to the laser data
+		self.sub = rospy.Subscriber('scan', LaserScan, self.laser_callback)
+		# Publish movement commands to the turtlebot's base
+		self.pub = rospy.Publisher('/cmd_vel', Twist,queue_size=1)
 
 	def stop(self):
 		self.sub.unregister()
@@ -89,7 +89,7 @@ class follower:
 		self.command.angular.z = 0.0
 
 	def getPosition(self, scan):
-        # Build a depths array to rid ourselves of any nan data inherent in scan.ranges.
+		# Build a depths array to rid ourselves of any nan data inherent in scan.ranges.
 		depths = []
 		for dist in scan.ranges:
 			if dist>0.:    # We get bogus readings of zero
