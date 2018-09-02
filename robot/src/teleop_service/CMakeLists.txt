@@ -15,6 +15,7 @@ add_message_files(
   FILES
 	Behavior.msg
     ObstacleDistance.msg
+	TeleopStatus.msg
 )
 
 add_service_files(

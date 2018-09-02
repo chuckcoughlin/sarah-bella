@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>teleop_service</name>
-  <version>0.0.4</version>
+  <version>0.0.5</version>
   <description>Turtlebot3 remote control and crash protection.</description>
 
   <maintainer email="chuck_coughlin@comcast.net">chuckc</maintainer>
