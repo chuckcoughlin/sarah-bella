@@ -7,10 +7,10 @@ thickness = 4;
 wide_x  = 110;    // 1/2 width of the "wings"
 start_cutout_x  = 40;   // 1/2 width of cutout around the helper board
 end_cutout_x    = 65;   // 1/2 width of cutout around the helper board
-narrow_x= 45;    // 1/2 width of the battery holder
+narrow_x= 80;    // 1/2 width of the battery holder
 
-min_y    = 18;      // beginning of "wing
-cutout_y = 0;    // close edge of the cutout
+min_y    = 18;    // beginning of "wing
+cutout_y = 0;     // close edge of the cutout
 wide_y  = -26;    // The near edge the wide rectangular portion
 fillet_side= 16;  // End of flare to narrow
 full_y  = -86;    // Greatest extent of the plate
@@ -26,9 +26,10 @@ pillar_x     = 24;    // Center-line to center of pillar
 pillar_y     = -20;   // Baseline to center of pillar
 rim          = 3;     // Width of rim
 
+arduino_width       = 54; // y direction
 battery_rivet_x     = 28; // On centerline
 battery_rivet_y     = 8;  // On centerline, 16mm from rim.
-main_rivet_x        = 48; // Connect to msin board
+main_rivet_x        = 48; // Connect to main board
 main_rivet_y        = 0;
 
 rivet_radius = 2.5;   // Hole radius for rivet attachment
@@ -78,9 +79,30 @@ module main_holes(z) {
     }
 }
 // These are the various holes for battery rivets.
+// We've offset by 35mm
 module rivet_holes(z) {
-    for(i=[[battery_rivet_x,0],[-battery_rivet_x,0],
-           [0,battery_rivet_y],[0,-battery_rivet_y]]) {
+    for(i=[[battery_rivet_x-35,0],[-battery_rivet_x-35,0],
+           [-35,battery_rivet_y],[-35,-battery_rivet_y]]) {
+        translate(i)
+        cylinder(r=rivet_radius,h=z);
+    }
+}
+// These are the various holes for arduino rivets.
+// These are on the plus side
+module arduino_holes(z) {
+    for(i=[[4,8],[4,36],
+           [56,4],[58,52]]) {
+        translate(i)
+        cylinder(r=rivet_radius,h=z);
+    }
+}
+// These are for connecting the "ears" near the
+// end of the wings.
+module ear_holes(z) {
+    for(i=[[wide_x-14,cutout_y-2+10],
+           [wide_x-14,cutout_y-2-10],
+           [-wide_x+14,cutout_y-2+10],
+           [-wide_x+14,cutout_y-2-10]]) {
         translate(i)
         cylinder(r=rivet_radius,h=z);
     }
@@ -246,8 +268,13 @@ difference() {
     base(thickness);
     post_holes(thickness);
     main_holes(thickness);
-    translate([0,full_y+32,0])
-    rivet_holes(thickness);
+    ear_holes(thickness);
+    translate([0,full_y+32,0]) {
+        rivet_holes(thickness);
+    }
+    translate([0,full_y+thickness,0]) {
+        arduino_holes(thickness);
+    }
 }
 translate([0,0,thickness/2])
 difference() {

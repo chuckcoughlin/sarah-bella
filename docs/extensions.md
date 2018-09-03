@@ -218,15 +218,9 @@ ObstacleDistance
 **publish:**  /sb_obstacle_distance (ObstacleDistance)<br/>
 
  ### 04- Follow <a id="follow"></a>
- The *follower* application is one of the ROBOTIS demonstrations. I chose the version from: https://github.com/NVIDIA-Jetson/turtlebot3/tree/master/turtlebot_apps/turtlebot_follower. I modified references from *turtlebot_msgs* to *turtlebot3_msgs*.
+ The *follower* application is one of the ROBOTIS demonstrations. I chose the version from: https://github.com/pirobot/ros-by-example/blob/master/rbx_vol_1/rbx1_apps/nodes/follower.py as my starting point, making modifications to fit into my application framework.
 
  The *follow* application will cause the TurtleBot3 to look for objects in a window 50cm in front of it. And it will seek to keep the centroid of the observed objects directly in front of it and a fixed distance away. If the centroid of the object is too far away it will drive forward, too close backward, and if offset to the side it will turn toward the centroid.
-
- https://github.com/jjones646/turtlebot-follower.git Class project outline. Python.
-
- https://github.com/NVIDIA-Jetson/turtlebot3/blob/master/turtlebot_apps/turtlebot_follower/src/follower.cpp Jetson-NVIDIA. cpp, turtlebot3, switch.py. rapp
-
- https://github.com/ROBOTIS-GIT/turtlebot3_applications. Official demo. python. follow_filter
 
 
 
