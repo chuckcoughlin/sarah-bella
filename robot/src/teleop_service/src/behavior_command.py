@@ -10,19 +10,25 @@
 # to suppress joystick commands (if appropriate). Likewise, we leave it to the
 # tablet controller to pay attention to obstacle alerts.
 #
+# Use this method to open the teleop status publisher as a guarantee that
+# the topic will always exist. The various behaviors all make use of it.
+#
 # Package: teleop_service. Define the behavior.
 #
 import sys
 import rospy
-from teleop_service.msg import Behavior
+from teleop_service.msg import Behavior, TeleopStatus
 from teleop_service.srv import BehaviorCommand,BehaviorCommandRequest,BehaviorCommandResponse
 
 pub = rospy.Publisher('/sb_behavior',Behavior,queue_size=1)
+spub = rospy.Publisher('sb_teleop_status',TeleopStatus,queue_size=1)
 
 def handleBehavior(request):
 	response = BehaviorCommandResponse()
 	behavior = Behavior()
 	behavior.state = request.behavior
+	opStatus = TeleopStatus()
+	opstatus.status=str(behavior.state)+' started ...'
 	response.msg = ""
 	# "joystick" means all control is external
 	if behavior.state=="joystick":
@@ -32,6 +38,7 @@ def handleBehavior(request):
 	
 	# Publish Behavior
 	pub.publish(behavior)
+	spub.publish(opstatus)
 	rospy.loginfo("Behavior Command: New behavior is %s",behavior.state)
 	return response
 

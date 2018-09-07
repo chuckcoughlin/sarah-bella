@@ -13,8 +13,9 @@ import os
 from std_msgs.msg import String, Bool
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
-from teleop_service.msg import Behavior
+from teleop_service.msg import Behavior,TeleopStatus
 from math import tanh
+
 
 class follower:
 	def __init__(self, followDistance=2, stopDistance=1, max_speed=0.6, min_speed=0.01 ):
@@ -38,6 +39,12 @@ class follower:
 		# Distance to the closest object, and its position in array, respectively.
 		self.closest = 0
 		self.position = 0
+		# Publish status so that controller can keep track of state
+		self.spub = rospy.Publisher('sb_teleop_status',TeleopStatus,queue_size=1)
+		self.msg = TeleopStatus()
+		self.msg.status='Initialized follower'
+		self.spub.publish(self.msg)
+		self.state=""
 
 	# Follow the closest object until the reset parameter becomes false.
 	def start(self):
@@ -46,10 +53,14 @@ class follower:
 		self.sub = rospy.Subscriber('scan', LaserScan, self.laser_callback)
 		# Publish movement commands to the turtlebot's base
 		self.pub = rospy.Publisher('/cmd_vel', Twist,queue_size=1)
+		self.msg.status='Started follower'
+		self.spub.publish(self.msg)
 
 	def stop(self):
 		self.sub.unregister()
 		self.stopped = True
+		self.msg.status='Stopped follower'
+		self.spub.publish(self.msg)
 
 	def laser_callback(self, scan):
 		if rospy.is_shutdown() or self.stopped:
@@ -75,6 +86,7 @@ class follower:
 
 	#Starts following the nearest object.
 	def follow(self):
+		self.reportState("following")
 		self.command.linear.x = tanh(5 * (self.closest - self.stopDistance)) * self.max_speed
 		#turn faster the further we're turned from our intended object.
 		self.command.angular.z = ((self.position-320.0)/320.0)
@@ -87,6 +99,7 @@ class follower:
 	def doNothing(self):
 		self.command.linear.x = 0.0
 		self.command.angular.z = 0.0
+		self.reportState("waiting")
 
 	def getPosition(self, scan):
 		# Build a depths array to rid ourselves of any nan data inherent in scan.ranges.
@@ -105,6 +118,12 @@ class follower:
 		else:
 			self.closest = min(depths)
 			self.position = fullDepthsArray.index(self.closest)
+
+	def reportState(self,status):
+		if self.state!=status:
+			self.state = status
+			self.msg.status=status
+			self.spub.publish(self.msg)
 
 
 # The overall behavior has changed. Start the folower if state is "follow".
