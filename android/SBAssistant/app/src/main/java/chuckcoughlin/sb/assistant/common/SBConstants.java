@@ -49,9 +49,7 @@ public class SBConstants {
     public static final int NUM_LOG_MESSAGES = 100;
 
     // Application Names - these must match parameters set in robot launch files
-    public static final String APPLICATION_FOLLOW="follow";
     public static final String APPLICATION_HEADLAMP="headlamp";
-    public static final String APPLICATION_PARK="park";
     public static final String APPLICATION_SYSTEM="system";
     public static final String APPLICATION_TELEOP="teleop";
     // Platform Types

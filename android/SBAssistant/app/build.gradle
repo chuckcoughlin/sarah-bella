@@ -68,6 +68,7 @@ dependencies {
     implementation files('libs/turtlebot3_msgs-0.1.5.jar')
     implementation files('libs/tf-1.11.8.jar')
     implementation files('libs/geometry_msgs-1.12.5.jar')
-    implementation files('libs/teleop_service-0.0.4.jar')
+    implementation files('libs/teleop_service-0.0.5.jar')
+    implementation files('libs/audio_locator-0.0.1.jar')
 }
 

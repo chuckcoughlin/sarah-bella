@@ -116,11 +116,8 @@ public class SBDbManager extends SQLiteOpenHelper {
         Log.i(CLSS,String.format("onCreate: Created %s at %s",SBConstants.DB_NAME,context.getDatabasePath(SBConstants.DB_NAME)));
 
         // Define the various applications. This is a fixed list and must correspondd to robot contents.
-        statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('"+SBConstants.APPLICATION_FOLLOW+"','Robot follows the closest object')";
-        execLenient(sqLiteDatabase,statement);
+        // NOTE: The former applications FOLLOW, PARK and COME are now sub-applications of Teleop_Services.
         statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('"+SBConstants.APPLICATION_HEADLAMP+"','Turn the robot headlamp on/off')";
-        execLenient(sqLiteDatabase,statement);
-        statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('"+SBConstants.APPLICATION_PARK+"','Auto-park robot under positioning banner')";
         execLenient(sqLiteDatabase,statement);
         statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('"+SBConstants.APPLICATION_SYSTEM+"','Monitor robot system status')";
         execLenient(sqLiteDatabase,statement);

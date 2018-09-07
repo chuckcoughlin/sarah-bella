@@ -93,9 +93,7 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
     // We only react to specific applications.
     public void applicationStarted(String appName) {
         if( appName==null) return;
-        if(     !appName.equalsIgnoreCase(SBConstants.APPLICATION_FOLLOW) &&
-                !appName.equalsIgnoreCase(SBConstants.APPLICATION_PARK) &&
-                !appName.equalsIgnoreCase(SBConstants.APPLICATION_TELEOP))   return;
+        if(!appName.equalsIgnoreCase(SBConstants.APPLICATION_TELEOP))   return;
 
         Log.i(CLSS, String.format("applicationStarted: %s ...", appName));
         this.appName = appName;
@@ -112,9 +110,7 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
 
     public void applicationShutdown(String appName) {
         if( appName==null ) return;
-        if(     !appName.equalsIgnoreCase(SBConstants.APPLICATION_FOLLOW) &&
-                !appName.equalsIgnoreCase(SBConstants.APPLICATION_PARK) &&
-                !appName.equalsIgnoreCase(SBConstants.APPLICATION_TELEOP))   return;
+        if( !appName.equalsIgnoreCase(SBConstants.APPLICATION_TELEOP))   return;
         Log.i(CLSS, String.format("applicationShutdown"));
         transformListener.shutdown();
         laserListener.shutdown();

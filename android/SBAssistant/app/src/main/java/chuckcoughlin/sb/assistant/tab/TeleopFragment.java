@@ -54,6 +54,7 @@ import chuckcoughlin.sb.assistant.ros.SBRobotManager;
 import teleop_service.BehaviorCommandRequest;
 import teleop_service.BehaviorCommandResponse;
 import teleop_service.ObstacleDistance;
+import teleop_service.TeleopStatus;
 import teleop_service.TwistCommandRequest;
 import teleop_service.TwistCommandResponse;
 
@@ -89,12 +90,16 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     private ServiceClient<TwistCommandRequest, TwistCommandResponse> twistServiceClient = null;
     private ServiceTimer serviceTimer = null;       // Publish velocity commands at a constant rate.
     private DistanceListener distanceListener = null;
+    private TeleopStatusListener statusListener = null;
     private int language = TwistCommandController.ENGLISH;
     private SpeechRecognizer sr = null;
     private ObstacleErrorAnnunciator speechSynthesizer = null;
     private ToggleButton onlineToggle = null;
     private ToggleButton speechToggle = null;
     private RadioGroup behaviorGroup = null;
+    private TextView angularVelocityView = null;
+    private TextView linearVelocityView = null;
+    private TextView teleopStatusView = null;
     ParameterClient paramClient = null;
 
 
@@ -103,6 +108,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
         this.applicationManager = SBApplicationManager.getInstance();
         distanceListener = new DistanceListener();
+        statusListener = new TeleopStatusListener();
         View view = inflater.inflate(R.layout.fragment_teleops, container, false);
         TextView label = view.findViewById(R.id.fragmentTeleopsText);
         label.setText(R.string.fragmentTeleopLabel);
@@ -133,6 +139,9 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
 
         joystick = (DirectControlstickView)view.findViewById(R.id.virtual_joystick);
         joystick.setController(this);
+        angularVelocityView = (TextView)view.findViewById(R.id.velocity_field);
+        linearVelocityView = (TextView)view.findViewById(R.id.angular_velocity_field);
+        teleopStatusView = (TextView)view.findViewById(R.id.teleops_status_field);
 
         NodeConfiguration nodeConfiguration = NodeConfiguration.newPrivate();
         MessageFactory messageFactory = nodeConfiguration.getTopicMessageFactory();
@@ -228,6 +237,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                             currentRequest.setLinearX(0.0);  // Stopped
                             currentRequest.setAngularZ(0.0);
                             distanceListener.subscribe(node,"/sb_obstacle_distance");
+                            statusListener.subscribe(node,"/sb_teleop_status");
                             restartServiceTimer(isOnline);
                             setBehavior(behaviorGroup.getCheckedRadioButtonId());
                         }
@@ -491,7 +501,17 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                     if (online) {
                         // Only call if there has been a change
                         if( currentX!=current.getLinearX() || currentZ!=current.getAngularZ()) {
-                            twistServiceClient.call(current,thistimer);
+                            if( twistServiceClient!=null ) {
+                                twistServiceClient.call(current,thistimer);
+                                getActivity().runOnUiThread(new Runnable() {
+                                    public void run() {
+                                        linearVelocityView.setText(String.valueOf(current.getLinearX()));
+                                        angularVelocityView.setText(String.valueOf(current.getAngularZ()));
+                                    }
+                                });
+
+                            }
+                            Log.i(TAG, String.format("call: ONLINE, but twist service client is NULL"));
                         }
                     }
                     else {
@@ -499,8 +519,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                                 current.getLinearX(),current.getAngularZ()));
 
                     }
-                    // Change our current and target by our delta. Aim for straight again.
-                    current.setAngularZ(straighten(current));
+                    // Change our target angle by our increment. Aim for straight again.
                     target.setAngularZ(straighten(target));
                 }
             };
@@ -561,7 +580,30 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
             if( obstacleDistance< SBConstants.SB_ROBOT_CLOSEST_APPROACH ) {
                 // We know this will fail ...
                 commandVelocity(targetRequest.getLinearX(),targetRequest.getAngularZ());
+                if( behaviorGroup.getCheckedRadioButtonId()==R.id.joystick ) {
+                    getActivity().runOnUiThread(new Runnable() {
+                        public void run() {
+                            teleopStatusView.setText(String.valueOf(obstacleDistance));
+                        }
+                    });
+                }
             }
+        }
+    }
+    // ============================= Teleop Status Message Listener ===========================
+    private class TeleopStatusListener extends AbstractMessageListener<TeleopStatus> {
+        public TeleopStatusListener() {
+            super(teleop_service.TeleopStatus._TYPE);
+        }
+
+        // Simply display the status we get from the robot.
+        @Override
+        public void onNewMessage(teleop_service.TeleopStatus message) {
+            getActivity().runOnUiThread(new Runnable() {
+                public void run() {
+                    teleopStatusView.setText(message.getStatus());
+                }
+            });
         }
     }
     // ====================================== OnItemSelectedListener ===============================

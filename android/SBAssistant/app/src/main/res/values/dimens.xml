@@ -18,4 +18,6 @@
     <dimen name="log_field_padding">1dp</dimen>
     <dimen name="log_transition_z">2dp</dimen>
     <dimen name="teleop_horizontal_padding">12dp</dimen>
+    <dimen name="teleop_field_size">120dp</dimen>
+    <dimen name="teleop_wide_field_size">240dp</dimen>
 </resources>

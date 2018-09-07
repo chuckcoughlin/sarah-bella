@@ -61,51 +61,83 @@
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:adjustViewBounds="true"/>
+    <TextView
+        android:id="@+id/angular_velocity_field"
+        android:layout_below="@id/virtual_joystick"
+        android:layout_centerHorizontal="true"
+        android:layout_width="@dimen/teleop_field_size"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:textAlignment="center"
+        android:text=""
+        android:textSize="20sp"/>
+    <TextView
+        android:id="@+id/velocity_field"
+        android:layout_width="@dimen/teleop_field_size"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:layout_below="@id/virtual_joystick"
+        android:layout_toLeftOf="@id/angular_velocity_field"
+        android:text=""
+        android:textAlignment="center"
+        android:textSize="20sp"/>
+    <TextView
+        android:id="@+id/teleops_status_field"
+        android:layout_width="@dimen/teleop_wide_field_size"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:layout_below="@id/virtual_joystick"
+        android:layout_toRightOf="@id/angular_velocity_field"
+        android:text=""
+        android:textSize="20sp"/>
 
-    <LinearLayout
+    <Spinner
+        android:id="@+id/languages_spinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="top|center_horizontal"
-        android:layout_below="@+id/virtual_joystick"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@id/angular_velocity_field"
         android:layout_centerHorizontal="true"
-        android:orientation="horizontal">
-        <ToggleButton
-            android:id="@+id/speech_toggle"
-            android:layout_width="wrap_content"
-            android:layout_height="180dp"
-            android:layout_marginBottom="0dp"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="0dp"
+        android:layout_centerVertical="true"
+        android:paddingLeft="@dimen/teleop_horizontal_padding"
+        android:paddingTop="10dp"
+        />
+    <ToggleButton
+        android:id="@+id/speech_toggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/angular_velocity_field"
+        android:layout_toLeftOf="@id/languages_spinner"
+        android:layout_marginBottom="0dp"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="0dp"
 
-            android:background="@null"
-            android:button="@drawable/toggle"
-            android:textAppearance="@style/TabTitle"
-            android:textOff="@string/teleopToggleOff"
-            android:textOn="@string/teleopToggleOn"
-            android:textSize="20sp" />
-        <Spinner
-            android:id="@+id/languages_spinner"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/teleop_horizontal_padding"/>
-        <ToggleButton
-            android:id="@+id/online_toggle"
-            android:layout_width="145dp"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="0dp"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="0dp"
+        android:background="@null"
+        android:button="@drawable/toggle"
+        android:textAppearance="@style/TabTitle"
+        android:textOff="@string/teleopToggleOff"
+        android:textOn="@string/teleopToggleOn"
+        android:textSize="20sp" />
+    <ToggleButton
+        android:id="@+id/online_toggle"
+        android:layout_width="145dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/angular_velocity_field"
+        android:layout_toRightOf="@id/languages_spinner"
+        android:layout_marginBottom="0dp"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="0dp"
 
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_gravity="center_vertical|right"
-            android:background="@drawable/rounded_button"
-            android:textAppearance="@style/TabTitle"
-            android:textOff="@string/teleopToggleDisconnected"
-            android:textOn="@string/teleopToggleConnected"
-            android:textSize="20sp" />
-    </LinearLayout>
-
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:background="@drawable/rounded_button"
+        android:textAppearance="@style/TabTitle"
+        android:textOff="@string/teleopToggleDisconnected"
+        android:textOn="@string/teleopToggleConnected"
+        android:textSize="18dp" />
 </RelativeLayout>

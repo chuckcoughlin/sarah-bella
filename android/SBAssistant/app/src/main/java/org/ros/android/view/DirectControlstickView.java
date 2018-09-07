@@ -793,8 +793,8 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
                 // to contactUp.
                 if (inLastContactRange(event.getX(event.getActionIndex()), event.getY(event.getActionIndex()))) {
                     // Trigger resume-previous-velocity mode.
-                    Log.i(CLSS,String.format("DOWN PREV (%3.0f,%3.0f)",event.getX(event.getActionIndex()),
-                            event.getY(event.getActionIndex())));
+                    //Log.i(CLSS,String.format("DOWN PREV (%3.0f,%3.0f)",event.getX(event.getActionIndex()),
+                    //        event.getY(event.getActionIndex())));
                     previousVelocityMode = true;
                     // The animation calculations/operations are performed in
                     // onContactMove(). If this is not called and the user's finger stays
