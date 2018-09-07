@@ -27,7 +27,7 @@ def handleBehavior(request):
 	response = BehaviorCommandResponse()
 	behavior = Behavior()
 	behavior.state = request.behavior
-	opStatus = TeleopStatus()
+	opstatus = TeleopStatus()
 	opstatus.status=str(behavior.state)+' started ...'
 	response.msg = ""
 	# "joystick" means all control is external

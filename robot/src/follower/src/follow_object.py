@@ -42,25 +42,22 @@ class follower:
 		# Publish status so that controller can keep track of state
 		self.spub = rospy.Publisher('sb_teleop_status',TeleopStatus,queue_size=1)
 		self.msg = TeleopStatus()
-		self.msg.status='Initialized follower'
-		self.spub.publish(self.msg)
 		self.state=""
+		self.reportState("Follower: initialized.")
 
 	# Follow the closest object until the reset parameter becomes false.
 	def start(self):
 		self.stopped = False
 		# Subscribe to the laser data
-		self.sub = rospy.Subscriber('scan', LaserScan, self.laser_callback)
+		self.sub = rospy.Subscriber('/scan', LaserScan, self.laser_callback)
 		# Publish movement commands to the turtlebot's base
 		self.pub = rospy.Publisher('/cmd_vel', Twist,queue_size=1)
-		self.msg.status='Started follower'
-		self.spub.publish(self.msg)
+		self.reportState("Follower: started ...");
 
 	def stop(self):
 		self.sub.unregister()
 		self.stopped = True
-		self.msg.status='Stopped follower'
-		self.spub.publish(self.msg)
+		self.reportState("Follower: stopped.")
 
 	def laser_callback(self, scan):
 		if rospy.is_shutdown() or self.stopped:
@@ -68,21 +65,22 @@ class follower:
 		reset = rospy.get_param("robot/reset")
 		if reset:
 			self.stop()
-		# Proceed with calculations
-		# Finds the closest thing
-		self.getPosition(scan)
-		rospy.loginfo('position: {0}'.format(self.position))
-
-		#if there's something within self.followDist from us, start following.
-		if (self.closest < self.followDist):
-			self.follow()
 		else:
-			self.doNothing() 
+			# Proceed with calculations
+			# Finds the closest thing
+			self.getPosition(scan)
+			rospy.loginfo('position: {0}'.format(self.position))
 
-		# Add a log message, so that we know what's going on
-		rospy.loginfo('Follower: Distance: {0}, speed: {1}, angular: {2}'.format(self.closest, \
-			self.command.linear.x, self.command.angular.z))
-		self.pub.publish(self.command)
+			#if there's something within self.followDist from us, start following.
+			if (self.closest < self.followDist):
+				self.follow()
+			else:
+				self.doNothing() 
+
+			# Add a log message, so that we know what's going on
+			rospy.loginfo('Follower: Distance: {0}, speed: {1}, angular: {2}'.format(self.closest, \
+				self.command.linear.x, self.command.angular.z))
+			self.pub.publish(self.command)
 
 	#Starts following the nearest object.
 	def follow(self):
