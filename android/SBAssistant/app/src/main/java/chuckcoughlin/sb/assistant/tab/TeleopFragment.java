@@ -503,13 +503,14 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                         if( currentX!=current.getLinearX() || currentZ!=current.getAngularZ()) {
                             if( twistServiceClient!=null ) {
                                 twistServiceClient.call(current,thistimer);
-                                getActivity().runOnUiThread(new Runnable() {
-                                    public void run() {
-                                        linearVelocityView.setText(String.valueOf(current.getLinearX()));
-                                        angularVelocityView.setText(String.valueOf(current.getAngularZ()));
-                                    }
-                                });
-
+                                if( getActivity()!=null ) {
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        public void run() {
+                                            linearVelocityView.setText(String.valueOf(current.getLinearX()));
+                                            angularVelocityView.setText(String.valueOf(current.getAngularZ()));
+                                        }
+                                    });
+                                }
                             }
                             Log.i(TAG, String.format("call: ONLINE, but twist service client is NULL"));
                         }
@@ -576,11 +577,11 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         @Override
         public void onNewMessage(teleop_service.ObstacleDistance message) {
             obstacleDistance = message.getDistance();
-            Log.i(CLSS,String.format("received ObstacleDistance = (%f)",obstacleDistance));
+            //Log.i(CLSS,String.format("received ObstacleDistance = (%f)",obstacleDistance));
             if( obstacleDistance< SBConstants.SB_ROBOT_CLOSEST_APPROACH ) {
                 // We know this will fail ...
                 commandVelocity(targetRequest.getLinearX(),targetRequest.getAngularZ());
-                if( behaviorGroup.getCheckedRadioButtonId()==R.id.joystick ) {
+                if( behaviorGroup.getCheckedRadioButtonId()==R.id.joystick && getActivity()!=null  ) {
                     getActivity().runOnUiThread(new Runnable() {
                         public void run() {
                             teleopStatusView.setText(String.valueOf(obstacleDistance));
@@ -599,11 +600,13 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         // Simply display the status we get from the robot.
         @Override
         public void onNewMessage(teleop_service.TeleopStatus message) {
-            getActivity().runOnUiThread(new Runnable() {
-                public void run() {
-                    teleopStatusView.setText(message.getStatus());
-                }
-            });
+            if( getActivity()!=null ) {
+                getActivity().runOnUiThread(new Runnable() {
+                    public void run() {
+                        teleopStatusView.setText(message.getStatus());
+                    }
+                });
+            }
         }
     }
     // ====================================== OnItemSelectedListener ===============================

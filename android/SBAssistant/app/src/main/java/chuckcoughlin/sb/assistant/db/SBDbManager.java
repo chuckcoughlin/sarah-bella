@@ -117,6 +117,8 @@ public class SBDbManager extends SQLiteOpenHelper {
 
         // Define the various applications. This is a fixed list and must correspondd to robot contents.
         // NOTE: The former applications FOLLOW, PARK and COME are now sub-applications of Teleop_Services.
+        statement = "DELETE FROM RobotApplications";
+        execLenient(sqLiteDatabase,statement);
         statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('"+SBConstants.APPLICATION_HEADLAMP+"','Turn the robot headlamp on/off')";
         execLenient(sqLiteDatabase,statement);
         statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('"+SBConstants.APPLICATION_SYSTEM+"','Monitor robot system status')";
