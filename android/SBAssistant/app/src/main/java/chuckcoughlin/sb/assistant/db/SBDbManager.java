@@ -119,11 +119,11 @@ public class SBDbManager extends SQLiteOpenHelper {
         // NOTE: The former applications FOLLOW, PARK and COME are now sub-applications of Teleop_Services.
         statement = "DELETE FROM RobotApplications";
         execLenient(sqLiteDatabase,statement);
-        statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('"+SBConstants.APPLICATION_HEADLAMP+"','Turn the robot headlamp on/off')";
+        statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('"+SBConstants.APPLICATION_HEADLAMP+"','Turn robot headlamp on/off')";
         execLenient(sqLiteDatabase,statement);
         statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('"+SBConstants.APPLICATION_SYSTEM+"','Monitor robot system status')";
         execLenient(sqLiteDatabase,statement);
-        statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('"+SBConstants.APPLICATION_TELEOP+"','Control the robot from the tablet')";
+        statement = "INSERT INTO RobotApplications(AppName,Description) VALUES('"+SBConstants.APPLICATION_TELEOP+"','Control robot from the tablet')";
         execLenient(sqLiteDatabase,statement);
     }
 

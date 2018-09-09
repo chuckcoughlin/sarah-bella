@@ -74,9 +74,9 @@ public class BluetoothChecker {
     }
 
     private class CheckerThread extends Thread {
-        private RobotDescription robot;
         private BluetoothAdapter adapter;
         private Set<BluetoothDevice> pairedDevices;
+        private RobotDescription robot;
 
         public CheckerThread(RobotDescription rbt, BluetoothManager bmgr) {
             this.robot = rbt;
@@ -119,7 +119,7 @@ public class BluetoothChecker {
                 adapter.cancelDiscovery();
             }
             catch (Throwable ex) {
-                Log.e("RosAndroid", "Exception while searching for Bluetooth for "
+                Log.e(CLSS, "Exception while searching for Bluetooth for "
                         + robot.getRobotId().getDeviceName(), ex);
                 errorMsg = ex.getLocalizedMessage();
             }

@@ -105,6 +105,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                disconnect();
                 getActivity().finish();
             }
         });
@@ -408,9 +409,7 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
                 !robotManager.getConnectionState().equals(SBRobotManager.STATE_UNCONNECTED) ) {
 
             applicationManager.setApplication(null);   // Shutdown current
-            if( bluetoothManager.getAdapter()!=null )  bluetoothManager.getAdapter().disable();
-            WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE);
-            wifiManager.disconnect();
+            disconnect();
             robotManager.setConnectionState(SBRobotManager.STATE_UNCONNECTED);
             updateUI();
 
@@ -451,6 +450,15 @@ public class DiscoveryFragment extends BasicAssistantListFragment implements SBR
             robotManager.setConnectionState(SBRobotManager.STATE_UNAVAILABLE);
             handleNetworkError("The MasterURI must be defined on the Settings panel");
         }
+    }
+    // Disconnect both wifi and bluetooth connections
+    private void disconnect() {
+        BluetoothManager bluetoothManager = (BluetoothManager)getActivity().getSystemService(BLUETOOTH_SERVICE);
+        if( bluetoothManager.getAdapter()!=null )  {
+            bluetoothManager.getAdapter().disable();
+        }
+        WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE);
+        wifiManager.disconnect();
     }
     //  Start/stop toggle clicked:
     //    If this is not the application currently running on the robot,

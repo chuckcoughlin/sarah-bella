@@ -759,8 +759,8 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
                     if (previousVelocityMode) {
                         // And the current contact is close to the contact location prior to
                         // ContactUp.
-                        Log.i(CLSS,String.format("MOVE PREV (%3.0f,%3.0f)",event.getX(event.getActionIndex()),
-                                event.getY(event.getActionIndex())));
+                        //Log.i(CLSS,String.format("MOVE PREV (%3.0f,%3.0f)",event.getX(event.getActionIndex()),
+                        //        event.getY(event.getActionIndex())));
                         if (inLastContactRange(event.getX(event.getActionIndex()),
                                 event.getY(event.getActionIndex()))) {
                             // Then use the previous velocity.

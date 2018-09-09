@@ -600,6 +600,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
         // Simply display the status we get from the robot.
         @Override
         public void onNewMessage(teleop_service.TeleopStatus message) {
+            Log.i(CLSS,String.format("Teleop Status message: (%s)",message.getStatus()));
             if( getActivity()!=null ) {
                 getActivity().runOnUiThread(new Runnable() {
                     public void run() {
