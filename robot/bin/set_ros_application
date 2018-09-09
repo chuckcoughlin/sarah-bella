@@ -9,6 +9,7 @@ export SRC=${HOME}/catkin_ws/src
 if [ $# -lt 1 ] 
 then
 	echo "USAGE: $0 <application_name>"
+	echo "  apps: all diagnostics follow gpio joystick obstacle park system teleop"
 	exit 1
 fi
 #
@@ -33,7 +34,7 @@ then
 elif [ ${APP} = "follow" -o ${APP} = "follower" ]
 then
     echo "LAUNCH_PKG=follower" > ${CONFIG}
-    echo "LAUNCH_FILE=follower.launch" >> ${CONFIG}
+    echo "LAUNCH_FILE=follower_test.launch" >> ${CONFIG}
 elif [ ${APP} = "gpio" -o ${APP} = "gpio_msgs" ]
 then
     echo "LAUNCH_PKG=gpio_msgs" > ${CONFIG}
@@ -43,6 +44,13 @@ elif [ ${APP} = "headlamp" ]
 then
     echo "LAUNCH_PKG=system_check" > ${CONFIG}
     echo "LAUNCH_FILE=system.launch" >> ${CONFIG}
+# ========================================================
+#   JOYSTICK - test of teleop with joystick
+# ========================================================
+elif [ ${APP} = "joystick" ]
+then
+    echo "LAUNCH_PKG=teleop_service" > ${CONFIG}
+    echo "LAUNCH_FILE=joystick.launch" >> ${CONFIG}
 # ========================================================
 #   OBSTACLE - test of obstacle detection only, no teleop
 # ========================================================
@@ -56,19 +64,19 @@ then
 elif [ ${APP} = "park" ]
 then
     echo "LAUNCH_PKG=automatic_parking" > ${CONFIG}
-    echo "LAUNCH_FILE=automatic_parking.launch" >> ${CONFIG}
+    echo "LAUNCH_FILE=automatic_parking_test.launch" >> ${CONFIG}
 elif [ ${APP} = "system" ]
 then
     echo "LAUNCH_PKG=system_check" > ${CONFIG}
     echo "LAUNCH_FILE=system.launch" >> ${CONFIG}
 # ========================================================
 #   TELEOP - includes obstacle detection, switch to park, 
-#            follow or come modes
+#            follow or come modes. Same as "all"
 # ========================================================
 elif [ ${APP} = "teleop" -o ${APP} = "teleops" ]
 then
     echo "LAUNCH_PKG=teleop_service" > ${CONFIG}
-    echo "LAUNCH_FILE=teleop.launch" >> ${CONFIG}
+    echo "LAUNCH_FILE=all.launch" >> ${CONFIG}
 else
 	echo "Unknown application ${APP}"
 	exit 2

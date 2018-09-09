@@ -133,10 +133,10 @@ def getBehavior(behavior):
 		follower.stop()
 
 if __name__ == "__main__":
-    # Initialize the node
+	# Initialize the node
 	rospy.init_node('sb_follow', log_level=rospy.INFO, anonymous=True)
 	follower = follower()
-	rospy.Subscriber("sb_behavior",Behavior,getBehavior)
+	rospy.Subscriber("/sb_behavior",Behavior,getBehavior)
 	
  	rospy.spin()
 

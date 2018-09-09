@@ -1,7 +1,6 @@
 <!--
   The turtlebot people (or whatever) follower nodelet.
-  Meant to be called by the "all" teleop launch. This does not
-  independently start LIDAR.
+  This is a test version that starts LIDAR independently.
  -->
 <launch>
   <param name="robot/name" value="SarahBella" type="str"/>
@@ -9,7 +8,6 @@
   <param name="robot/application" value="follow" type="str"/>
   <param name="robot/platform" value="RaspberryPi" type="str"/>
   <param name="robot/behavior" value="follow" type="str"/>
-  <!-- These metrics influence the follower algorithm -->
   <param name="robot/x_scale" value="7.0" />
   <param name="robot/z_scale" value="2.0" />
   <param name="robot/min_x" value="-0.35" />
@@ -18,6 +16,7 @@
   <param name="robot/max_y" value="0.5" />
   <param name="roboy/goal_z" value="0.6" />
 
+  <include file="$(find turtlebot3_bringup)/launch/turtlebot3_robot.launch"/>
   <node pkg="follower" type="follow_object.py" name="sb_follow" output="log">
   </node>
 
