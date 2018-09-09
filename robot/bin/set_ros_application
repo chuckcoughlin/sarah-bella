@@ -57,7 +57,7 @@ then
 elif [ ${APP} = "obstacle" ]
 then
     echo "LAUNCH_PKG=teleop_service" > ${CONFIG}
-    echo "LAUNCH_FILE=obstacle.launch" >> ${CONFIG}
+    echo "LAUNCH_FILE=teleop_test.launch" >> ${CONFIG}
 # ========================================================
 #   PARK - 
 # ========================================================
