@@ -1,5 +1,5 @@
-<!-- The "teleop" application relies on builtin functions except for our TwistCommand service.
-  Does not start the LIDAR.
+<!-- Test remote control of the robot. This application does not support switching to other 
+     teleop modes (e.g. follow). There is no lidar. This just tests control
 -->
 <launch>
   <param name="robot/name" value="SarahBella" type="str"/>
@@ -7,12 +7,8 @@
   <param name="robot/application" value="teleop" type="str"/>
   <param name="robot/platform" value="RaspberryPi" type="str"/>
   <param name="robot/behavior" value="joystick" type="str"/>
-  <include file="$(find turtlebot3_bringup)/launch/turtlebot3_robot.launch" />
   <!-- Make a slower lidar feed available; only required if we use android client -->
   <node pkg="topic_tools" type="throttle" name="scan_throttle"
         args="messages /scan 1" output="log"/>
   <node pkg="teleop_service" type="monitor_obstacle_distance.py" name="sb_publish_obstacle_distance" output="log" />
-  <node pkg="teleop_service" type="behavior_command.py" name="sb_serve_behavior_command" output="log" />
-  <node pkg="teleop_service" type="twist_command.py" name="sb_serve_twist_command" output="log" />
-/>
 </launch>

@@ -1,5 +1,4 @@
-<!-- The "teleop" application relies on builtin functions except for our TwistCommand service.
-  Does not start the LIDAR.
+<!-- The "obstacle" application is simply a test of obstacle detection using LIDAR.
 -->
 <launch>
   <param name="robot/name" value="SarahBella" type="str"/>

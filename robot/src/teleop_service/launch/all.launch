@@ -1,5 +1,6 @@
 <!-- The "all" launcher starts all applications controlled by the "BehaviorService":
      come, follow, joystick, park. Initially all are turned off.
+	It also starts LIDAR.
 -->
 <launch>
   <param name="robot/name" value="SarahBella" type="str"/>
@@ -8,7 +9,7 @@
   <param name="robot/platform" value="RaspberryPi" type="str"/>
   <param name="robot/behavior" value="none" type="str"/>
   <include file="$(find turtlebot3_bringup)/launch/turtlebot3_robot.launch" />
-  <include file="$(find teleop_service)/launch/teleop.launch" />
+  <include file="$(find teleop_service)/launch/joystick.launch" />
   <include file="$(find follower)/launch/follower.launch" />
 />
 </launch>
