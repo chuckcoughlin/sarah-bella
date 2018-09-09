@@ -19,7 +19,7 @@ from math import tanh
 
 class follower:
 	def __init__(self, followDistance=2, stopDistance=1, max_speed=0.6, min_speed=0.01 ):
-		self.stopped = False
+		self.stopped = True
 		# Create a Twist message, and fill in the fields.  
 		self.command = Twist()
 		self.command.linear.x = 0.0
@@ -44,6 +44,7 @@ class follower:
 		self.msg = TeleopStatus()
 		self.state=""
 		self.reportState("Follower: initialized.")
+		self.behavior = ""
 
 	# Follow the closest object until the reset parameter becomes false.
 	def start(self):
@@ -55,15 +56,16 @@ class follower:
 		self.reportState("Follower: started ...");
 
 	def stop(self):
-		self.sub.unregister()
-		self.stopped = True
-		self.reportState("Follower: stopped.")
+		if not self.stopped:
+			self.sub.unregister()
+			self.stopped = True
+			self.reportState("Follower: stopped.")
 
 	def laser_callback(self, scan):
+		global behaviorName
 		if rospy.is_shutdown() or self.stopped:
 			return
-		reset = rospy.get_param("robot/reset")
-		if reset:
+		if not behaviorName=="follow":
 			self.stop()
 		else:
 			# Proceed with calculations
@@ -127,6 +129,8 @@ class follower:
 # The overall behavior has changed. Start the folower if state is "follow".
 def getBehavior(behavior):
 	global follower
+	global behaviorName
+	behaviorName = behavior.state
 	if behavior.state=="follow":
 		follower.start()
 	else:
@@ -136,6 +140,7 @@ if __name__ == "__main__":
 	# Initialize the node
 	rospy.init_node('sb_follow', log_level=rospy.INFO, anonymous=True)
 	follower = follower()
+	behaviorName = "follow"
 	rospy.Subscriber("/sb_behavior",Behavior,getBehavior)
 	
  	rospy.spin()
