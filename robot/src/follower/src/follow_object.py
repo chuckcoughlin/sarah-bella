@@ -49,11 +49,11 @@ class follower:
 	# Follow the closest object until the reset parameter becomes false.
 	def start(self):
 		self.stopped = False
+		self.reportState("Follower: started ...");
 		# Subscribe to the laser data
 		self.sub = rospy.Subscriber('/scan', LaserScan, self.laser_callback)
 		# Publish movement commands to the turtlebot's base
 		self.pub = rospy.Publisher('/cmd_vel', Twist,queue_size=1)
-		self.reportState("Follower: started ...");
 
 	def stop(self):
 		if not self.stopped:
@@ -71,7 +71,6 @@ class follower:
 			# Proceed with calculations
 			# Finds the closest thing
 			self.getPosition(scan)
-			rospy.loginfo('position: {0}'.format(self.position))
 
 			#if there's something within self.followDist from us, start following.
 			if (self.closest < self.followDist):
@@ -118,6 +117,8 @@ class follower:
 		else:
 			self.closest = min(depths)
 			self.position = fullDepthsArray.index(self.closest)
+
+		rospy.loginfo('Follower.position: {0},target {1}'.format(self.position,self.closest))
 
 	def reportState(self,status):
 		if self.state!=status:
