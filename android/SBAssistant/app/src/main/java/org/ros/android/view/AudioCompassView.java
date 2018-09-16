@@ -28,6 +28,7 @@ import android.widget.TextView;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import audio_locator.AudioLocation;
 import audio_locator.SignalAudio;
 import chuckcoughlin.sb.assistant.R;
 
@@ -61,6 +62,7 @@ public class AudioCompassView extends RelativeLayout implements AnimationListene
      * fading the yellow event signal to background.
      */
     private static final long FADE_TO_BLACK_DELAY = 200L;
+    private static final float WEDGE_SIZE = 15.f;  // Degrees
     // ============================================================================================
     private static final float FLOAT_EPSILON = 0.001f;   // For float equality
     private static final int INVALID_POINTER_ID = -1;
@@ -84,19 +86,6 @@ public class AudioCompassView extends RelativeLayout implements AnimationListene
      */
     private TextView magnitudeText;
     private RelativeLayout mainLayout; // Parent layout containing all elements of the compass.
-    /**
-     * normalizedMagnitude This is the distance between the center divet and the
-     * point of contact normalized between 0 and 1. The linear velocity is based
-     * on this.
-     */
-    private float normalizedMagnitude;
-    /**
-     * normalizingMultiplier Used to convert any distance from pixels to a
-     * normalized value between 0 and 1. 0 is the center of widget and 1 is the
-     * normalized distance to the {@link #outerBand} from the center of the
-     * widget.
-     */
-    private float normalizingMultiplier;
     /**
      * orientationWidget 4 long tacks on the major axes and 20 small tacks off of
      * the major axes at 15 degree increments. These fade in and fade out to
@@ -169,8 +158,8 @@ public class AudioCompassView extends RelativeLayout implements AnimationListene
             tack.setVisibility(INVISIBLE);
         }
         // Hide the intensity circle.
-        animateIntensityCircle(0);
-        animateOrientationWidgets();
+        animateIntensityCircle(0.0f);
+        animateOrientationWidgets(0.0);
         for (ImageView tack : orientationWidget) {
             tack.setVisibility(INVISIBLE);
         }
@@ -206,11 +195,16 @@ public class AudioCompassView extends RelativeLayout implements AnimationListene
     /**
      * We've received an audio locator message. Annotate the appropriate wedge.
      */
-    public void onAudioMessage(SignalAudio msg) {
+    public void onAudioMessage(AudioLocation msg) {
+        boolean forward = (msg.getIntensityFront()>msg.getIntensityBack());
+        float magnitude = (float)msg.getIntensityBack();
+        if( forward ) magnitude = (float)msg.getIntensityFront();
+        float phase = (float)(msg.getPhase()*360./(2.*Math.PI));   // In degrees
+        if( !forward ) phase = phase+180.f;
         // Update the size and location (scale and rotation) of various elements.
-        animateIntensityCircle();
-        animateOrientationWidgets();
-        updateMagnitudeText();
+        animateIntensityCircle(magnitude);
+        animateOrientationWidgets(phase);
+        updateMagnitudeText(magnitude,phase);
         // Restore the orientation tacks.
         for (ImageView tack : orientationWidget) {
             tack.setVisibility(VISIBLE);
@@ -225,11 +219,10 @@ public class AudioCompassView extends RelativeLayout implements AnimationListene
      * {@link #animateIntensityCircle(float)} this method registers an animation
      * listener.
      *
-     * @param endScale The scale factor that must be attained at the end of the
-     *                 animation.
-     * @param duration The duration in milliseconds the animation should take.
+     * @param endScale The radius that must be attained at the end of the amimation
      */
-    private void animateIntensityCircle(float endScale, long duration) {
+    private void animateIntensityCircle(float endScale) {
+        long duration = FADE_TO_BLACK_DELAY;
         AnimationSet intensityCircleAnimation = new AnimationSet(true);
         intensityCircleAnimation.setInterpolator(new LinearInterpolator());
         intensityCircleAnimation.setFillAfter(true);
@@ -255,15 +248,16 @@ public class AudioCompassView extends RelativeLayout implements AnimationListene
 
     /**
      * Fade in and fade out the {@link #orientationWidget}s. The widget best
-     * aligned with the {@link #contactTheta} will be the brightest and the
+     * aligned with the phase will be the brightest and the
      * successive ones within {@link #ORIENTATION_TACK_FADE_RANGE} the will be
      * faded out proportionally. The tacks out of that range will have alpha set
      * to 0.
+     * @param phase  direction in degrees
      */
-    private void animateOrientationWidgets() {
+    private void animateOrientationWidgets(double phase) {
         float deltaTheta;
         for (int i = 0; i < orientationWidget.length; i++) {
-            deltaTheta = differenceBetweenAngles(i * 15, contactTheta);
+            deltaTheta = differenceBetweenAngles(i * 15, (float)phase);
             if (deltaTheta < ORIENTATION_TACK_FADE_RANGE) {
                 orientationWidget[i].setAlpha(1.0f - deltaTheta / ORIENTATION_TACK_FADE_RANGE);
             } else {
@@ -272,101 +266,31 @@ public class AudioCompassView extends RelativeLayout implements AnimationListene
         }
     }
 
-
     /**
-     * Updates the virtual joystick layout based on the location of the contact.
-     * Generates the velocity messages. Switches in and out of turn-in-place.
+     * From http://actionsnippet.com/?p=1451. Calculates the difference between 2
+     * angles. The result is always the minimum difference between 2 angles (0<
+     * result <= 360).
      *
-     * @param x The x coordinates of the contact relative to the parent container.
-     * @param y The y coordinates of the contact relative to the parent container.
+     * @param angle0 One of 2 angles used to calculate difference. The order of
+     *               arguments does not matter. Must be in degrees.
+     * @param angle1 One of 2 angles used to calculate difference. The order of
+     *               arguments does not matter. Must be in degrees.
+     * @return The difference between the 2 arguments in degrees.
      */
-    private void onContactMove(float x, float y) {
-        // Get the coordinates of the contact relative to the center of the main
-        // layout.
-        float thumbDivetX = x - joystickRadius;
-        float thumbDivetY = y - joystickRadius;
-        // Convert the coordinates from Cartesian to Polar.
-        contactTheta = (float) (Math.atan2(thumbDivetY, thumbDivetX) * 180 / Math.PI + 90);
-        contactRadius =
-                (float) Math.sqrt(thumbDivetX * thumbDivetX + thumbDivetY * thumbDivetY)
-                        * normalizingMultiplier;
-        // Calculate the distance (0 to 1) from the center divet to the contact
-        // point.
-        normalizedMagnitude = (contactRadius - deadZoneRatio) / (1 - deadZoneRatio);
-        // Perform bounds checking.
-        if (contactRadius >= 1f) {
-            // Since the contact is outside the outer ring, reset the coordinate for
-            // the thumb divet to the on the outer ring.
-            thumbDivetX /= contactRadius;
-            thumbDivetY /= contactRadius;
-            // The magnitude should not exceed 1.
-            normalizedMagnitude = 1f;
-            contactRadius = 1f;
-        } else if (contactRadius < deadZoneRatio) {
-            // Since the contact is inside the dead zone snap the thumb divet to the
-            // dead zone. It should stay there till the contact gets outside the
-            // deadzone area.
-            thumbDivetX = 0;
-            thumbDivetY = 0;
-            // Prevent normalizedMagnitude going negative inside the deadzone.
-            normalizedMagnitude = 0f;
-        }
-
-        // Magnetize!
-        // If the contact is not snapped to the x axis.
-        if (!magnetizedXAxis) {
-            // Check if the contact should be snapped to either axis.
-            if ((contactTheta + 360) % 90 < magnetTheta) {
-                // If the current angle is within MAGNET_THETA degrees + 0, 90, 180, or
-                // 270 then subtract the additional degrees so that the current theta is
-                // 0, 90, 180, or 270.
-                contactTheta -= ((contactTheta + 360) % 90);
-            } else if ((contactTheta + 360) % 90 > (90 - magnetTheta)) {
-                // If the current angle is within MAGNET_THETA degrees - 0, 90, 180, or
-                // 270 then add the additional degrees so that the current theta is 0,
-                // 90, 180, or 270.
-                contactTheta += (90 - ((contactTheta + 360) % 90));
-            }
-            // Indicate that the contact has been snapped to the x-axis.
-            if (floatCompare(contactTheta, 90) || floatCompare(contactTheta, 270)) {
-                magnetizedXAxis = true;
-            }
-        } else {
-            // Use a wider range to keep the contact snapped in.
-            if (differenceBetweenAngles((contactTheta + 360) % 360, 90) < POST_LOCK_MAGNET_THETA) {
-                contactTheta = 90;
-            } else if (differenceBetweenAngles((contactTheta + 360) % 360, 270) < POST_LOCK_MAGNET_THETA) {
-                contactTheta = 270;
-            }
-            // Indicate that the contact is not snapped to the x-axis.
-            else {
-                magnetizedXAxis = false;
-            }
-        }
-
-        // Update the size and location (scale and rotation) of various elements.
-        animateIntensityCircle(contactRadius);
-        animateOrientationWidgets();
-        updateThumbDivet(thumbDivetX, thumbDivetY);
-        updateMagnitudeText();
-        // Command the velocities. There are only two degrees of freedom. We choose velocity in x and rotation.
-        // (The original called these holonomic/non-holonomic, but I disagree).
-        controller.commandVelocity(normalizedMagnitude * Math.cos(contactTheta * Math.PI / 180.0),
-                normalizedMagnitude * Math.sin(contactTheta * Math.PI / 180.0));
-
-        // Check if the turn-in-place mode needs to be activated/deactivated.
-        updateTurnInPlaceMode();
+    private float differenceBetweenAngles(float angle0, float angle1) {
+        return Math.abs((angle0 + 180 - angle1) % 360 - 180);
     }
 
 
     /**
      * Update the linear velocity text view.
      */
-    private void updateMagnitudeText() {
+    private void updateMagnitudeText(double magnitude,double phase) {
+        float normalizedMagnitude = 0f;
         magnitudeText.setText(String.valueOf((int) (normalizedMagnitude * 100)) + "%");
-        magnitudeText.setTranslationX((float) (parentSize / 4 * Math.cos((90 + contactTheta)
+        magnitudeText.setTranslationX((float) (parentSize / 4 * Math.cos((90 + phase)
                     * Math.PI / 180.0)));
-        magnitudeText.setTranslationY((float) (parentSize / 4 * Math.sin((90 + contactTheta)
+        magnitudeText.setTranslationY((float) (parentSize / 4 * Math.sin((90 + phase)
                     * Math.PI / 180.0)));
     }
 
@@ -394,8 +318,8 @@ public class AudioCompassView extends RelativeLayout implements AnimationListene
 
     @Override
     public void onAnimationEnd(Animation animation) {
-        normalizedMagnitude = 0f;
-        updateMagnitudeText();
+        float normalizedMagnitude = 0f;
+        updateMagnitudeText(normalizedMagnitude,0.0f);
     }
 
     @Override
