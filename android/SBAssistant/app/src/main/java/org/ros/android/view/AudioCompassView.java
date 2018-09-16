@@ -29,7 +29,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import audio_locator.AudioLocation;
-import audio_locator.SignalAudio;
 import chuckcoughlin.sb.assistant.R;
 
 
@@ -128,34 +127,41 @@ public class AudioCompassView extends RelativeLayout implements AnimationListene
         intensity = (ImageView) findViewById(R.id.intensity);
         orientationWidget = new ImageView[24];
         orientationWidget[0] = (ImageView) findViewById(R.id.wedge_0_degrees);
-        orientationWidget[1] = (ImageView) findViewById(R.id.widget_15_degrees);
-        orientationWidget[2] = (ImageView) findViewById(R.id.widget_30_degrees);
-        orientationWidget[3] = (ImageView) findViewById(R.id.widget_45_degrees);
-        orientationWidget[4] = (ImageView) findViewById(R.id.widget_60_degrees);
-        orientationWidget[5] = (ImageView) findViewById(R.id.widget_75_degrees);
-        orientationWidget[6] = (ImageView) findViewById(R.id.widget_90_degrees);
-        orientationWidget[7] = (ImageView) findViewById(R.id.widget_105_degrees);
-        orientationWidget[8] = (ImageView) findViewById(R.id.widget_120_degrees);
-        orientationWidget[9] = (ImageView) findViewById(R.id.widget_135_degrees);
-        orientationWidget[10] = (ImageView) findViewById(R.id.widget_150_degrees);
-        orientationWidget[11] = (ImageView) findViewById(R.id.widget_165_degrees);
-        orientationWidget[12] = (ImageView) findViewById(R.id.widget_180_degrees);
-        orientationWidget[13] = (ImageView) findViewById(R.id.widget_195_degrees);
-        orientationWidget[14] = (ImageView) findViewById(R.id.widget_210_degrees);
-        orientationWidget[15] = (ImageView) findViewById(R.id.widget_225_degrees);
-        orientationWidget[16] = (ImageView) findViewById(R.id.widget_240_degrees);
-        orientationWidget[17] = (ImageView) findViewById(R.id.widget_255_degrees);
-        orientationWidget[18] = (ImageView) findViewById(R.id.widget_270_degrees);
-        orientationWidget[19] = (ImageView) findViewById(R.id.widget_285_degrees);
-        orientationWidget[20] = (ImageView) findViewById(R.id.widget_300_degrees);
-        orientationWidget[21] = (ImageView) findViewById(R.id.widget_315_degrees);
-        orientationWidget[22] = (ImageView) findViewById(R.id.widget_330_degrees);
-        orientationWidget[23] = (ImageView) findViewById(R.id.widget_345_degrees);
+        orientationWidget[1] = (ImageView) findViewById(R.id.wedge_15_degrees);
+        orientationWidget[2] = (ImageView) findViewById(R.id.wedge_30_degrees);
+        orientationWidget[3] = (ImageView) findViewById(R.id.wedge_45_degrees);
+        orientationWidget[4] = (ImageView) findViewById(R.id.wedge_60_degrees);
+        orientationWidget[5] = (ImageView) findViewById(R.id.wedge_75_degrees);
+        orientationWidget[6] = (ImageView) findViewById(R.id.wedge_90_degrees);
+        orientationWidget[7] = (ImageView) findViewById(R.id.wedge_105_degrees);
+        orientationWidget[8] = (ImageView) findViewById(R.id.wedge_120_degrees);
+        orientationWidget[9] = (ImageView) findViewById(R.id.wedge_135_degrees);
+        orientationWidget[10] = (ImageView) findViewById(R.id.wedge_150_degrees);
+        orientationWidget[11] = (ImageView) findViewById(R.id.wedge_165_degrees);
+        orientationWidget[12] = (ImageView) findViewById(R.id.wedge_180_degrees);
+        orientationWidget[13] = (ImageView) findViewById(R.id.wedge_195_degrees);
+        orientationWidget[14] = (ImageView) findViewById(R.id.wedge_210_degrees);
+        orientationWidget[15] = (ImageView) findViewById(R.id.wedge_225_degrees);
+        orientationWidget[16] = (ImageView) findViewById(R.id.wedge_240_degrees);
+        orientationWidget[17] = (ImageView) findViewById(R.id.wedge_255_degrees);
+        orientationWidget[18] = (ImageView) findViewById(R.id.wedge_270_degrees);
+        orientationWidget[19] = (ImageView) findViewById(R.id.wedge_285_degrees);
+        orientationWidget[20] = (ImageView) findViewById(R.id.wedge_300_degrees);
+        orientationWidget[21] = (ImageView) findViewById(R.id.wedge_315_degrees);
+        orientationWidget[22] = (ImageView) findViewById(R.id.wedge_330_degrees);
+        orientationWidget[23] = (ImageView) findViewById(R.id.wedge_345_degrees);
 
         // Initially hide all the widgets.
+        int index=0;
         for (ImageView tack : orientationWidget) {
-            tack.setAlpha(0.0f);
-            tack.setVisibility(INVISIBLE);
+            if( tack!=null) {
+                tack.setAlpha(0.0f);
+                tack.setVisibility(INVISIBLE);
+            }
+            else {
+                Log.i(CLSS,String.format("initCompass: Wedge %d is null",index));
+            }
+            index = index+1;
         }
         // Hide the intensity circle.
         animateIntensityCircle(0.0f);
