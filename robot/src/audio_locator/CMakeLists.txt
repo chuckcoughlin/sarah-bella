@@ -13,6 +13,7 @@ find_package(catkin
 add_message_files(
   DIRECTORY msg
   FILES
+    AudioLocation.msg
     StereoWaveform.msg
 )
 

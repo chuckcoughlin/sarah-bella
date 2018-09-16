@@ -16,9 +16,10 @@ from geometry_msgs.msg import Twist
 from teleop_service.msg import Behavior,TeleopStatus
 from math import tanh
 
+INFINITY = 100000.
 
 class follower:
-	def __init__(self, followDistance=2, stopDistance=1, max_speed=0.6, min_speed=0.01 ):
+	def __init__(self):
 		self.stopped = True
 		# Create a Twist message, and fill in the fields.  
 		self.command = Twist()
@@ -30,15 +31,14 @@ class follower:
 		self.command.angular.z = 0.0
 
 		# How close should we get to things, and what are our speeds?
-		self.stopDistance = stopDistance
-		self.max_speed = max_speed
-		self.min_speed = min_speed
-		#at what distance do we start following something/someone?
-		self.followDist = followDistance
+		self.stopDistance = float(rospy.get_param("/follow/stop_distance",0.3))
+		self.followDistance = float(rospy.get_param("/follow/follow_distance",0.5))
+		self.maxSpeed = float(rospy.get_param("/follow/max_speed",0.5))
+		self.minSpeed = float(rospy.get_param("/follow/min_speed",0.01))
 
-		# Distance to the closest object, and its position in array, respectively.
-		self.closest = 0
-		self.position = 0
+		# Distance to the closest object, and its angular direction, respectively
+		self.targetDistance = INFINITY
+		self.targetDirection = 0
 		# Publish status so that controller can keep track of state
 		self.spub = rospy.Publisher('sb_teleop_status',TeleopStatus,queue_size=1)
 		self.msg = TeleopStatus()
@@ -47,13 +47,14 @@ class follower:
 		self.behavior = ""
 
 	# Follow the closest object until the reset parameter becomes false.
+	# NOTE: When publishing, change sign.
 	def start(self):
 		self.stopped = False
+		self.reportState("Follower: started ...");
 		# Subscribe to the laser data
 		self.sub = rospy.Subscriber('/scan', LaserScan, self.laser_callback)
 		# Publish movement commands to the turtlebot's base
 		self.pub = rospy.Publisher('/cmd_vel', Twist,queue_size=1)
-		self.reportState("Follower: started ...");
 
 	def stop(self):
 		if not self.stopped:
@@ -69,30 +70,31 @@ class follower:
 			self.stop()
 		else:
 			# Proceed with calculations
-			# Finds the closest thing
-			self.getPosition(scan)
-			rospy.loginfo('position: {0}'.format(self.position))
+			# Finds the closest object (the target)
+			self.calculateTarget(scan)
 
 			#if there's something within self.followDist from us, start following.
-			if (self.closest < self.followDist):
+			if (self.targetDistance < self.followDistance):
 				self.follow()
 			else:
 				self.doNothing() 
 
 			# Add a log message, so that we know what's going on
-			rospy.loginfo('Follower: Distance: {0}, speed: {1}, angular: {2}'.format(self.closest, \
-				self.command.linear.x, self.command.angular.z))
+			rospy.loginfo('Follower: Target:{0},{1}, command:{2},{3}'.format(self.targetDistance, \
+				self.targetDirection,self.command.linear.x, self.command.angular.z))
 			self.pub.publish(self.command)
 
-	#Starts following the nearest object.
+	# Follow the nearest object.
+	# Note that negative is forward.
+	# Raw angles are 0-2*PI. 0 is straight ahead.
 	def follow(self):
 		self.reportState("following")
-		self.command.linear.x = tanh(5 * (self.closest - self.stopDistance)) * self.max_speed
+		self.command.linear.x = -tanh(5 * (self.stopDistance - self.targetDistance)) * self.maxSpeed
 		#turn faster the further we're turned from our intended object.
-		self.command.angular.z = ((self.position-320.0)/320.0)
+		self.command.angular.z = -self.targetDirection
 		
 		#if we're going slower than our min_speed, just stop.
-		if abs(self.command.linear.x) < self.min_speed:
+		if abs(self.command.linear.x) < self.minSpeed:
  			self.command.linear.x = 0.0  
 
 	# Stop moving.
@@ -101,23 +103,19 @@ class follower:
 		self.command.angular.z = 0.0
 		self.reportState("waiting")
 
-	def getPosition(self, scan):
-		# Build a depths array to rid ourselves of any nan data inherent in scan.ranges.
-		depths = []
+    # Determine the direction of the closest object in radians
+	def calculateTarget(self, scan):
+		# Only consider distances less than our follow distance
+		# Throw readings of zero as bogus
+		self.targetDistance = INFINITY
+		delta = scan.angle_increment
+		angle = scan.angle_max+delta
 		for dist in scan.ranges:
-			if dist>0.:    # We get bogus readings of zero
-				depths.append(dist)
-		#scan.ranges is a tuple, and we want an array.
-		fullDepthsArray = scan.ranges[:]
+			angle = angle - delta
+			if dist>0. and dist<self.followDistance and dist<self.targetDistance: 
+				self.targetDistance = dist
+				self.targetDirection = angle
 
-		#If depths is empty that means we're way too close to an object to get a reading.
-		#thus establish our distance/position to nearest object as "0".
-		if len(depths) == 0:
-			self.closest = 0
-			self.position = 0
-		else:
-			self.closest = min(depths)
-			self.position = fullDepthsArray.index(self.closest)
 
 	def reportState(self,status):
 		if self.state!=status:

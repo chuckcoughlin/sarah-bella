@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>audio_locator</name>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>Turtlebot3 move toward source of audio signal.</description>
 
   <maintainer email="chuck_coughlin@comcast.net">chuckc</maintainer>
