@@ -43,6 +43,7 @@ import sensor_msgs.LaserScan;
 public class LaserScanLayer extends AbstractLayer  {
     private static final String CLSS = "LaserScanLayer";
     public final static String LASERSCAN_MODE_INTENSITY = "INTENSITY";
+    public final static String LASERSCAN_MODE_LUMINOSITY = "LUMINOSITY";
     public final static String LASERSCAN_MODE_RANGE     = "RANGE";
     private static final Color BORDER_COLOR = Color.fromHexAndAlpha("303f9f", 0.9f);
     private static final Color FREE_SPACE_COLOR = Color.fromHexAndAlpha("377dfa", 0.1f);
@@ -52,6 +53,7 @@ public class LaserScanLayer extends AbstractLayer  {
     //private static final int LASER_SCAN_STRIDE = 15;    // Show every 15th data point
     private static final int LASER_SCAN_STRIDE = 1;     // Show all data points
     private static final float LASER_INTENSITY_SCALE_FACTOR = 1000f;
+    private static final float LASER_LUMINOSITY_SCALE_FACTOR = 4000f;
 
     private GraphName frame;
     private LaserScan message = null;    // Save prior message
@@ -113,6 +115,7 @@ public class LaserScanLayer extends AbstractLayer  {
         int vertexCount = 0;
         float[] measurements = laserScan.getRanges();
         if( mode.equalsIgnoreCase(LASERSCAN_MODE_INTENSITY)) measurements = laserScan.getIntensities();
+        else if( mode.equalsIgnoreCase(LASERSCAN_MODE_LUMINOSITY)) measurements = getLuminosities(laserScan,stride);
         int size = ((measurements.length / stride) + 2) * 3;
         if (vertexBackBuffer == null || vertexBackBuffer.capacity() < size) {
             vertexBackBuffer = Vertices.allocateBuffer(size);
@@ -140,6 +143,7 @@ public class LaserScanLayer extends AbstractLayer  {
         for (int i = 0; i < measurements.length; i += stride) {
             float measurement = measurements[i];
             if( mode.equalsIgnoreCase(LASERSCAN_MODE_INTENSITY)) measurement = measurement/LASER_INTENSITY_SCALE_FACTOR;  // 1000
+            else if( mode.equalsIgnoreCase(LASERSCAN_MODE_LUMINOSITY)) measurement = measurement/LASER_LUMINOSITY_SCALE_FACTOR; // 4000
             // Ignore ranges that are outside the defined range. We are not overly
             // concerned about the accuracy of the visualization and this is makes it
             // look a lot nicer.
@@ -165,5 +169,21 @@ public class LaserScanLayer extends AbstractLayer  {
     @Override
     public GraphName getFrame() {
         return frame;
+    }
+
+    /**
+     * Compute luminosity as intensity*range*range
+     */
+    private float[] getLuminosities(LaserScan msg,int stride) {
+        int count = msg.getRanges().length;
+        float[] luminosities = new float[count];
+        float[] ranges = msg.getRanges();
+        float[] intensities = msg.getIntensities();
+
+        // Calculate the luminosities
+        for (int i = 0; i < count; i += stride) {
+            luminosities[i] = intensities[i]*ranges[i]*ranges[i];
+        }
+        return luminosities;
     }
 }

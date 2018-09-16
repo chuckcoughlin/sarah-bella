@@ -16,6 +16,7 @@
     <string name="fragmentCoverLabel">Turtlebot3 \"Sarah-Bella\"</string>
     <string name="fragmentDiscoveryLabel">Robot Discovery</string>
     <string name="fragmentLidarIntensityLabel">Lidar - Intensity</string>
+    <string name="fragmentLidarLuminosityLabel">Lidar - Luminosity</string>
     <string name="fragmentLidarRangeLabel">Lidar - Range</string>
     <string name="fragmentLogsLabel">Log Messages</string>
     <string name="fragmentSettingsLabel">Configuration Settings</string>
@@ -33,6 +34,7 @@
     <string name="discoveryViewPopupTitle">Robot Attributes</string>
     <!-- Strings for Lidar Tab -->
     <string name="lidarIntensity">Intensity</string>
+    <string name="lidarLuminosity">Luminosity</string>
     <string name="lidarRange">Range</string>
     <!-- Strings for Log tab-->
     <string name="logButtonClear">Clear</string>

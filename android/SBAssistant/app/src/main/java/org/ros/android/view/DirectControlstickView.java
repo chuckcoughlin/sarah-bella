@@ -94,7 +94,7 @@ public class DirectControlstickView extends RelativeLayout implements AnimationL
      * CONTACT_THETA The orientation of the virtual joystick in degrees after the current touch.
      * For this class the value is always zero.
      */
-    private float contactTheta;
+    private float contactTheta = 0f;
     /**
      * contactUpLocation The location of the primary contact when it is lifted off
      * of the screen.

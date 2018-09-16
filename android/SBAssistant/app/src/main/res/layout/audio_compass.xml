@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Could not find a way to get square dimensions other than setting size explicitly -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="600dp" android:layout_height="600dp"
+    android:id="@+id/audio_compass_layout">
+
+    <!-- The black background on which all the other images will be displayed. -->
+    <ImageView android:id="@+id/black_background" android:layout_width="match_parent"
+        android:layout_height="match_parent" android:src="@drawable/black_background"
+        android:layout_centerInParent="true" />
+
+    <!-- Outer band  -->
+    <ImageView android:id="@+id/outer_band" android:layout_width="match_parent"
+        android:layout_height="match_parent" android:src="@drawable/grey_ring_notched"
+        android:layout_centerInParent="true"></ImageView>
+
+    <!-- The intensity circle representing current magnitude. -->
+    <ImageView android:id="@+id/intensity" android:src="@drawable/intensity"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_centerInParent="true" android:antialias="true"></ImageView>
+
+    <!-- Magnitude text display -->
+    <TextView android:id="@+id/magnitude" android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:layout_centerInParent="true"
+        android:textSize="15px" android:text="0%" />
+
+    <!-- 0 degree marker -->
+    <ImageView android:id="@+id/wedge_0_degrees" android:src="@drawable/large_d_widget_3"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_centerInParent="true" android:antialias="true"></ImageView>
+
+    <!-- 15 degree marker -->
+    <ImageView android:id="@+id/wedge_15_degrees" android:src="@drawable/small_d_widget_3"
+        android:layout_width="fill_parent" android:layout_height="fill_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="15.0" />
+
+    <!-- 30 degree marker -->
+    <ImageView android:id="@+id/wedge_30_degrees" android:src="@drawable/small_d_widget_3"
+        android:layout_width="fill_parent" android:layout_height="fill_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="30.0" />
+
+    <!-- 45 degree marker -->
+    <ImageView android:id="@+id/wedge_45_degrees" android:src="@drawable/small_d_widget_3"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="45.0" />
+
+    <!-- 60 degree marker -->
+    <ImageView android:id="@+id/wedge_60_degrees" android:src="@drawable/small_d_widget_3"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="60.0" />
+
+    <!-- 75 degree marker -->
+    <ImageView android:id="@+id/wedge_75_degrees" android:src="@drawable/small_d_widget_3"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="75.0" />
+
+    <!-- 90 degree marker -->
+    <ImageView android:id="@+id/wedge_90_degrees" android:src="@drawable/large_d_widget_3"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="90.0" />
+
+    <!-- 105 degree marker -->
+    <ImageView android:id="@+id/widget_105_degrees" android:src="@drawable/small_d_widget_3"
+        android:layout_width="fill_parent" android:layout_height="fill_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="105.0" />
+
+    <!-- 120 degree marker -->
+    <ImageView android:id="@+id/wedge_120_degrees" android:src="@drawable/small_d_widget_3"
+        android:layout_width="fill_parent" android:layout_height="fill_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="120.0" />
+
+    <!-- 135 degree marker -->
+    <ImageView android:id="@+id/wedge_135_degrees" android:src="@drawable/small_d_widget_3"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="135.0" />
+
+    <!-- 150 degree marker -->
+    <ImageView android:id="@+id/widget_150_degrees" android:src="@drawable/small_d_widget_3"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="150.0" />
+
+    <!-- 165 degree marker -->
+    <ImageView android:id="@+id/wedge_165_degrees" android:src="@drawable/small_d_widget_3"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="165.0" />
+
+    <!-- 180 degree marker -->
+    <ImageView android:id="@+id/widget_180_degrees" android:src="@drawable/large_d_widget_3"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="180.0" />
+
+    <!-- 195 degree marker -->
+    <ImageView android:id="@+id/wedge_195_degrees" android:src="@drawable/small_d_widget_3"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="195.0" />
+
+    <!-- 210 degree marker -->
+    <ImageView android:id="@+id/wedge_210_degrees" android:src="@drawable/small_d_widget_3"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="210.0" />
+
+    <!-- 225 degree marker -->
+    <ImageView android:id="@+id/widget_225_degrees" android:src="@drawable/small_d_widget_3"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="225.0" />
+
+    <!-- 240 degree marker -->
+    <ImageView android:id="@+id/wedge_240_degrees" android:src="@drawable/small_d_widget_3"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="240.0" />
+
+    <!-- 255 degree marker -->
+    <ImageView android:id="@+id/wedge_255_degrees" android:src="@drawable/small_d_widget_3"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="255.0" />
+
+    <!-- 270 degree marker -->
+    <ImageView android:id="@+id/wedge_270_degrees" android:src="@drawable/large_d_widget_3"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="270.0" />
+
+    <!-- 285 degree marker -->
+    <ImageView android:id="@+id/wedge_285_degrees" android:src="@drawable/small_d_widget_3"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="285.0" />
+
+    <!-- 300 degree marker -->
+    <ImageView android:id="@+id/wedge_300_degrees" android:src="@drawable/small_d_widget_3"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="300.0" />
+
+    <!-- 315 degree marker -->
+    <ImageView android:id="@+id/wedge_315_degrees" android:src="@drawable/small_d_widget_3"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="315.0" />
+
+    <!-- 330 degree marker -->
+    <ImageView android:id="@+id/wedge_330_degrees" android:src="@drawable/small_d_widget_3"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="330.0" />
+
+    <!-- 345 degree marker -->
+    <ImageView android:id="@+id/wedge_345_degrees" android:src="@drawable/small_d_widget_3"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_centerInParent="true" android:antialias="true"
+        android:rotation="345.0" />
+
+    <!-- The center button is an inert knob. -->
+    <ImageView android:id="@+id/center_knob" android:layout_height="wrap_content"
+        android:layout_width="wrap_content" android:src="@drawable/center_widget"
+        android:layout_centerInParent="true"></ImageView>
+
+    <!-- Axis -->
+    <ImageView android:id="@+id/horizontal_axis" android:src="@drawable/horizontal_bar"
+        android:layout_centerInParent="true" android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:antialias="true" />
+
+</RelativeLayout>

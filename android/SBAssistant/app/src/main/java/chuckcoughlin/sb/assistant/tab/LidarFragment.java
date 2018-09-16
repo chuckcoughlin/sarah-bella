@@ -176,6 +176,10 @@ public class LidarFragment extends BasicAssistantFragment implements SBApplicati
                     layer.setMode(LaserScanLayer.LASERSCAN_MODE_INTENSITY);
                     label.setText(R.string.fragmentLidarIntensityLabel);
                     break;
+                case R.id.luminosity:
+                layer.setMode(LaserScanLayer.LASERSCAN_MODE_LUMINOSITY);
+                label.setText(R.string.fragmentLidarLuminosityLabel);
+                break;
                 default:
                     Log.i(CLSS, String.format("setLayer: Unrecognized selection"));
             }

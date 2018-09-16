@@ -55,6 +55,12 @@
                 android:layout_height="wrap_content"
                 android:text="@string/lidarIntensity"
                 android:textSize="22sp" />
+            <RadioButton
+                android:id="@+id/luminosity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/lidarLuminosity"
+                android:textSize="22sp" />
         </RadioGroup>
     <org.ros.android.view.visualization.VisualizationView
         android:id="@+id/fragmentLidarImage"
