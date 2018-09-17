@@ -73,8 +73,8 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
     private static final String CLSS = "TeleopFragment";
 
     // ================================== Timing Constants ===========================
-    private static final double DELTA_ANGLE               = 0.02;  // Max normalized angle change in a step
-    private static final double DELTA_VELOCITY            = 0.02;  // Max normalized velocity change in a step
+    private static final double DELTA_ANGLE               = 0.2;  // Max normalized angle change in a step was 0.02
+    private static final double DELTA_VELOCITY            = 0.2;  // Max normalized velocity change in a step 0.02
     private static final double MIN_OBSTACLE_DISTANCE     = 0.40;
     private static final long OFFLINE_TIMER_PERIOD = 3000;  // ~msecs
     private static final long TIMER_PERIOD         = 100;   // ~msecs

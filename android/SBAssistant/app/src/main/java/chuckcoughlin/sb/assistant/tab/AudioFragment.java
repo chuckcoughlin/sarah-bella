@@ -57,6 +57,7 @@ public class AudioFragment extends BasicAssistantFragment implements SBApplicati
 
     @Override
     public void onDestroyView() {
+        super.onDestroyView();
         Log.i(CLSS, "onDestroyView");
         applicationShutdown(SBConstants.APPLICATION_TELEOP);
     }

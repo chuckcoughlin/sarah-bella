@@ -180,15 +180,11 @@ public class LogRecyclerAdapter extends RecyclerView.Adapter<LogViewHolder> impl
     }
     /**
      * It will always be the first log in the list
-     * that is removed.
+     * that is removed. We assume this originates from a button
+     * and is on the UI thread.
      */
     @Override
     public void notifyLogRemoved() {
-        Activity activity = (Activity)context;
-        activity.runOnUiThread(new Runnable() {
-            public void run() {
-                notifyItemRemoved(0);
-            }
-        });
+        notifyItemRemoved(0);
     }
 }
