@@ -172,7 +172,8 @@ public class LaserScanLayer extends AbstractLayer  {
     }
 
     /**
-     * Compute luminosity as intensity*range*range
+     * Compute luminosity as intensity*intensity*range. Don't know if this
+     * is actually luminosity, but we'll call it that.
      */
     private float[] getLuminosities(LaserScan msg,int stride) {
         int count = msg.getRanges().length;
@@ -182,7 +183,7 @@ public class LaserScanLayer extends AbstractLayer  {
 
         // Calculate the luminosities
         for (int i = 0; i < count; i += stride) {
-            luminosities[i] = intensities[i]*ranges[i]*ranges[i];
+            luminosities[i] = intensities[i]*intensities[i]*ranges[i];
         }
         return luminosities;
     }
