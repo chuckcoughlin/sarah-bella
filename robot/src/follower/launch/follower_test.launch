@@ -10,9 +10,9 @@
   <param name="robot/behavior" value="follow" type="str"/>
   <!-- These metrics influence the follower algorithm -->
   <param name="/follow/stop_distance" value="0.3" />
-  <param name="/follow/follow_distance" value="0.5" />
-  <param name="/follow/max_speed" value="0.5" />
-  <param name="/follow/min_speed" value="0.01" />
+  <param name="/follow/follow_distance" value="1.0" />
+  <param name="/follow/max_speed" value="0.2" />
+  <param name="/follow/min_speed" value="0.03" />
 
   <include file="$(find turtlebot3_bringup)/launch/turtlebot3_robot.launch"/>
   <node pkg="follower" type="follow_object.py" name="sb_follow" output="log">
