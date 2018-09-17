@@ -6,12 +6,14 @@
   <param name="robot/type" value="turtlebot3" type="str"/>
   <param name="robot/application" value="park" type="str"/>
   <param name="robot/platform" value="RaspberryPi" type="str"/>
+  <param name="robot/behavior" value="follow" type="str"/>
+  <!-- These metrics influence the automatic parking algorithm -->
+  <param name="/park/stop_distance" value="0.3" />
+  <param name="/park/follow_distance" value="1.0" />
+  <param name="/park/max_speed" value="0.2" />
+  <param name="/park/min_speed" value="0.03" />
 
-  <!-- Make a slower lidar feed available; only required if we use android client -->
-  <node pkg="topic_tools" type="throttle" name="scan_throttle"
-        args="messages /scan 0.2" output="log"/>
-  <node pkg="topic_tools" type="throttle" name="tf_throttle"
-        args="messages /tf 0.1" output="log"/>
+  <node pkg="automatic_parking" type="automatic_parking.py" name="sb_park" output="log">
+  </node>
 
-  <node name="automatic_parking" pkg="automatic_parking" type="automatic_parking.py" output="log"/>
 </launch>
