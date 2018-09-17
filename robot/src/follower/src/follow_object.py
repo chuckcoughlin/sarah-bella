@@ -19,7 +19,7 @@ from math import tanh
 INFINITY = 100000.
 IGNORE   = 0.20 # Ignore distances less than this
 
-class follower:
+class Follower:
 	def __init__(self):
 		self.stopped = True
 		# Create a Twist message, and fill in the fields.  
@@ -141,7 +141,7 @@ if __name__ == "__main__":
 	# Initialize the node
 	rospy.init_node('sb_follow', log_level=rospy.INFO, anonymous=True)
 	follower = follower()
-	behaviorName = "follow"
+	behaviorName = ""
 	rospy.Subscriber("/sb_behavior",Behavior,getBehavior)
 	
  	rospy.spin()

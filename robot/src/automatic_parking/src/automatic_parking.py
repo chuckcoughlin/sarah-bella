@@ -38,207 +38,268 @@ class ReturnValue(object):
         self.data_2 = data_2
         self.data_3 = data_3
 
-def scan_parking_spot():
-    stats = False
-    intensity_index = []
-    index_count = []
-    spot_angle_index = []
-    minimun_scan_angle = 30
-    maximun_scan_angle = 330
-    intensity_threshold = 100
+class Parker:
+    def __init__(self):
+		self.stopped = True
 
-    for i in range(360):
-        if i >= minimun_scan_angle and i < maximun_scan_angle:
-            spot_intensity = msg.intensities[i] ** 2 * msg.ranges[i] / 100000
-            if spot_intensity >= intensity_threshold:
-                intensity_index.append(i)
-                index_count.append(i)
-            else:
-                intensity_index.append(0)
-        else:
-            intensity_index.append(0)
+		# Create a Twist message, and fill in the fields.
+		self.twist = Twist()
+		self.odom = Odometry()
+		self.scan = LaserScan()
 
-    for i in index_count:
-        if abs(i - index_count[int(len(index_count) / 2)]) < 20:
-            spot_angle_index.append(i)
-            if len(spot_angle_index) > 10:
-                stats = True
-            else:
-                stats = False
-    center_angle = spot_angle_index[int(len(spot_angle_index) / 2)]
-    start_angle = spot_angle_index[2]
-    end_angle = spot_angle_index[-3]
-    spot_angle.return_val(stats, center_angle, start_angle, end_angle)
+		self.spot_angle = ReturnValue('spot_angle')
+		self.spot_point = ReturnValue('spot_point')
+		self.step = 0
+		# Publish status so that controller can keep track of state
+		self.spub = rospy.Publisher('sb_teleop_status',TeleopStatus,queue_size=1)
+		self.msg = TeleopStatus()
+		self.reportState("Parker: initialized.")
+		self.behavior = ""
+		self.rate = rospy.Rate(10)
 
-def quaternion():
-    quaternion = (
-        odom.pose.pose.orientation.x,
-        odom.pose.pose.orientation.y,
-        odom.pose.pose.orientation.z,
-        odom.pose.pose.orientation.w)
-    euler = euler_from_quaternion(quaternion)
-    yaw = euler[2]
-    return yaw
 
-def get_angle_distance(angle):
-    distance = msg.ranges[int(angle)]
-    if msg.ranges[int(angle)] is not None and distance is not 0:
-        angle = int(angle)
-        distance = distance
-    return angle, distance
+	def report(self,text):
+		self.msg.status = text
+        self.spub.publish(self.msg)
+    
+    # Start by finding the parking spot
+	def start(self):
+		self.stopped = False
+		self.report("Parker: auto park started ...");
+		# Publish movement commands to the turtlebot's base
+		self.pub = rospy.Publisher('/cmd_vel', Twist,queue_size=1)
+		self.step = 0
 
-def get_point(start_angle_distance):
-    angle = start_angle_distance[0]
-    angle = np.deg2rad(angle - 180)
-    distance = start_angle_distance[1]
+	def stop(self):
+		if not self.stopped:
+			self.sub.unregister()
+			self.stopped = True
+			self.report("Parker: stopped.")
 
-    if angle >= 0 and angle < pi / 2:
-        x = distance * cos(angle) * -1
-        y = distance * sin(angle) * -1
-    elif angle >= pi / 2 and angle < pi:
-        x = distance * cos(angle) * -1
-        y = distance * sin(angle) * -1
-    elif angle >= -pi / 2 and angle < 0:
-        x = distance * cos(angle) * -1
-        y = distance * sin(angle) * -1
-    else:
-        x = distance * cos(angle) * -1
-        y = distance * sin(angle) * -1
-    return x, y
 
-def finding_spot_position():
-    rospy.loginfo("scan parking spot done!")
-    stats = False
-    start_angle_distance = get_angle_distance(spot_angle.data_1)
-    center_angle_distance = get_angle_distance(spot_angle.data_2)
-    end_angle_distance = get_angle_distance(spot_angle.data_3)
+	# Initiate the parking sequence.
+	# Note that negative is forward.
+	# Raw angles are 0-2*PI. 0 is straight ahead.
+	def park(self):
+		self.report("Started parking sequence ...")
 
-    if start_angle_distance[1] != 0 and center_angle_distance[1] != 0 and end_angle_distance[1] != 0:
-        rospy.loginfo("calibration......")
-        start_point = get_point(start_angle_distance)
-        center_point = get_point(center_angle_distance)
-        end_point = get_point(end_angle_distance)
-        stats = True
-    else:
-        stats = False
-        rospy.logwarn("Unsuccessful scan!!")
+		self.spot_angle = ReturnValue('spot_angle')
+		self.spot_point = ReturnValue('spot_point')
 
-    return spot_point.return_val(stats, start_point, center_point, end_point)
+		while not rospy.is_shutdown() and not self.stopped:
+			self.scan = rospy.wait_for_message("/scan", LaserScan)
+			self.odom = rospy.wait_for_message("/odom", Odometry)
+			yaw = self.quaternion()
+			self.scan_parking_spot()
+			if self.step == 0:
+				if self.spot_angle.stats == True:
+					self.find_spot_position()
+					if self.spot_point.stats == True:
+						theta = np.arctan2(self.spot_point.data_1[1] - self.spot_point.data_3[1], \
+											self.spot_point.data_1[0] - self.spot_point.data_3[0])
+						self.spub.publish("=================================")
+						self.spub.publish("|        |     x     |     y     |")
+						self.spub.publish('| start  | {0:>10.3f}| {1:>10.3f}|'.format(self.spot_point.data_1[0],\
+											self.spot_point.data_1[1]))
+						self.spub.publish('| center | {0:>10.3f}| {1:>10.3f}|'.format(self.spot_point.data_2[0],\
+											self.spot_point.data_2[1]))
+						self.spub.publish('| end    | {0:>10.3f}| {1:>10.3f}|'.format(self.spot_point.data_3[0],\
+											self.spot_point.data_3[1]))	
+						self.spub.publish("=================================")
+						self.spub.publish('| theta  | {0:.2f} deg'.format(np.rad2deg(theta)))
+						self.spub.publish('| yaw    | {0:.2f} deg'.format(np.rad2deg(yaw)))
+						self.spub.publish("=================================")
+						self.spub.publish("===== Go to parking spot!!! =====")
+						self.step = 1
+				else:
+					self.spub.publish("ERROR: Fail finding parking spot.")
+			elif step == 1:
+				init_yaw = yaw
+				yaw = theta + yaw
+				if theta > 0:
+					if theta - init_yaw > 0.1:
+						twist.linear.x = 0.0
+						twist.angular.z = 0.2
+					else:
+						self.twist.linear.x = 0.0
+						self.twist.angular.z = 0.0
+						cmd_pub.publish(twist)
+						time.sleep(1)
+						time.sleep(3)
+						rotation_point = rotate_origin_only(spot_point.data_2[0], spot_point.data_2[1], -(pi / 2 - init_yaw))
+						step = 2
+				else:
+					if theta - init_yaw < -0.1:
+						self.twist.linear.x = 0.0
+						self.twist.angular.z = -0.2
+					else:
+						self.twist.linear.x = 0.0
+						self.twist.angular.z = 0.0
+						cmd_pub.publish(self.twist)
+						time.sleep(1)
+						reset_pub.publish(reset)
+						time.sleep(3)
+						rotation_point = rotate_origin_only(spot_point.data_2[0], spot_point.data_2[1], -(pi / 2 - init_yaw))
+						self.step = 2
+			elif step == 2:
+				if abs(odom.pose.pose.position.x - (rotation_point[1])) > 0.02:
+					if odom.pose.pose.position.x > (rotation_point[1]):
+						self.twist.linear.x = -0.05
+						self.twist.angular.z = 0.0
+					else:
+						self.twist.linear.x = 0.05
+						self.twist.angular.z = 0.0
+				else:
+					self.twist.linear.x = 0.0
+					self.twist.angular.z = 0.0
+					self.step = 3
+			elif step == 3:
+				if yaw > -pi / 2:
+					self.twist.linear.x = 0.0
+					self.twist.angular.z = -0.2
+				else:
+					self.twist.linear.x = 0.0
+					self.twist.angular.z = 0.0
+					self.step = 4
+			elif step == 4:
+				ranges = []
+				for i in range(150, 210):
+					if msg.ranges[i] != 0:
+						ranges.append(msg.ranges[i])
+				if min(ranges) > 0.2:
+					self.twist.linear.x = -0.04
+					self.twist.angular.z = 0.0
+				else:
+					self.twist.linear.x = 0.0
+					self.twist.angular.z = 0.0
+					self.report("Auto_parking Done.")
+					cmd_pub.publish(self.twist)
+					sys.exit()
+			cmd_pub.publish(self.twist)
+			scan_spot_filter(self.scan)
 
-def rotate_origin_only(x, y, radians):
-    xx = x * cos(radians) + y * sin(radians)
-    yy = -x * sin(radians) + y * cos(radians)
-    return xx, yy
 
-def scan_spot_filter(msg):
-    scan_spot_pub = rospy.Publisher("/scan_spot", LaserScan, queue_size=1)
-    scan_spot = msg
-    scan_spot_list = list(scan_spot.intensities)
-    for i in range(360):
-        scan_spot_list[i] = 0
-    scan_spot_list[spot_angle.data_1] = msg.ranges[spot_angle.data_1] + 10000
-    scan_spot_list[spot_angle.data_2] = msg.ranges[spot_angle.data_2] + 10000
-    scan_spot_list[spot_angle.data_3] = msg.ranges[spot_angle.data_3] + 10000
-    scan_spot.intensities = tuple(scan_spot_list)
-    scan_spot_pub.publish(scan_spot)
 
-if __name__=="__main__":
-    rospy.init_node('AutoParking')
-    rospy.loginfo("Autoparking startup ......")
-    cmd_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-    reset_pub = rospy.Publisher('/reset', Empty, queue_size=1)
-    msg = LaserScan()
-    r = rospy.Rate(10)
-    spot_angle = ReturnValue('spot_angle')
-    spot_point = ReturnValue('spot_point')
-    step = 0
-    twist = Twist()
-    reset = Empty()
-    while not rospy.is_shutdown():
-        msg = rospy.wait_for_message("/scan", LaserScan)
-        odom = rospy.wait_for_message("/odom", Odometry)
-        yaw = quaternion()
-        scan_parking_spot()
-        if step == 0:
-            if spot_angle.stats == True:
-                finding_spot_position()
-                if spot_point.stats == True:
-                    theta = np.arctan2(spot_point.data_1[1] - spot_point.data_3[1], spot_point.data_1[0] - spot_point.data_3[0])
-                    rospy.loginfo("=================================")
-                    rospy.loginfo("|        |     x     |     y     |")
-                    rospy.loginfo('| start  | {0:>10.3f}| {1:>10.3f}|'.format(spot_point.data_1[0], spot_point.data_1[1]))
-                    rospy.loginfo('| center | {0:>10.3f}| {1:>10.3f}|'.format(spot_point.data_2[0], spot_point.data_2[1]))
-                    rospy.loginfo('| end    | {0:>10.3f}| {1:>10.3f}|'.format(spot_point.data_3[0], spot_point.data_3[1]))
-                    rospy.loginfo("=================================")
-                    rospy.loginfo('| theta  | {0:.2f} deg'.format(np.rad2deg(theta)))
-                    rospy.loginfo('| yaw    | {0:.2f} deg'.format(np.rad2deg(yaw)))
-                    rospy.loginfo("=================================")
-                    rospy.loginfo("===== Go to parking spot!!! =====")
-                    step = 1
-            else:
-                rospy.logerror("Fail finding parking spot.")
-        elif step == 1:
-            init_yaw = yaw
-            yaw = theta + yaw
-            if theta > 0:
-                if theta - init_yaw > 0.1:
-                    twist.linear.x = 0.0
-                    twist.angular.z = 0.2
-                else:
-                    twist.linear.x = 0.0
-                    twist.angular.z = 0.0
-                    cmd_pub.publish(twist)
-                    time.sleep(1)
-                    reset_pub.publish(reset)
-                    time.sleep(3)
-                    rotation_point = rotate_origin_only(spot_point.data_2[0], spot_point.data_2[1], -(pi / 2 - init_yaw))
-                    step = 2
-            else:
-                if theta - init_yaw < -0.1:
-                    twist.linear.x = 0.0
-                    twist.angular.z = -0.2
-                else:
-                    twist.linear.x = 0.0
-                    twist.angular.z = 0.0
-                    cmd_pub.publish(twist)
-                    time.sleep(1)
-                    reset_pub.publish(reset)
-                    time.sleep(3)
-                    rotation_point = rotate_origin_only(spot_point.data_2[0], spot_point.data_2[1], -(pi / 2 - init_yaw))
-                    step = 2
-        elif step == 2:
-            if abs(odom.pose.pose.position.x - (rotation_point[1])) > 0.02:
-                if odom.pose.pose.position.x > (rotation_point[1]):
-                    twist.linear.x = -0.05
-                    twist.angular.z = 0.0
-                else:
-                    twist.linear.x = 0.05
-                    twist.angular.z = 0.0
-            else:
-                twist.linear.x = 0.0
-                twist.angular.z = 0.0
-                step = 3
-        elif step == 3:
-            if yaw > -pi / 2:
-                twist.linear.x = 0.0
-                twist.angular.z = -0.2
-            else:
-                twist.linear.x = 0.0
-                twist.angular.z = 0.0
-                step = 4
-        elif step == 4:
-            ranges = []
-            for i in range(150, 210):
-                if msg.ranges[i] != 0:
-                    ranges.append(msg.ranges[i])
-            if min(ranges) > 0.2:
-                twist.linear.x = -0.04
-                twist.angular.z = 0.0
-            else:
-                twist.linear.x = 0.0
-                twist.angular.z = 0.0
-                rospy.loginfo("Auto_parking Done.")
-                cmd_pub.publish(twist)
-                sys.exit()
-        cmd_pub.publish(twist)
-        scan_spot_filter(msg)
+	def scan_parking_spot():
+		stats = False
+		intensity_index = []
+		index_count = []
+		spot_angle_index = []
+		minimun_scan_angle = 30
+		maximun_scan_angle = 330
+		intensity_threshold = 100
+
+		for i in range(360):
+			if i >= minimun_scan_angle and i < maximun_scan_angle:
+				spot_intensity = msg.intensities[i] ** 2 * msg.ranges[i] / 100000
+				if spot_intensity >= intensity_threshold:
+               		intensity_index.append(i)
+               		index_count.append(i)
+           		else:
+               		intensity_index.append(0)
+			else:
+           		intensity_index.append(0)
+
+		for i in index_count:
+			if abs(i - index_count[int(len(index_count) / 2)]) < 20:
+           		spot_angle_index.append(i)
+           		if len(spot_angle_index) > 10:
+               		stats = True
+           		else:
+					stats = False
+		center_angle = spot_angle_index[int(len(spot_angle_index) / 2)]
+		start_angle = spot_angle_index[2]
+		end_angle = spot_angle_index[-3]
+		self.spot_angle.return_val(stats, center_angle, start_angle, end_angle)
+
+	def quaternion():
+		quaternion = (
+ 			odom.pose.pose.orientation.x,
+			odom.pose.pose.orientation.y,
+			odom.pose.pose.orientation.z,
+			odom.pose.pose.orientation.w)
+		euler = euler_from_quaternion(quaternion)
+		yaw = euler[2]
+		return yaw
+
+	def get_angle_distance(angle):
+		distance = msg.ranges[int(angle)]
+		if msg.ranges[int(angle)] is not None and distance is not 0:
+			angle = int(angle)
+			distance = distance
+		return angle, distance
+
+	def get_point(start_angle_distance):
+		angle = start_angle_distance[0]
+		angle = np.deg2rad(angle - 180)
+		distance = start_angle_distance[1]
+
+		if angle >= 0 and angle < pi / 2:
+			x = distance * cos(angle) * -1
+			y = distance * sin(angle) * -1
+		elif angle >= pi / 2 and angle < pi:
+			x = distance * cos(angle) * -1
+			y = distance * sin(angle) * -1
+		elif angle >= -pi / 2 and angle < 0:
+			x = distance * cos(angle) * -1
+			y = distance * sin(angle) * -1
+		else:
+			x = distance * cos(angle) * -1
+			y = distance * sin(angle) * -1
+		return x, y
+
+	def find_spot_position():
+		self.report("Finding parking spot ...")
+		stats = False
+		start_angle_distance = get_angle_distance(spot_angle.data_1)
+		center_angle_distance = get_angle_distance(spot_angle.data_2)
+		end_angle_distance = get_angle_distance(spot_angle.data_3)
+
+		if start_angle_distance[1] != 0 and center_angle_distance[1] != 0 and end_angle_distance[1] != 0:
+			self.report("calibrating ......")
+			start_point = get_point(start_angle_distance)
+			center_point = get_point(center_angle_distance)
+			end_point = get_point(end_angle_distance)
+			stats = True
+		else:
+			stats = False
+			self.report("Unsuccessful scan!!")
+
+		return self.spot_point.return_val(stats, start_point, center_point, end_point)
+
+	def rotate_origin_only(x, y, radians):
+		xx = x * cos(radians) + y * sin(radians)
+		yy = -x * sin(radians) + y * cos(radians)
+		return xx, yy
+
+	def scan_spot_filter(msg):
+		scan_spot_pub = rospy.Publisher("/scan_spot", LaserScan, queue_size=1)
+		scan_spot = msg
+		scan_spot_list = list(scan_spot.intensities)
+		for i in range(360):
+        	scan_spot_list[i] = 0
+		scan_spot_list[spot_angle.data_1] = msg.ranges[spot_angle.data_1] + 10000
+		scan_spot_list[spot_angle.data_2] = msg.ranges[spot_angle.data_2] + 10000
+		scan_spot_list[spot_angle.data_3] = msg.ranges[spot_angle.data_3] + 10000
+		scan_spot.intensities = tuple(scan_spot_list)
+		scan_spot_pub.publish(scan_spot)
+
+# The overall behavior has changed. Start the folower if state is "follow".
+def getBehavior(behavior):
+	global parker
+	global behaviorName
+	behaviorName = behavior.state
+	if behavior.state=="park":
+		parker.start()
+	else:
+		parker.stop()
+
+if __name__ == "__main__":
+	# Initialize the node
+	rospy.init_node('sb_park', log_level=rospy.INFO, anonymous=True)
+	parker = parker()
+	behaviorName = ""
+	rospy.Subscriber("/sb_behavior",Behavior,getBehavior)
+
+	rospy.spin()
+
