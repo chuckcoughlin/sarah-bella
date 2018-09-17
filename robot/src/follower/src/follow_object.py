@@ -17,8 +17,9 @@ from teleop_service.msg import Behavior,TeleopStatus
 from math import tanh
 
 INFINITY = 100000.
+IGNORE   = 0.20 # Ignore distances less than this
 
-class follower:
+class Follower:
 	def __init__(self):
 		self.stopped = True
 		# Create a Twist message, and fill in the fields.  
@@ -32,9 +33,9 @@ class follower:
 
 		# How close should we get to things, and what are our speeds?
 		self.stopDistance = float(rospy.get_param("/follow/stop_distance",0.3))
-		self.followDistance = float(rospy.get_param("/follow/follow_distance",0.5))
-		self.maxSpeed = float(rospy.get_param("/follow/max_speed",0.5))
-		self.minSpeed = float(rospy.get_param("/follow/min_speed",0.01))
+		self.followDistance = float(rospy.get_param("/follow/follow_distance",1.0))
+		self.maxSpeed = float(rospy.get_param("/follow/max_speed",0.2))
+		self.minSpeed = float(rospy.get_param("/follow/min_speed",0.03))
 
 		# Distance to the closest object, and its angular direction, respectively
 		self.targetDistance = INFINITY
@@ -74,14 +75,16 @@ class follower:
 			self.calculateTarget(scan)
 
 			#if there's something within self.followDist from us, start following.
-			if (self.targetDistance < self.followDistance):
+			if self.targetDistance < self.followDistance and \
+			   self.targetDistance>self.stopDistance:
 				self.follow()
 			else:
 				self.doNothing() 
 
 			# Add a log message, so that we know what's going on
-			rospy.loginfo('Follower: Target:{0},{1}, command:{2},{3}'.format(self.targetDistance, \
-				self.targetDirection,self.command.linear.x, self.command.angular.z))
+			rospy.loginfo('Follower: Target:{:.2f},{:.0f}, command:{:.2f},{:.0f}'.format(\
+			    self.targetDistance, 360*self.targetDirection/(2*Math.PI),\
+				self.command.linear.x, 360*self.command.angular.z/(2*Math.PI)))
 			self.pub.publish(self.command)
 
 	# Follow the nearest object.
@@ -112,7 +115,7 @@ class follower:
 		angle = scan.angle_max+delta
 		for dist in scan.ranges:
 			angle = angle - delta
-			if dist>0. and dist<self.followDistance and dist<self.targetDistance: 
+			if dist>IGNORE and dist<self.followDistance and dist<self.targetDistance: 
 				self.targetDistance = dist
 				self.targetDirection = angle
 
@@ -138,7 +141,7 @@ if __name__ == "__main__":
 	# Initialize the node
 	rospy.init_node('sb_follow', log_level=rospy.INFO, anonymous=True)
 	follower = follower()
-	behaviorName = "follow"
+	behaviorName = ""
 	rospy.Subscriber("/sb_behavior",Behavior,getBehavior)
 	
  	rospy.spin()
