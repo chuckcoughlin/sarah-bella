@@ -152,39 +152,30 @@ public class LogRecyclerAdapter extends RecyclerView.Adapter<LogViewHolder> impl
 
 
     // ============================= LogListObserver ===========================
+
+    /**
+     * A log message has been appended to the visible list.
+     */
     @Override
-    public void notifyLogAppended() {
-        final int count = getItemCount();
+    public void notifyListAppended() {
+        final int size = getItemCount();
         if( context!=null ) {
             Activity activity = (Activity)context;
             activity.runOnUiThread(new Runnable() {
                 public void run() {
-                    notifyItemInserted(count);
+                    notifyItemRangeInserted(size-1,1);
                 }
             });
         }
     }
 
     /**
-     * It will always be the first log in the list
-     * that is removed.
-     */
-    @Override
-    public void notifyLogChanged() {
-        Activity activity = (Activity)context;
-        activity.runOnUiThread(new Runnable() {
-            public void run() {
-                notifyDataSetChanged();
-            }
-        });
-    }
-    /**
-     * It will always be the first log in the list
-     * that is removed. We assume this originates from a button
+     * The entire list has been cleared. We assume this originates from a button
      * and is on the UI thread.
      */
     @Override
-    public void notifyLogRemoved() {
-        notifyItemRemoved(0);
+    public void notifyListCleared() {
+        int size = getItemCount();
+        notifyDataSetChanged();
     }
 }

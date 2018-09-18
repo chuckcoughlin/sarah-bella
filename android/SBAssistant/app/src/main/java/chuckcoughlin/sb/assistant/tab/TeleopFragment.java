@@ -158,7 +158,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
 
         sr = SpeechRecognizer.createSpeechRecognizer(getActivity());
         sr.setRecognitionListener(TeleopFragment.this);
-        speechSynthesizer = new ObstacleErrorAnnunciator(getActivity(),this);
+        if( speechSynthesizer==null) speechSynthesizer = new ObstacleErrorAnnunciator(getActivity(),this);
 
         return view;
     }
@@ -584,7 +584,7 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                 if( behaviorGroup.getCheckedRadioButtonId()==R.id.joystick && getActivity()!=null  ) {
                     getActivity().runOnUiThread(new Runnable() {
                         public void run() {
-                            teleopStatusView.setText(String.valueOf(obstacleDistance));
+                            teleopStatusView.setText(String.format("%.2f",obstacleDistance));
                         }
                     });
                 }

@@ -116,7 +116,7 @@ public class SBLogManager implements SBApplicationStatusListener {
      */
     public void clear() {
         logList.clear();
-        notifyObservers(true);
+        notifyObserversOfClearedLog();
     }
     public void freeze() {
         frozen = true;
@@ -135,14 +135,24 @@ public class SBLogManager implements SBApplicationStatusListener {
     }
 
     /**
-     * Notify all observers regarding a new message
-     * @param full true if the list was at capacity before getting the current new message
+     * Notify observers regarding a log queue clearance.
+     * The queue has been emptied before this call.
      */
-    private void notifyObservers(boolean full) {
+    private void notifyObserversOfClearedLog() {
         for(LogListObserver observer:observers) {
             if( observer!=null ) {
-                if(full) observer.notifyLogRemoved();
-                observer.notifyLogAppended();
+                observer.notifyListCleared();
+            }
+            else {
+                //android.util.Log.i(CLSS, String.format("WARNING: Attempt to notify null observer"));
+            }
+        }
+    }
+
+    private void notifyObserversOfLogAddition() {
+        for(LogListObserver observer:observers) {
+            if( observer!=null ) {
+                observer.notifyListAppended();
             }
             else {
                 //android.util.Log.i(CLSS, String.format("WARNING: Attempt to notify null observer"));
@@ -161,9 +171,8 @@ public class SBLogManager implements SBApplicationStatusListener {
 
             if( !frozen ) {
                 android.util.Log.i(CLSS, String.format("%s", msg.getMsg()));
-                boolean full = logList.isFull();
                 logList.add(msg);
-                notifyObservers(full);
+                notifyObserversOfLogAddition();
             }
             else {
                 android.util.Log.i(CLSS, String.format("Ignored log message - %s", msg.getMsg()));

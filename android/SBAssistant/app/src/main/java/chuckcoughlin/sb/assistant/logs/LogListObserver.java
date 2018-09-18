@@ -10,7 +10,6 @@ package chuckcoughlin.sb.assistant.logs;
  * first entry in the list that is removed, if any.
  */
 public interface LogListObserver {
-  public void notifyLogAppended();
-  public void notifyLogChanged();
-  public void notifyLogRemoved();
+  public void notifyListAppended();
+  public void notifyListCleared();
 }
