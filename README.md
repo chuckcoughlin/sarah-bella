@@ -16,6 +16,7 @@ debugged and added to the repository on the development system.  From there the 
   * system: tablet displays robot status - CPU, memory, battery and GPIO configuration. Tablet gets, sets and subscribes to GPIO values.
   * logging: tablet displays ROS log messages generated on the robot.
   * lidar: tablet displays a scalable laser scan output.
+  * follow: one of the options on the "teleop" page. Robot follows a slow walker.
   * teleop: use a virtual joystick on the tablet to control the robot. Alternately, use voice commands in English or Russian. The robot will automatically detect
   obstacles and stop before hitting them.
 

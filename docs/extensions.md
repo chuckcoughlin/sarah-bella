@@ -193,6 +193,8 @@ The initial construction of the package files was accomplished using:
  ![Mezzanine (auxiliary battery holder)](/images/mezzanine-cad.png)
  ````Mezzanine````
 
+![Headlamp circuit](/images/headlamp_circuit.svg).
+
  ### 03- Teleop <a id="teleop"></a>
 The base code for the joystick view widget came from [here](https://github.com/rosjava/android_core/tree/kinetic/android_15/src/org/ros/android/view). We have modified the control so that "up" always correlates to the
 front of the robot. The joystick control may be augmented with voice commands. Additionally there is a fail-safe mechanism that prevents
@@ -216,6 +218,7 @@ ObstacleDistance
 ##### ----------------------- robot --------------------------<br/>
 **service:** /sb_serve_twist_command (TwistCommand)<br/>
 **publish:**  /sb_obstacle_distance (ObstacleDistance)<br/>
+**publish:**  /sb_teleop_status (TeleopStatus)<br/>
 
  ### 04- Follow <a id="follow"></a>
  The *follower* application is one of the ROBOTIS demonstrations. I chose the version from: https://github.com/pirobot/ros-by-example/blob/master/rbx_vol_1/rbx1_apps/nodes/follower.py as my starting point, making modifications to fit into my application framework.
