@@ -17,7 +17,7 @@ from geometry_msgs.msg import Twist
 from teleop_service.msg import Behavior,TeleopStatus
 from math import tanh
 
-DELTA=0.2 # Most we turn at a time.
+DELTA=0.4 # Most we turn at a time.
 INFINITY = 100000.
 IGNORE   = 0.20 # Ignore distances less than this
 
@@ -107,7 +107,7 @@ class Follower:
 		self.command.linear.x = 0.0
 		self.command.angular.z = 0.0
 		self.reportState("waiting: target {:.2f} not in [{:2f} - {:2f}]".format(\
-			self.targetDistance,self.stopDIatance,self.followDistance))
+			self.targetDistance,self.stopDistance,self.followDistance))
 
     # Determine the direction of the closest object in radians
 	def calculateTarget(self, scan):
@@ -124,7 +124,7 @@ class Follower:
 
 
 	# Turn toward target. Target 0->2PI.
-	def rampedAngle():
+	def rampedAngle(self):
 		angle = self.targetDirection
 		if angle>math.pi:
 			angle = angle - 2*math.pi
@@ -134,7 +134,8 @@ class Follower:
 		else:
 			if angle>DELTA:
 				angle = DELTA
-		return angle
+		return -angle
+
 	def reportState(self,status):
 		if self.state!=status:
 			self.state = status
