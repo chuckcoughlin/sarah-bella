@@ -10,12 +10,14 @@
 
 import rospy
 import os
+import math
 from std_msgs.msg import String, Bool
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
 from teleop_service.msg import Behavior,TeleopStatus
 from math import tanh
 
+DELTA=0.4 # Most we turn at a time.
 INFINITY = 100000.
 IGNORE   = 0.20 # Ignore distances less than this
 
@@ -83,8 +85,8 @@ class Follower:
 
 			# Add a log message, so that we know what's going on
 			rospy.loginfo('Follower: Target:{:.2f},{:.0f}, command:{:.2f},{:.0f}'.format(\
-			    self.targetDistance, 360*self.targetDirection/(2*Math.PI),\
-				self.command.linear.x, 360*self.command.angular.z/(2*Math.PI)))
+			    self.targetDistance, 360*self.targetDirection/(2*math.pi),\
+				self.command.linear.x, 360*self.command.angular.z/(2*math.pi)))
 			self.pub.publish(self.command)
 
 	# Follow the nearest object.
@@ -92,9 +94,9 @@ class Follower:
 	# Raw angles are 0-2*PI. 0 is straight ahead.
 	def follow(self):
 		self.reportState("following")
-		self.command.linear.x = -tanh(5 * (self.stopDistance - self.targetDistance)) * self.maxSpeed
+		self.command.linear.x = tanh(5*(self.stopDistance - self.targetDistance))*self.maxSpeed
 		#turn faster the further we're turned from our intended object.
-		self.command.angular.z = -self.targetDirection
+		self.command.angular.z = self.rampedAngle()
 		
 		#if we're going slower than our min_speed, just stop.
 		if abs(self.command.linear.x) < self.minSpeed:
@@ -104,7 +106,8 @@ class Follower:
 	def doNothing(self):
 		self.command.linear.x = 0.0
 		self.command.angular.z = 0.0
-		self.reportState("waiting")
+		self.reportState("waiting: target {:.2f} not in [{:2f} - {:2f}]".format(\
+			self.targetDistance,self.stopDistance,self.followDistance))
 
     # Determine the direction of the closest object in radians
 	def calculateTarget(self, scan):
@@ -119,6 +122,19 @@ class Follower:
 				self.targetDistance = dist
 				self.targetDirection = angle
 
+
+	# Turn toward target. Target 0->2PI.
+	def rampedAngle(self):
+		angle = self.targetDirection
+		if angle>math.pi:
+			angle = angle - 2*math.pi
+		if angle<0.0:
+			if angle<-DELTA:
+				angle = -DELTA
+		else:
+			if angle>DELTA:
+				angle = DELTA
+		return -angle
 
 	def reportState(self,status):
 		if self.state!=status:
@@ -140,7 +156,7 @@ def getBehavior(behavior):
 if __name__ == "__main__":
 	# Initialize the node
 	rospy.init_node('sb_follow', log_level=rospy.INFO, anonymous=True)
-	follower = follower()
+	follower = Follower()
 	behaviorName = ""
 	rospy.Subscriber("/sb_behavior",Behavior,getBehavior)
 	
