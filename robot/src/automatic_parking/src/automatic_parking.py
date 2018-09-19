@@ -202,10 +202,10 @@ class Parker:
 
 		for i in index_count:
 			if abs(i - index_count[int(len(index_count) / 2)]) < 20:
-           		spot_angle_index.append(i)
-           		if len(spot_angle_index) > 10:
-               		stats = True
-           		else:
+				spot_angle_index.append(i)
+				if len(spot_angle_index) > 10:
+					stats = True
+				else:
 					stats = False
 		center_angle = spot_angle_index[int(len(spot_angle_index) / 2)]
 		start_angle = spot_angle_index[2]
