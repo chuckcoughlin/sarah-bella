@@ -29,17 +29,17 @@ from tf.transformations import euler_from_quaternion, quaternion_from_euler
 import time
 
 class ReturnValue(object):
-    def __init__(self, name):
+	def __init__(self, name):
         self.name = name
 
-    def return_val(self, stats, data_1, data_2, data_3):
+	def return_val(self, stats, data_1, data_2, data_3):
         self.stats = stats
         self.data_1 = data_1
         self.data_2 = data_2
         self.data_3 = data_3
 
 class Parker:
-    def __init__(self):
+	def __init__(self):
 		self.stopped = True
 
 		# Create a Twist message, and fill in the fields.
@@ -60,9 +60,9 @@ class Parker:
 
 	def report(self,text):
 		self.msg.status = text
-        self.spub.publish(self.msg)
+		self.spub.publish(self.msg)
     
-    # Start by finding the parking spot
+	# Start by finding the parking spot
 	def start(self):
 		self.stopped = False
 		self.report("Parker: auto park started ...");
@@ -193,10 +193,10 @@ class Parker:
 			if i >= minimun_scan_angle and i < maximun_scan_angle:
 				spot_intensity = msg.intensities[i] ** 2 * msg.ranges[i] / 100000
 				if spot_intensity >= intensity_threshold:
-               		intensity_index.append(i)
-               		index_count.append(i)
+					intensity_index.append(i)
+					index_count.append(i)
            		else:
-               		intensity_index.append(0)
+					intensity_index.append(0)
 			else:
            		intensity_index.append(0)
 
