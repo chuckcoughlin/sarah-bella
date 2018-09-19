@@ -80,6 +80,7 @@ The **headlamp** application has no separate control panel. Instead, the *system
 lamp on and off.
 
 The photos show the "porch" add-on structure used to hold the headlamp and relay module. The "mezzanine" holds a breadboard and auxiliary battery.
+It has recently been expanded to hold an Arduino UNO board.
 
 ******************************************************
 ### 03 - Teleop <a id="teleop"></a>
@@ -118,7 +119,7 @@ With the *follow* application running, walk in front of the TurtleBot3. Then, sl
 
 ******************************************************
 ### 05 - Auto-park <a id="follow"></a>
-When this application is running, the robot will search for a white tag that marks its intended parking space.
+When this application is running, the robot will search for a "hitching post" that marks its intended parking space. A stack of tin cans will suffice for the marker.
 
 ******************************************************
 ### 06 - Call <a id="follow"></a>

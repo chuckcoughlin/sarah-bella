@@ -90,8 +90,8 @@ module rivet_holes(z) {
 // These are the various holes for arduino rivets.
 // These are on the plus side
 module arduino_holes(z) {
-    for(i=[[4,8],[4,36],
-           [56,4],[58,52]]) {
+    for(i=[[11,17],[11,45],
+           [62,0],[64,48]]) {
         translate(i)
         cylinder(r=rivet_radius,h=z);
     }
