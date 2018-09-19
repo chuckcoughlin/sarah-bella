@@ -30,13 +30,13 @@ import time
 
 class ReturnValue(object):
 	def __init__(self, name):
-        self.name = name
+		self.name = name
 
 	def return_val(self, stats, data_1, data_2, data_3):
-        self.stats = stats
-        self.data_1 = data_1
-        self.data_2 = data_2
-        self.data_3 = data_3
+		self.stats = stats
+		self.data_1 = data_1
+		self.data_2 = data_2
+		self.data_3 = data_3
 
 class Parker:
 	def __init__(self):
