@@ -23,6 +23,7 @@ from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Empty
+from teleop_service.msg import Behavior,TeleopStatus
 import numpy as np
 from math import sin, cos, pi, atan2
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
@@ -53,7 +54,7 @@ class Parker:
 		# Publish status so that controller can keep track of state
 		self.spub = rospy.Publisher('sb_teleop_status',TeleopStatus,queue_size=1)
 		self.msg = TeleopStatus()
-		self.reportState("Parker: initialized.")
+		self.report("Parker: initialized.")
 		self.behavior = ""
 		self.rate = rospy.Rate(10)
 
@@ -297,7 +298,7 @@ def getBehavior(behavior):
 if __name__ == "__main__":
 	# Initialize the node
 	rospy.init_node('sb_park', log_level=rospy.INFO, anonymous=True)
-	parker = parker()
+	parker = Parker()
 	behaviorName = ""
 	rospy.Subscriber("/sb_behavior",Behavior,getBehavior)
 
