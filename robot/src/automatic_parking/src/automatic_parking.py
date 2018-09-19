@@ -277,7 +277,7 @@ class Parker:
 		scan_spot = msg
 		scan_spot_list = list(scan_spot.intensities)
 		for i in range(360):
-        	scan_spot_list[i] = 0
+			scan_spot_list[i] = 0
 		scan_spot_list[spot_angle.data_1] = msg.ranges[spot_angle.data_1] + 10000
 		scan_spot_list[spot_angle.data_2] = msg.ranges[spot_angle.data_2] + 10000
 		scan_spot_list[spot_angle.data_3] = msg.ranges[spot_angle.data_3] + 10000
