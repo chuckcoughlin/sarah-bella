@@ -1,0 +1,19 @@
+<!--
+  The turtlebot people (or whatever) follower nodelet.
+ -->
+<launch>
+  <param name="robot/name" value="SarahBella" type="str"/>
+  <param name="robot/type" value="turtlebot3" type="str"/>
+  <param name="robot/application" value="park" type="str"/>
+  <param name="robot/platform" value="RaspberryPi" type="str"/>
+  <param name="robot/behavior" value="follow" type="str"/>
+  <!-- These metrics influence the automatic parking algorithm -->
+  <param name="/park/stop_distance" value="0.3" />
+  <param name="/park/follow_distance" value="1.0" />
+  <param name="/park/max_speed" value="0.2" />
+  <param name="/park/min_speed" value="0.03" />
+
+  <node pkg="automatic_parking" type="automatic_parking.py" name="sb_park" output="log">
+  </node>
+
+</launch>

@@ -23,23 +23,24 @@ from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Empty
+from teleop_service.msg import Behavior,TeleopStatus
 import numpy as np
 from math import sin, cos, pi, atan2
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 import time
 
 class ReturnValue(object):
-    def __init__(self, name):
-        self.name = name
+	def __init__(self, name):
+		self.name = name
 
-    def return_val(self, stats, data_1, data_2, data_3):
-        self.stats = stats
-        self.data_1 = data_1
-        self.data_2 = data_2
-        self.data_3 = data_3
+	def return_val(self, stats, data_1, data_2, data_3):
+		self.stats = stats
+		self.data_1 = data_1
+		self.data_2 = data_2
+		self.data_3 = data_3
 
 class Parker:
-    def __init__(self):
+	def __init__(self):
 		self.stopped = True
 
 		# Create a Twist message, and fill in the fields.
@@ -53,16 +54,16 @@ class Parker:
 		# Publish status so that controller can keep track of state
 		self.spub = rospy.Publisher('sb_teleop_status',TeleopStatus,queue_size=1)
 		self.msg = TeleopStatus()
-		self.reportState("Parker: initialized.")
+		self.report("Parker: initialized.")
 		self.behavior = ""
 		self.rate = rospy.Rate(10)
 
 
 	def report(self,text):
 		self.msg.status = text
-        self.spub.publish(self.msg)
+		self.spub.publish(self.msg)
     
-    # Start by finding the parking spot
+	# Start by finding the parking spot
 	def start(self):
 		self.stopped = False
 		self.report("Parker: auto park started ...");
@@ -193,19 +194,19 @@ class Parker:
 			if i >= minimun_scan_angle and i < maximun_scan_angle:
 				spot_intensity = msg.intensities[i] ** 2 * msg.ranges[i] / 100000
 				if spot_intensity >= intensity_threshold:
-               		intensity_index.append(i)
-               		index_count.append(i)
-           		else:
-               		intensity_index.append(0)
+					intensity_index.append(i)
+					index_count.append(i)
+				else:
+					intensity_index.append(0)
 			else:
-           		intensity_index.append(0)
+				intensity_index.append(0)
 
 		for i in index_count:
 			if abs(i - index_count[int(len(index_count) / 2)]) < 20:
-           		spot_angle_index.append(i)
-           		if len(spot_angle_index) > 10:
-               		stats = True
-           		else:
+				spot_angle_index.append(i)
+				if len(spot_angle_index) > 10:
+					stats = True
+				else:
 					stats = False
 		center_angle = spot_angle_index[int(len(spot_angle_index) / 2)]
 		start_angle = spot_angle_index[2]
@@ -277,7 +278,7 @@ class Parker:
 		scan_spot = msg
 		scan_spot_list = list(scan_spot.intensities)
 		for i in range(360):
-        	scan_spot_list[i] = 0
+			scan_spot_list[i] = 0
 		scan_spot_list[spot_angle.data_1] = msg.ranges[spot_angle.data_1] + 10000
 		scan_spot_list[spot_angle.data_2] = msg.ranges[spot_angle.data_2] + 10000
 		scan_spot_list[spot_angle.data_3] = msg.ranges[spot_angle.data_3] + 10000
@@ -297,7 +298,7 @@ def getBehavior(behavior):
 if __name__ == "__main__":
 	# Initialize the node
 	rospy.init_node('sb_park', log_level=rospy.INFO, anonymous=True)
-	parker = parker()
+	parker = Parker()
 	behaviorName = ""
 	rospy.Subscriber("/sb_behavior",Behavior,getBehavior)
 
