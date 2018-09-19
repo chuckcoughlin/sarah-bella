@@ -195,10 +195,10 @@ class Parker:
 				if spot_intensity >= intensity_threshold:
 					intensity_index.append(i)
 					index_count.append(i)
-           		else:
-           			intensity_index.append(0)
+				else:
+					intensity_index.append(0)
 			else:
-           		intensity_index.append(0)
+				intensity_index.append(0)
 
 		for i in index_count:
 			if abs(i - index_count[int(len(index_count) / 2)]) < 20:
