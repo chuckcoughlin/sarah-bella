@@ -196,7 +196,7 @@ class Parker:
 					intensity_index.append(i)
 					index_count.append(i)
            		else:
-					intensity_index.append(0)
+           			intensity_index.append(0)
 			else:
            		intensity_index.append(0)
 
