@@ -13,6 +13,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Modified clc so that frame of reference is always straight ahead.
+# I was unable to find a good target with a high reflective intensity,
+# so the parking target is between two towers, e.g. stacked cans.
 #################################################################################
 
 # Authors: Gilbert #
@@ -25,19 +29,27 @@ from geometry_msgs.msg import Twist
 from std_msgs.msg import Empty
 from teleop_service.msg import Behavior,TeleopStatus
 import numpy as np
-from math import sin, cos, pi, atan2
-from tf.transformations import euler_from_quaternion, quaternion_from_euler
+import math
 import time
 
-class ReturnValue(object):
+MAX_ANGLE   = 0.5
+MAX_SPEED   = 0.2
+ROBOT_WIDTH = 0.2     # Robot width ~ m
+TOLERANCE   = 0.04
+TOWER_WIDTH = 0.09    # Approx tower width ~ m
+START_OFFSET= 1.0     # Dist from left tower to start ~ m
+IGNORE      = 0.02    # Ignore any distances less than this
+INFINITY    = 10.
+
+
+# Position consists of a name, distance and angle from the current
+# heading and position of the LIDAR. Distances in meters, angle in radians
+class Position(object):
 	def __init__(self, name):
 		self.name = name
-
-	def return_val(self, stats, data_1, data_2, data_3):
-		self.stats = stats
-		self.data_1 = data_1
-		self.data_2 = data_2
-		self.data_3 = data_3
+		self.distance = 0.0
+		self.angle = 0.0
+		self.width = 0   # ~ m
 
 class Parker:
 	def __init__(self):
@@ -45,18 +57,20 @@ class Parker:
 
 		# Create a Twist message, and fill in the fields.
 		self.twist = Twist()
-		self.odom = Odometry()
-		self.scan = LaserScan()
+		self.reset = Empty()
 
-		self.spot_angle = ReturnValue('spot_angle')
-		self.spot_point = ReturnValue('spot_point')
 		self.step = 0
 		# Publish status so that controller can keep track of state
 		self.spub = rospy.Publisher('sb_teleop_status',TeleopStatus,queue_size=1)
+		self.reset_pub = rospy.Publisher('/reset',Empty,queue_size=1)
 		self.msg = TeleopStatus()
 		self.report("Parker: initialized.")
 		self.behavior = ""
-		self.rate = rospy.Rate(10)
+		self.leftTower = Position('left_tower')
+		self.rightTower= Position('right_tower')
+		self.towerSeparation = -1.
+		self.targetX = -1.
+		self.targetY = -1.
 
 
 	def report(self,text):
@@ -70,220 +84,204 @@ class Parker:
 		# Publish movement commands to the turtlebot's base
 		self.pub = rospy.Publisher('/cmd_vel', Twist,queue_size=1)
 		self.step = 0
+		self.park()
 
 	def stop(self):
 		if not self.stopped:
-			self.sub.unregister()
 			self.stopped = True
 			self.report("Parker: stopped.")
 
 
-	# Initiate the parking sequence.
+	# =============================== Parking Sequence ========================
 	# Note that negative is forward.
 	# Raw angles are 0-2*PI. 0 is straight ahead.
 	def park(self):
 		self.report("Started parking sequence ...")
 
-		self.spot_angle = ReturnValue('spot_angle')
-		self.spot_point = ReturnValue('spot_point')
-
 		while not rospy.is_shutdown() and not self.stopped:
-			self.scan = rospy.wait_for_message("/scan", LaserScan)
-			self.odom = rospy.wait_for_message("/odom", Odometry)
-			yaw = self.quaternion()
-			self.scan_parking_spot()
+			scan = rospy.wait_for_message("/scan", LaserScan)
+			self.find_parking_markers(scan)
 			if self.step == 0:
-				if self.spot_angle.stats == True:
-					self.find_spot_position()
-					if self.spot_point.stats == True:
-						theta = np.arctan2(self.spot_point.data_1[1] - self.spot_point.data_3[1], \
-											self.spot_point.data_1[0] - self.spot_point.data_3[0])
-						self.spub.publish("=================================")
-						self.spub.publish("|        |     x     |     y     |")
-						self.spub.publish('| start  | {0:>10.3f}| {1:>10.3f}|'.format(self.spot_point.data_1[0],\
-											self.spot_point.data_1[1]))
-						self.spub.publish('| center | {0:>10.3f}| {1:>10.3f}|'.format(self.spot_point.data_2[0],\
-											self.spot_point.data_2[1]))
-						self.spub.publish('| end    | {0:>10.3f}| {1:>10.3f}|'.format(self.spot_point.data_3[0],\
-											self.spot_point.data_3[1]))	
-						self.spub.publish("=================================")
-						self.spub.publish('| theta  | {0:.2f} deg'.format(np.rad2deg(theta)))
-						self.spub.publish('| yaw    | {0:.2f} deg'.format(np.rad2deg(yaw)))
-						self.spub.publish("=================================")
-						self.spub.publish("===== Go to parking spot!!! =====")
-						self.step = 1
+				# We stay in this state until we find the towers...
+				self.report("Park: Step 0 - searching for markers")
+				if self.rightTower.valid and self.leftTower.valid:
+					rospy.loginfo("=================================")
+					rospy.loginfo("|        |   dist    |   angle   |")
+					rospy.loginfo('| left  | {0>:.2f}| {1:>.0f}|'.format(self.leftTower.dist,\
+											np.rad2deg(self.leftTower.angle)))
+					rospy.loginfo('| right | {0>:.2f}| {1:>.0f}|'.format(self.rightTower.dist,\
+											np.rad2deg(self.rightTower.angle)))
+					rospy.loginfo("=================================")
+					self.step = 1
 				else:
-					self.spub.publish("ERROR: Fail finding parking spot.")
+					self.spub.publish("ERROR: Failed to find parking spot")
 			elif step == 1:
-				init_yaw = yaw
-				yaw = theta + yaw
-				if theta > 0:
-					if theta - init_yaw > 0.1:
-						twist.linear.x = 0.0
-						twist.angular.z = 0.2
-					else:
-						self.twist.linear.x = 0.0
-						self.twist.angular.z = 0.0
-						cmd_pub.publish(twist)
-						time.sleep(1)
-						time.sleep(3)
-						rotation_point = rotate_origin_only(spot_point.data_2[0], spot_point.data_2[1], -(pi / 2 - init_yaw))
-						step = 2
-				else:
-					if theta - init_yaw < -0.1:
-						self.twist.linear.x = 0.0
-						self.twist.angular.z = -0.2
-					else:
-						self.twist.linear.x = 0.0
-						self.twist.angular.z = 0.0
-						cmd_pub.publish(self.twist)
-						time.sleep(1)
-						reset_pub.publish(reset)
-						time.sleep(3)
-						rotation_point = rotate_origin_only(spot_point.data_2[0], spot_point.data_2[1], -(pi / 2 - init_yaw))
-						self.step = 2
+				self.report("Park: Step 1 - proceed to reference point")
+				self.setTarget(0,START_OFFSET+ROBOT_WIDTH)
+				if self.twist.linear.x<IGNORE:
+					time.sleep(1)
+					self.reset_pub.publish(self,reset)
+					time.sleep(3)	
+					self.pivot(0.0)
+					self.stop()
+					self.step = 2
 			elif step == 2:
-				if abs(odom.pose.pose.position.x - (rotation_point[1])) > 0.02:
-					if odom.pose.pose.position.x > (rotation_point[1]):
-						self.twist.linear.x = -0.05
-						self.twist.angular.z = 0.0
-					else:
-						self.twist.linear.x = 0.05
-						self.twist.angular.z = 0.0
-				else:
-					self.twist.linear.x = 0.0
-					self.twist.angular.z = 0.0
+				self.report("Park: Step 2 - downwind leg")
+				self.setTarget(START_OFFSET,START_OFFSET+ROBOT_WIDTH)
+				if self.twist.linear.x<IGNORE:
 					self.step = 3
 			elif step == 3:
-				if yaw > -pi / 2:
-					self.twist.linear.x = 0.0
-					self.twist.angular.z = -0.2
-				else:
-					self.twist.linear.x = 0.0
-					self.twist.angular.z = 0.0
+				self.report("Park: Step 3 - base leg")
+				self.setTarget(START_OFFSET,1.5*ROBOT_WIDTH)
+				if self.twist.linear.x<IGNORE:
 					self.step = 4
 			elif step == 4:
-				ranges = []
-				for i in range(150, 210):
-					if msg.ranges[i] != 0:
-						ranges.append(msg.ranges[i])
-				if min(ranges) > 0.2:
-					self.twist.linear.x = -0.04
-					self.twist.angular.z = 0.0
-				else:
-					self.twist.linear.x = 0.0
-					self.twist.angular.z = 0.0
-					self.report("Auto_parking Done.")
-					cmd_pub.publish(self.twist)
-					sys.exit()
+				self.report("Park: Step 4 - final approach")
+				self.setTarget(1.5*ROBOT_WIDTH,1.5*ROBOT_WIDTH)
+				if self.twist.linear.x<IGNORE:
+					self.step = 5
+					self.report("Auto_parking complete.")
+			elif step == 5:
+				self.report("Park: Step 5 - reverse angle")
+				self.setTarget(self.towerSeparation/2.,0.)
+				self.reverse()
+				if self.twist.linear.x<IGNORE:
+					self.step = 6
+			elif step==6:
+				self.report("Auto_parking complete.")
+				time.sleep(1)
+				self.reset_pub.publish(self,reset)
+				time.sleep(3)	
+				self.pivot(0.0)
 			cmd_pub.publish(self.twist)
-			scan_spot_filter(self.scan)
 
+	# =============================== End of Steps ========================
 
-
-	def scan_parking_spot():
-		stats = False
-		intensity_index = []
-		index_count = []
-		spot_angle_index = []
-		minimun_scan_angle = 30
-		maximun_scan_angle = 330
-		intensity_threshold = 100
-
-		for i in range(360):
-			if i >= minimun_scan_angle and i < maximun_scan_angle:
-				spot_intensity = msg.intensities[i] ** 2 * msg.ranges[i] / 100000
-				if spot_intensity >= intensity_threshold:
-					intensity_index.append(i)
-					index_count.append(i)
-				else:
-					intensity_index.append(0)
-			else:
-				intensity_index.append(0)
-
-		for i in index_count:
-			if abs(i - index_count[int(len(index_count) / 2)]) < 20:
-				spot_angle_index.append(i)
-				if len(spot_angle_index) > 10:
-					stats = True
-				else:
-					stats = False
-		center_angle = spot_angle_index[int(len(spot_angle_index) / 2)]
-		start_angle = spot_angle_index[2]
-		end_angle = spot_angle_index[-3]
-		self.spot_angle.return_val(stats, center_angle, start_angle, end_angle)
-
-	def quaternion():
-		quaternion = (
- 			odom.pose.pose.orientation.x,
-			odom.pose.pose.orientation.y,
-			odom.pose.pose.orientation.z,
-			odom.pose.pose.orientation.w)
-		euler = euler_from_quaternion(quaternion)
-		yaw = euler[2]
-		return yaw
-
-	def get_angle_distance(angle):
-		distance = msg.ranges[int(angle)]
-		if msg.ranges[int(angle)] is not None and distance is not 0:
-			angle = int(angle)
-			distance = distance
-		return angle, distance
-
-	def get_point(start_angle_distance):
-		angle = start_angle_distance[0]
-		angle = np.deg2rad(angle - 180)
-		distance = start_angle_distance[1]
-
-		if angle >= 0 and angle < pi / 2:
-			x = distance * cos(angle) * -1
-			y = distance * sin(angle) * -1
-		elif angle >= pi / 2 and angle < pi:
-			x = distance * cos(angle) * -1
-			y = distance * sin(angle) * -1
-		elif angle >= -pi / 2 and angle < 0:
-			x = distance * cos(angle) * -1
-			y = distance * sin(angle) * -1
+	def find_parking_markers(self,scan):
+		count = 0
+		position = Position('start')
+		position.valid = False
+		position.distance = INFINITY
+		position.angle = 0.
+		while not position.valid and count<5:
+			position = self.find_next_position(scan,position)
+			count = count+1
+		pos1 = position
+		
+		position = Position('start')
+		position.valid = False
+		position.distance = pos1.distance
+		position.angle    = pos1.angle
+		while not position.valid and count<5:
+			position = self.find_next_position(scan,pos1.distance,pos1.angle)
+			count = count+1
+		pos2 = position
+		if pos1.angle>pos2.angle:
+			self.rightTower = pos1
+			self.leftTower  = pos2
 		else:
-			x = distance * cos(angle) * -1
-			y = distance * sin(angle) * -1
-		return x, y
+			self.leftTower  = pos1
+			self.rightTower = pos2
+		self.leftTower.name = 'LeftTower'
+		self.rightTower.name= 'RightTower'
+		# If we've never computed distance between, do it and save it
+		# Use law of cosines
+		if self.towerSeparation<0:
+			a = pos1.distance
+			b = pos2.distance
+			angle = pos1.angle-pos2.angle
+			self.towerSeparation = math.abs(math.sqrt(a*a+b*b-2.*a*b*math.cos(angle))
+			rospy.loginfo("Park: Tower separation {:.2f}".format(self.towerSeparation))
 
-	def find_spot_position():
-		self.report("Finding parking spot ...")
-		stats = False
-		start_angle_distance = get_angle_distance(spot_angle.data_1)
-		center_angle_distance = get_angle_distance(spot_angle.data_2)
-		end_angle_distance = get_angle_distance(spot_angle.data_3)
 
-		if start_angle_distance[1] != 0 and center_angle_distance[1] != 0 and end_angle_distance[1] != 0:
-			self.report("calibrating ......")
-			start_point = get_point(start_angle_distance)
-			center_point = get_point(center_angle_distance)
-			end_point = get_point(end_angle_distance)
-			stats = True
+	# Search the scan results for the next-closest pillar
+	def find_next_position(self,scan,startPosition):
+		position = Position('tower')
+		delta  = scan.angle_increment
+		angle  = scan.angle_min-delta
+		for d in scan.ranges:
+			angle = angle + delta
+			if d>ignore and angle>startPosition.angle and d<startPosition.distance:
+				position.distance = d
+		# Now get the angle span
+		minAngle = 0
+		maxAngle    = 2*math.pi
+		angle  = scan.angle_min-delta
+		inArc = False
+		a = INFINITY
+		b = INFINITY
+		for d in scan.ranges:
+			angle = angle + delta
+			if d>=position.distance and d<position.distance+TOLERANCE:
+				minAngle = angle
+				inArc = True
+			elif inArc:
+				maxAngle = angle - delta
+				break
+
+		position.angle = (maxAngle - minAngle)/2.
+		if position.angle>math.pi:
+			position.angle = position.angle-2.*math.pi
+		# Use law of cosines to get width of post
+		width = math.sqrt(a*a+b*b-2.*a*b*math.cos(maxAngle-minAngle))
+		if width<2.*TOWER_WIDTH:
+			position.valid = True
+			position.width = width
+		return position
+
+		
+
+	# Angle is with respect to x-axis (towerLeft>towerRight)
+	def pivot(self,angle):
+		self.twist.linear.x  = 0.0
+		self.twist.angular.z = 0.0
+
+	# Compute the current position as a projection on the x-axis
+	# We have the LIDAR positions to the tower.
+	def projectionX(self):
+		# By law of sines, with c as angle at towerRight
+		sinc = self.towerLeft.distance*math.sin(self.towerLeft.angle-self.towerRight.angle)/\
+				    					self.towerSeparation
+		cosc = math.sqrt(1. - sinc*sinc)
+		return cosc*self.towerLeft.distance - self.towerSeparation
+
+	def projectionY(self):
+		# By law of sines, with c as angle at towerRight
+		sinc = self.towerLeft.distance*math.sin(self.towerLeft.angle-self.towerRight.angle)/\
+				    					self.towerSeparation
+		return sinc*self.towerLeft.distance
+
+	# Turn toward target. Target 0->2PI.
+	def rampedAngle(self):
+		angle = self.targetDirection
+		if angle>math.pi:
+			angle = angle - 2*math.pi
+		if angle<0.0:
+			if angle<-MAX_ANGLE:
+				angle = -MAX_ANGLE
 		else:
-			stats = False
-			self.report("Unsuccessful scan!!")
+			if angle>MAX_ANGLE:
+				angle = MAX_ANGLE
+		return -angle
 
-		return self.spot_point.return_val(stats, start_point, center_point, end_point)
+	def reverse(self):
+		self.twist.distance = -self.twist.distance
 
-	def rotate_origin_only(x, y, radians):
-		xx = x * cos(radians) + y * sin(radians)
-		yy = -x * sin(radians) + y * cos(radians)
-		return xx, yy
+	# Specify the target destination in terms of a reference system
+	# origin at towerLeft with x-axis through towerRight.
+	# we start the maneuvers. We travel to this point and pivot.
+	# If the left tower is the origin and the right tower on the x-axis,
+    # then the reference point is at (0,ROBOT_WIDTH+START_OFFSET)
+	def setTarget(self,x,y):
+		dx = self.projectionX()
+		dy = self.projectonY()
+		x = x + dx
+		y = y + dy
+		self.twist.angular.z = math.arctan(y/x)
+		self.twist.linear.x  = math.sqrt(x*x+y*y)
+		if self.twist.linear.x<MAX_SPEED:
+			self.twist.linear.x = MAX_SPEED
 
-	def scan_spot_filter(msg):
-		scan_spot_pub = rospy.Publisher("/scan_spot", LaserScan, queue_size=1)
-		scan_spot = msg
-		scan_spot_list = list(scan_spot.intensities)
-		for i in range(360):
-			scan_spot_list[i] = 0
-		scan_spot_list[spot_angle.data_1] = msg.ranges[spot_angle.data_1] + 10000
-		scan_spot_list[spot_angle.data_2] = msg.ranges[spot_angle.data_2] + 10000
-		scan_spot_list[spot_angle.data_3] = msg.ranges[spot_angle.data_3] + 10000
-		scan_spot.intensities = tuple(scan_spot_list)
-		scan_spot_pub.publish(scan_spot)
 
 # The overall behavior has changed. Start the folower if state is "follow".
 def getBehavior(behavior):
