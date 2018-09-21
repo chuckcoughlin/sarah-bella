@@ -8,6 +8,7 @@
   <param name="robot/platform" value="RaspberryPi" type="str"/>
   <include file="$(find turtlebot3_bringup)/launch/turtlebot3_robot.launch" />
   <include file="$(find follower)/launch/follower.launch" />
+  <include file="$(find automatic_parking)/launch/automatic_parking.launch" />
   <include file="$(find teleop_service)/launch/joystick.launch" />
 />
 </launch>
