@@ -44,6 +44,7 @@ INFINITY    = 10.
 # heading and position of the LIDAR. Distances in meters, angle in radians
 class Position(object):
 	def __init__(self, name):
+		self.valid = False
 		self.name = name
 		self.dist = 0.0
 		self.angle = 0.0
@@ -56,12 +57,12 @@ class Parker:
 		# Create a Twist message, and fill in the fields.
 		self.twist = Twist()
 		self.reset = Empty()
+		self.msg = TeleopStatus()
 
 		self.step = 0
 		# Publish status so that controller can keep track of state
 		self.spub = rospy.Publisher('sb_teleop_status',TeleopStatus,queue_size=1)
 		self.reset_pub = rospy.Publisher('/reset',Empty,queue_size=1)
-		self.msg = TeleopStatus()
 		self.report("Parker: initialized.")
 		self.behavior = ""
 		self.leftTower = Position('left_tower')
@@ -72,8 +73,9 @@ class Parker:
 
 
 	def report(self,text):
-		self.msg.status = text
-		self.spub.publish(self.msg)
+		if self.msg.status!=text:
+			self.msg.status = text
+			self.spub.publish(self.msg)
     
 	# Start by finding the parking spot
 	# We start here every time.
@@ -83,75 +85,82 @@ class Parker:
 		# Publish movement commands to the turtlebot's base
 		self.pub = rospy.Publisher('/cmd_vel', Twist,queue_size=1)
 		self.step = 0
+		self.sub  = rospy.Subscriber("/throttled_scan",LaserScan,self.getScan)
 		self.park()
 
 	def stop(self):
 		if not self.stopped:
 			self.stopped = True
 			self.report("Parker: stopped.")
+			self.sub.unregister()
+
+	# Receive a "throttled" scan message (once per second)
+	def getScan(self,scan):
+		global behaviorName
+		if rospy.is_shutdown() or self.stopped:
+			return
+		if not behaviorName=="park":
+			self.stop()
+		else:
+			# Proceed with application
+			self.find_parking_markers(scan)
+			if self.rightTower.valid and self.leftTower.valid:
+				self.park()
+			else:
+				rospy.loginfo("Park: Failed to find towers")
+
 
 
 	# =============================== Parking Sequence ========================
 	# Note that negative is forward.
 	# Raw angles are 0-2*PI. 0 is straight ahead.
 	def park(self):
-		self.report("Started parking sequence ...")
-
-		while not rospy.is_shutdown() and not self.stopped:
-			scan = rospy.wait_for_message("/scan", LaserScan)
-			self.find_parking_markers(scan)
-			if self.step == 0:
-				# We stay in this state until we find the towers...
-				# If logging is too voluminous, it gets lost
-				self.report("Park0: searching for markers")
-				if self.rightTower.valid and self.leftTower.valid:
-					rospy.loginfo(' left:  {0:.2f}| {1:.0f}|'.format(self.leftTower.dist,\
+		if self.step == 0:
+			self.report("Park0: searching for markers")
+			rospy.loginfo(' left:  {0:.2f}| {1:.0f}|'.format(self.leftTower.dist,\
 											np.rad2deg(self.leftTower.angle)))
-					time.sleep(0.5)
-					rospy.loginfo(' right: {0:.2f}| {1:.0f}|'.format(self.rightTower.dist,\
+			rospy.loginfo(' right: {0:.2f}| {1:.0f}|'.format(self.rightTower.dist,\
 											np.rad2deg(self.rightTower.angle)))
-					time.sleep(0.5)
-					self.step = 1
-				else:
-					self.spub.publish("ERROR: Failed to find parking spot")
-			elif self.step == 1:
-				self.report("Park1: proceed to reference point")
-				self.setTarget(0,START_OFFSET+ROBOT_WIDTH)
-				if self.twist.linear.x<IGNORE:
-					time.sleep(1)
-					self.reset_pub.publish(self,reset)
-					time.sleep(3)	
-					self.pivot(0.0)
-					self.stop()
-					self.step = 2
-			elif self.step == 2:
-				self.report("Park2: downwind leg")
-				self.setTarget(START_OFFSET,START_OFFSET+ROBOT_WIDTH)
-				if self.twist.linear.x<IGNORE:
-					self.step = 3
-			elif self.step == 3:
-				self.report("Park3: base leg")
-				self.setTarget(START_OFFSET,1.5*ROBOT_WIDTH)
-				if self.twist.linear.x<IGNORE:
-					self.step = 4
-			elif self.step == 4:
-				self.report("Park4: final approach")
-				self.setTarget(1.5*ROBOT_WIDTH,1.5*ROBOT_WIDTH)
-				if self.twist.linear.x<IGNORE:
-					self.step = 5
-			elif self.step == 5:
-				self.report("Park5: reverse angle")
-				self.setTarget(self.towerSeparation/2.,0.)
-				self.reverse()
-				if self.twist.linear.x<IGNORE:
-					self.step = 6
-			elif self.step==6:
-				self.report("Auto_parking complete.")
-				time.sleep(1)
+			self.step = 1
+		elif self.step == 1:
+			self.report("Park1: proceed to reference point")
+			self.setTarget(0,START_OFFSET+ROBOT_WIDTH)
+			if self.twist.linear.x<IGNORE:
 				self.reset_pub.publish(self,reset)
-				time.sleep(3)	
-				self.pivot(0.0)
-			self.pub.publish(self.twist)
+				self.step = 2
+				return
+		elif self.step == 2:
+			self.report("Park2: pivot")
+			self.pivot(0.0)
+			self.step = 3
+		elif self.step == 3:
+			self.report("Park3: downwind leg")
+			self.setTarget(START_OFFSET,START_OFFSET+ROBOT_WIDTH)
+			if self.twist.linear.x<IGNORE:
+				self.step = 4
+		elif self.step == 4:
+			self.report("Park4: base leg")
+			self.setTarget(START_OFFSET,1.5*ROBOT_WIDTH)
+			if self.twist.linear.x<IGNORE:
+				self.step = 5
+		elif self.step == 5:
+			self.report("Park5: final approach")
+			self.setTarget(1.5*ROBOT_WIDTH,1.5*ROBOT_WIDTH)
+			if self.twist.linear.x<IGNORE:
+				self.step = 6
+		elif self.step == 6:
+			self.report("Park6: reverse diagonal")
+			self.setTarget(self.towerSeparation/2.,0.)
+			self.reverse()
+			if self.twist.linear.x<IGNORE:
+				self.step = 7
+		elif self.step==7:
+			self.report("Auto_parking complete.")
+			self.reset_pub.publish(self,reset)
+			self.pivot(0.0)
+			self.stop()
+
+		self.pub.publish(self.twist)
 
 	# =============================== End of Steps ========================
 
