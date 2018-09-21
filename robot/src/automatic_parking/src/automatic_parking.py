@@ -19,8 +19,6 @@
 # so the parking target is between two towers, e.g. stacked cans.
 #################################################################################
 
-# Authors: Gilbert #
-
 import rospy
 import sys
 from sensor_msgs.msg import LaserScan
@@ -36,7 +34,7 @@ MAX_ANGLE   = 0.5
 MAX_SPEED   = 0.2
 ROBOT_WIDTH = 0.2     # Robot width ~ m
 TOLERANCE   = 0.04
-TOWER_WIDTH = 0.09    # Approx tower width ~ m
+PILLAR_WIDTH = 0.09    # Approx tower width ~ m
 START_OFFSET= 1.0     # Dist from left tower to start ~ m
 IGNORE      = 0.02    # Ignore any distances less than this
 INFINITY    = 10.
@@ -78,6 +76,7 @@ class Parker:
 		self.spub.publish(self.msg)
     
 	# Start by finding the parking spot
+	# We start here every time.
 	def start(self):
 		self.stopped = False
 		self.report("Parker: started ...");
@@ -103,15 +102,15 @@ class Parker:
 			self.find_parking_markers(scan)
 			if self.step == 0:
 				# We stay in this state until we find the towers...
+				# If logging is too voluminous, it gets lost
 				self.report("Park0: searching for markers")
 				if self.rightTower.valid and self.leftTower.valid:
-					rospy.loginfo("=================================")
-					rospy.loginfo("|        |   dist    |   angle   |")
-					rospy.loginfo('| left  | {0:.2f}| {1:.0f}|'.format(self.leftTower.dist,\
+					rospy.loginfo(' left:  {0:.2f}| {1:.0f}|'.format(self.leftTower.dist,\
 											np.rad2deg(self.leftTower.angle)))
-					rospy.loginfo('| right | {0:.2f}| {1:.0f}|'.format(self.rightTower.dist,\
+					time.sleep(0.5)
+					rospy.loginfo(' right: {0:.2f}| {1:.0f}|'.format(self.rightTower.dist,\
 											np.rad2deg(self.rightTower.angle)))
-					rospy.loginfo("=================================")
+					time.sleep(0.5)
 					self.step = 1
 				else:
 					self.spub.publish("ERROR: Failed to find parking spot")
@@ -168,9 +167,9 @@ class Parker:
 		pos1 = position
 		
 		position = Position('start')
-		position.valid = False
-		position.dist = pos1.dist
-		position.angle    = pos1.angle
+		position.valid   = False
+		position.dist    = pos1.dist
+		position.angle   = pos1.angle
 		while not position.valid and count<5:
 			position = self.find_next_position(scan,position)
 			count = count+1
@@ -191,7 +190,10 @@ class Parker:
 			angle = pos1.angle-pos2.angle
 			self.towerSeparation = math.fabs(math.sqrt(a*a+b*b-2.*a*b*math.cos(angle)))
 			rospy.loginfo("Park: Tower separation {:.2f}".format(self.towerSeparation))
+			time.sleep(0.5)
 			rospy.loginfo(" a,b,angle: {:.2f} {:.2f} {:.2f}".format(a,b,angle))
+			if self.towerSeparation<3*ROBOT_WIDTH:
+				self.towerSeparation = 3*ROBOT_WIDTH
 
 	# Search the scan results for the next-closest pillar
 	def find_next_position(self,scan,startPosition):
@@ -203,29 +205,31 @@ class Parker:
 			if d>IGNORE and angle>startPosition.angle and d<startPosition.dist:
 				position.dist = d
 		# Now get the angle span
-		minAngle = 0
-		maxAngle    = 2*math.pi
+		minAngle = 0.
+		maxAngle = 2*math.pi
 		angle  = scan.angle_min-delta
 		inArc = False
 		a = INFINITY
 		b = INFINITY
 		for d in scan.ranges:
 			angle = angle + delta
-			if d>=position.dist and d<position.dist+TOLERANCE:
+			if d>=position.dist and d<position.dist+TOLERANCE and not inArc:
 				minAngle = angle
 				inArc = True
-			elif inArc:
-				maxAngle = angle - delta
+			elif d>=position.dist+TOLERANCE and inArc:
+				maxAngle = angle
 				break
 
-		position.angle = (maxAngle - minAngle)/2.
+		position.angle = (maxAngle + minAngle)/2.
 		if position.angle>math.pi:
 			position.angle = position.angle-2.*math.pi
 		# Use law of cosines to get width of post
 		width = math.sqrt(a*a+b*b-2.*a*b*math.cos(maxAngle-minAngle))
-		if width<2.*TOWER_WIDTH:
+		if width<2.*PILLAR_WIDTH:
 			position.valid = True
 			position.width = width
+			time.sleep(0.5)
+			rospy.loginfo(" pillar width: {:.2f}".format(width))
 		return position
 
 		
@@ -242,8 +246,8 @@ class Parker:
 		sinc = self.leftTower.dist*math.sin(self.leftTower.angle-self.rightTower.angle)/\
 				    					self.towerSeparation
 		rospy.loginfo("ProjectionX: {:.2f} {:.2f} {:.2f} {:.2f}".format(\
-			sinc,self.leftTower.dist,sin(self.leftTower.angle-self.rightTower.angle),\
-			self.towerSeparation)
+			sinc,self.leftTower.dist,math.sin(self.leftTower.angle-self.rightTower.angle),\
+			self.towerSeparation))
 		cosc = math.sqrt(1. - sinc*sinc)
 		return cosc*self.leftTower.dist - self.towerSeparation
 
