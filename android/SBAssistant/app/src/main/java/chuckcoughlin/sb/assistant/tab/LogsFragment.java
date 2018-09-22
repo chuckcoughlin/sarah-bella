@@ -43,7 +43,7 @@ public class LogsFragment extends BasicAssistantFragment implements SBApplicatio
         applicationManager.addListener(this);
 
         logMessageView = rootView.findViewById(R.id.logs_recycler_view);
-        logMessageView.setHasFixedSize(false);
+        logMessageView.setHasFixedSize(false);   // Refers to the size of the layout.
         LinearLayoutManager layoutManager = new LinearLayoutManager(logMessageView.getContext());
         logMessageView.setLayoutManager(layoutManager);
         adapter = new LogRecyclerAdapter();

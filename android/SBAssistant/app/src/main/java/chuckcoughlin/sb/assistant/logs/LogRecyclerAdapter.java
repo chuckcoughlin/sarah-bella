@@ -5,7 +5,6 @@
 package chuckcoughlin.sb.assistant.logs;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
 import android.support.transition.TransitionManager;
 import android.support.v7.widget.RecyclerView;
@@ -77,7 +76,11 @@ public class LogRecyclerAdapter extends RecyclerView.Adapter<LogViewHolder> impl
     @Override
     public void onBindViewHolder(LogViewHolder holder, int position) {
         boolean expand = (position==expandedPosition);
-        Log msg = logManager.getLogAtPosition(position);
+        Log msg = logManager.getLogAtPosition(position);  // Checks index bounds
+        if( msg==null ) {
+            android.util.Log.w(CLSS,String.format("Null log holder at %d",position));
+            return;
+        }
         // The timestamp is always the same
         TextView timestampView  = holder.getTimestampView();
         int secsFromEpoch = msg.getHeader().getStamp().secs;
@@ -140,9 +143,7 @@ public class LogRecyclerAdapter extends RecyclerView.Adapter<LogViewHolder> impl
 
 
     @Override
-    public int getItemCount() {
-        return logManager.getLogs().size();
-    }
+    public int getItemCount() {return logManager.getLogs().size(); }
 
     @Override
     public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
