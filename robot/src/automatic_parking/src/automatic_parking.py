@@ -193,17 +193,18 @@ class Parker:
 				pillar1.a1 = angle
 				pillar1.inArc = True
 				pillar2.inArc = False
-			elif not pillar1.inArc and d<pillar1.trial:
+			elif not pillar1.inArc and d<pillar1.d1:
 				pillar1.d1 = d
 				pillar1.a1 = angle
 				pillar1.inArc = True
-			elif pillar1.inArc and d>(piller1.dist+TOLERANCE):
+			elif pillar1.inArc and d>(pillar1.dist+TOLERANCE):
 				pillar1.d2 = d
 				pillar1.a2 = angle
 				width = getWidth(self,pillar1)
 				if width<2.*PILLAR_WIDTH or width>2*PILLAR_WIDTH:
 					rospy.loginfo("Park: Issue: pillar1 width: {:.2f}".format(width))
 				else:
+					pillar2.valid = True
 					pillar2.dist = pillar1.dist
 					pillar2.angle= pillar1.angle
 					pillar2.width= pillar1.width
@@ -211,32 +212,28 @@ class Parker:
 					pillar1.angle = (pillar1.a1+pillar1.a2)/2.
 					pillar1.width = width
 				pillar1.inArc = False
-			# Farther than piller1, but closer than current pillar2
+			# Farther than pillar1, but closer than current pillar2
 			elif d<pillar2.d1-TOLERANCE:
 				pillar2.d1 = d
 				pillar2.a1 = angle
 				pillar2.inArc = True
-			elif not pillar2.inArc and d<pillar2.trial:
+			elif not pillar2.inArc and d<pillar2.d1:
 				pillar2.d1 = d
 				pillar2.a1 = angle
 				pillar2.inArc = True
-			elif pillar2.inArc and d>(piller2.dist+TOLERANCE):
+			elif pillar2.inArc and d>(pillar2.dist+TOLERANCE):
 				pillar2.d2 = d
 				pillar2.a2 = angle
 				width = getWidth(self,pillar1)
 				if width<2.*PILLAR_WIDTH or width>2*PILLAR_WIDTH:
 					rospy.loginfo("Park: Issue: pillar2 width: {:.2f}".format(width))
 				else:
+					pillar2.valid= True
 					pillar2.dist = (pillar2.d1+pillar1.d2)/2.
 					pillar2.angle = (pillar2.a1+pillar1.a2)/2.
 					pillar2.width = width
 				pillar2.inArc = False
 
-
-		rospy.loginfo("Park: LeftTower  {:.2f} {:.0f}".format(\
-				self.leftTower.dist,180*self.leftTower.angle/math.pi))
-		rospy.loginfo("Park: RightTower {:.2f} {:.0f}".format(\
-				self.rightTower.dist,180*self.rightTower.angle/math.pi))
 		
 		if pillar1.angle>pillar2.angle:
 			self.rightTower = pillar1
@@ -245,12 +242,17 @@ class Parker:
 			self.leftTower  = pillar1
 			self.rightTower = pillar2
 
+		rospy.loginfo("Park: LeftTower  {:.2f} {:.0f}".format(\
+				self.leftTower.dist,180*self.leftTower.angle/math.pi))
+		rospy.loginfo("Park: RightTower {:.2f} {:.0f}".format(\
+				self.rightTower.dist,180*self.rightTower.angle/math.pi))
+
 		# If we've never computed distance between, do it and save it
 		# Use law of cosines again
 		if self.towerSeparation<0:
-			a = pos1.dist
-			b = pos2.dist
-			angle = pos1.angle-pos2.angle
+			a = pillar1.dist
+			b = pillar2.dist
+			angle = pillar1.angle-pillar2.angle
 			self.towerSeparation = math.fabs(math.sqrt(a*a+b*b-2.*a*b*math.cos(angle)))
 			rospy.loginfo("Park: Tower separation {:.2f}".format(self.towerSeparation))
 			time.sleep(0.1)
