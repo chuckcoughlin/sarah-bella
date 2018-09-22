@@ -17,7 +17,7 @@ from geometry_msgs.msg import Twist
 from teleop_service.msg import Behavior,TeleopStatus
 from math import tanh
 
-DELTA=0.4 # Most we turn at a time.
+DELTA=0.5 # Most we turn at a time.
 INFINITY = 100000.
 IGNORE   = 0.20 # Ignore distances less than this
 
