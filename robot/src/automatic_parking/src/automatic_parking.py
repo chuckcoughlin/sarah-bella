@@ -40,15 +40,28 @@ IGNORE      = 0.02    # Ignore any distances less than this
 INFINITY    = 10.
 
 
+# A pillar describes the position of a target pillar in coordinates of the LIDAR
+# measurements. It carries attributes used in the calculation.
+class Pillar:
+	def __init__(self):
+		self.valid = False
+		self.dist = INFINITY
+		self.angle= 0.0
+		self.width = 0.0
+		self.d1 = INFINITY
+		self.d2 = INFINITY
+		self.a1 = 0.0
+		self.a2 = 0.0
+		self.inArc = False
+
 # Position consists of a name, distance and angle from the current
 # heading and position of the LIDAR. Distances in meters, angle in radians
-class Position(object):
+class Position:
 	def __init__(self, name):
 		self.valid = False
 		self.name = name
 		self.dist = 0.0
 		self.angle = 0.0
-		self.width = 0   # ~ m
 
 class Parker:
 	def __init__(self):
@@ -65,8 +78,8 @@ class Parker:
 		self.reset_pub = rospy.Publisher('/reset',Empty,queue_size=1)
 		self.report("Parker: initialized.")
 		self.behavior = ""
-		self.leftTower = Position('left_tower')
-		self.rightTower= Position('right_tower')
+		self.leftTower = Pillar()
+		self.rightTower= Pillar()
 		self.towerSeparation = -1
 		self.targetX = -1.
 		self.targetY = -1.
@@ -85,8 +98,7 @@ class Parker:
 		# Publish movement commands to the turtlebot's base
 		self.pub = rospy.Publisher('/cmd_vel', Twist,queue_size=1)
 		self.step = 0
-		self.sub  = rospy.Subscriber("/throttled_scan",LaserScan,self.getScan)
-		self.park()
+		self.sub  = rospy.Subscriber("/scan_throttle",LaserScan,self.getScan)
 
 	def stop(self):
 		if not self.stopped:
@@ -164,81 +176,95 @@ class Parker:
 
 	# =============================== End of Steps ========================
 
+	# Search the scan results for the two closest pillars.
+	# Reject objects that wre too narrow or wide.
 	def find_parking_markers(self,scan):
-		count = 0
-		position = Position('start')
-		position.valid = False
-		position.dist = INFINITY
-		position.angle = 0.
-		while not position.valid and count<5:
-			position = self.find_next_position(scan,position)
-			count = count+1
-		pos1 = position
+		delta  = scan.angle_increment
+		angle  = scan.angle_min-delta
+		pillar1 = Pillar()  # Closest
+		pillar2 = Pillar()  # Next closest
+		for d in scan.ranges:
+			angle = angle + delta
+			if d < IGNORE:
+				continue
+			# New minimum not matter what
+			if d<pillar1.d1-TOLERANCE:
+				pillar1.d1 = d
+				pillar1.a1 = angle
+				pillar1.inArc = True
+				pillar2.inArc = False
+			elif not pillar1.inArc and d<pillar1.trial:
+				pillar1.d1 = d
+				pillar1.a1 = angle
+				pillar1.inArc = True
+			elif pillar1.inArc and d>(piller1.dist+TOLERANCE):
+				pillar1.d2 = d
+				pillar1.a2 = angle
+				width = getWidth(self,pillar1)
+				if width<2.*PILLAR_WIDTH or width>2*PILLAR_WIDTH:
+					rospy.loginfo("Park: Issue: pillar1 width: {:.2f}".format(width))
+				else:
+					pillar2.dist = pillar1.dist
+					pillar2.angle= pillar1.angle
+					pillar2.width= pillar1.width
+					pillar1.dist = (pillar1.d1+pillar1.d2)/2.
+					pillar1.angle = (pillar1.a1+pillar1.a2)/2.
+					pillar1.width = width
+				pillar1.inArc = False
+			# Farther than piller1, but closer than current pillar2
+			elif d<pillar2.d1-TOLERANCE:
+				pillar2.d1 = d
+				pillar2.a1 = angle
+				pillar2.inArc = True
+			elif not pillar2.inArc and d<pillar2.trial:
+				pillar2.d1 = d
+				pillar2.a1 = angle
+				pillar2.inArc = True
+			elif pillar2.inArc and d>(piller2.dist+TOLERANCE):
+				pillar2.d2 = d
+				pillar2.a2 = angle
+				width = getWidth(self,pillar1)
+				if width<2.*PILLAR_WIDTH or width>2*PILLAR_WIDTH:
+					rospy.loginfo("Park: Issue: pillar2 width: {:.2f}".format(width))
+				else:
+					pillar2.dist = (pillar2.d1+pillar1.d2)/2.
+					pillar2.angle = (pillar2.a1+pillar1.a2)/2.
+					pillar2.width = width
+				pillar2.inArc = False
+
+
+		rospy.loginfo("Park: LeftTower  {:.2f} {:.0f}".format(\
+				self.leftTower.dist,180*self.leftTower.angle/math.pi))
+		rospy.loginfo("Park: RightTower {:.2f} {:.0f}".format(\
+				self.rightTower.dist,180*self.rightTower.angle/math.pi))
 		
-		position = Position('start')
-		position.valid   = False
-		position.dist    = pos1.dist
-		position.angle   = pos1.angle
-		while not position.valid and count<5:
-			position = self.find_next_position(scan,position)
-			count = count+1
-		pos2 = position
-		if pos1.angle>pos2.angle:
-			self.rightTower = pos1
-			self.leftTower  = pos2
+		if pillar1.angle>pillar2.angle:
+			self.rightTower = pillar1
+			self.leftTower  = pillar2
 		else:
-			self.leftTower  = pos1
-			self.rightTower = pos2
-		self.leftTower.name = 'leftTower'
-		self.rightTower.name= 'rightTower'
+			self.leftTower  = pillar1
+			self.rightTower = pillar2
+
 		# If we've never computed distance between, do it and save it
-		# Use law of cosines
+		# Use law of cosines again
 		if self.towerSeparation<0:
 			a = pos1.dist
 			b = pos2.dist
 			angle = pos1.angle-pos2.angle
 			self.towerSeparation = math.fabs(math.sqrt(a*a+b*b-2.*a*b*math.cos(angle)))
 			rospy.loginfo("Park: Tower separation {:.2f}".format(self.towerSeparation))
-			time.sleep(0.5)
+			time.sleep(0.1)
 			rospy.loginfo(" a,b,angle: {:.2f} {:.2f} {:.2f}".format(a,b,angle))
 			if self.towerSeparation<3*ROBOT_WIDTH:
 				self.towerSeparation = 3*ROBOT_WIDTH
 
-	# Search the scan results for the next-closest pillar
-	def find_next_position(self,scan,startPosition):
-		position = Position('tower')
-		delta  = scan.angle_increment
-		angle  = scan.angle_min-delta
-		for d in scan.ranges:
-			angle = angle + delta
-			if d>IGNORE and angle>startPosition.angle and d<startPosition.dist:
-				position.dist = d
-		# Now get the angle span
-		minAngle = 0.
-		maxAngle = 2*math.pi
-		angle  = scan.angle_min-delta
-		inArc = False
-		a = INFINITY
-		b = INFINITY
-		for d in scan.ranges:
-			angle = angle + delta
-			if d>=position.dist and d<position.dist+TOLERANCE and not inArc:
-				minAngle = angle
-				inArc = True
-			elif d>=position.dist+TOLERANCE and inArc:
-				maxAngle = angle
-				break
-
-		position.angle = (maxAngle + minAngle)/2.
-		if position.angle>math.pi:
-			position.angle = position.angle-2.*math.pi
-		# Use law of cosines to get width of post
+	# Compute width of a pillar using law of cosines and only temporary parts
+	# of the object. If width is not reasonable, object will be discarded.
+	def get_width(self,pillar):
+		a = pillar.d1
+		b = pillar.d2
+		theta = pillar.a2 - pillar.a1
 		width = math.sqrt(a*a+b*b-2.*a*b*math.cos(maxAngle-minAngle))
-		if width<2.*PILLAR_WIDTH:
-			position.valid = True
-			position.width = width
-			time.sleep(0.5)
-			rospy.loginfo(" pillar width: {:.2f}".format(width))
 		return position
 
 		
