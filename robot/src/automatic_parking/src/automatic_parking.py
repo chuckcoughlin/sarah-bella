@@ -130,7 +130,7 @@ class Parker:
 		if self.step == 0:
 			self.report("Park0: searching for markers")
 			rospy.loginfo(' towers:  {:.2f} {1:.0f}, {:.2f} {:.0f}'.format(\
-				self.leftTower.dist, np.rad2deg(self.leftTower.angle)),\
+				self.leftTower.dist, np.rad2deg(self.leftTower.angle),\
 				self.rightTower.dist,np.rad2deg(self.rightTower.angle)))
 			self.step = 1
 			return  		
