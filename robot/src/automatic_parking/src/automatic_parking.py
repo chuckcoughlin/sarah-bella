@@ -129,11 +129,11 @@ class Parker:
 	def park(self):
 		if self.step == 0:
 			self.report("Park0: searching for markers")
-			rospy.loginfo(' left:  {0:.2f}| {1:.0f}|'.format(self.leftTower.dist,\
-											np.rad2deg(self.leftTower.angle)))
-			rospy.loginfo(' right: {0:.2f}| {1:.0f}|'.format(self.rightTower.dist,\
-											np.rad2deg(self.rightTower.angle)))
+			rospy.loginfo(' towers:  {:.2f} {1:.0f}, {:.2f} {:.0f}'.format(\
+				self.leftTower.dist, np.rad2deg(self.leftTower.angle)),\
+				self.rightTower.dist,np.rad2deg(self.rightTower.angle)))
 			self.step = 1
+			return  		
 		elif self.step == 1:
 			self.report("Park1: proceed to reference point")
 			self.setTarget(0,START_OFFSET+ROBOT_WIDTH)
@@ -242,9 +242,8 @@ class Parker:
 			self.leftTower  = pillar1
 			self.rightTower = pillar2
 
-		rospy.loginfo("Park: LeftTower  {:.2f} {:.0f}".format(\
-				self.leftTower.dist,180*self.leftTower.angle/math.pi))
-		rospy.loginfo("Park: RightTower {:.2f} {:.0f}".format(\
+		rospy.loginfo("Park: towers  {:.2f} {:.0f}, {:.2f} {:.0f}".format(\
+				self.leftTower.dist,180*self.leftTower.angle/math.pi,\
 				self.rightTower.dist,180*self.rightTower.angle/math.pi))
 
 		# If we've never computed distance between, do it and save it
