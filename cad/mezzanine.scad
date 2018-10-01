@@ -60,12 +60,13 @@ module breadboard_notches() {
        }
 }
 // Subtract this from the base platform
-// These are the posts
+// These are the posts.
+// Cylinder arguments: height,r1,r2,center
 module post_holes(z) {
     for(i=[[pillar_x,pillar_y],[-pillar_x,pillar_y]]) {
         translate(i)
         rotate(22.5,0,0)
-        cylinder(r=4,h=z,$fn=6);
+        cylinder(z,4,4,false,$fn=6);
     }
 }
 
