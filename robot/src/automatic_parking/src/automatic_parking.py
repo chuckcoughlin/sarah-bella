@@ -177,7 +177,8 @@ class Parker:
 	# =============================== End of Steps ========================
 
 	# Search the scan results for the two closest pillars.
-	# Reject objects that wre too narrow or wide.
+	# Reject objects that are too narrow or wide.
+	# Handle the wrap
 	def find_parking_markers(self,scan):
 		delta  = scan.angle_increment
 		angle  = scan.angle_min-delta
@@ -188,7 +189,7 @@ class Parker:
 			if d < IGNORE:
 				continue
 			# New minimum not matter what
-			if d<pillar1.d1-TOLERANCE:
+			if d<pillar1.d1+TOLERANCE:
 				pillar1.d1 = d
 				pillar1.a1 = angle
 				rospy.loginfo("Park: Pillar1 in arc at "+str(angle))
@@ -216,7 +217,7 @@ class Parker:
 				pillar1.inArc = False
 				rospy.loginfo("Park: Pillar1 end arc at "+str(angle))
 			# Farther than pillar1, but closer than current pillar2
-			elif d<pillar2.d1-TOLERANCE:
+			elif d<pillar2.d1+TOLERANCE:
 				pillar2.d1 = d
 				pillar2.a1 = angle
 				pillar2.inArc = True
