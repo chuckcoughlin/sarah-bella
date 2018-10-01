@@ -191,14 +191,14 @@ class Parker:
 			if d<pillar1.d1-TOLERANCE:
 				pillar1.d1 = d
 				pillar1.a1 = angle
-				rospy.loginfo("Park: Pillar1 in arc at "+angle)
+				rospy.loginfo("Park: Pillar1 in arc at "+str(angle))
 				pillar1.inArc = True
 				pillar2.inArc = False
 			elif not pillar1.inArc and d<pillar1.d1:
 				pillar1.d1 = d
 				pillar1.a1 = angle
 				pillar1.inArc = True
-				rospy.loginfo("Park: Pillar1 start arc at "+angle)
+				rospy.loginfo("Park: Pillar1 start arc at "+str(angle))
 			elif pillar1.inArc and d>(pillar1.dist+TOLERANCE):
 				pillar1.d2 = d
 				pillar1.a2 = angle
@@ -214,7 +214,7 @@ class Parker:
 					pillar1.angle = (pillar1.a1+pillar1.a2)/2.
 					pillar1.width = width
 				pillar1.inArc = False
-				rospy.loginfo("Park: Pillar1 end arc at "+angle)
+				rospy.loginfo("Park: Pillar1 end arc at "+str(angle))
 			# Farther than pillar1, but closer than current pillar2
 			elif d<pillar2.d1-TOLERANCE:
 				pillar2.d1 = d
@@ -236,6 +236,7 @@ class Parker:
 					pillar2.angle = (pillar2.a1+pillar1.a2)/2.
 					pillar2.width = width
 				pillar2.inArc = False
+				rospy.loginfo("Park: Pillar2 end arc at "+str(angle))
 
 		
 		if pillar1.angle>pillar2.angle:
