@@ -54,6 +54,58 @@ class Pillar:
 		self.a2 = 0.0
 		self.inArc = False
 
+	def clone(pillar):
+		self.valid = pillar.valid
+		self.dist = pillar.dist
+		self.angle= pillar.angle
+		self.width = pillar.width
+		self.d1 = pillar.d1
+		self.d2 = pillar.d2
+		self.a1 = pillar.a1
+		self.a2 = pillar.a2
+		self.inArc = pillar.inArc
+
+	# Point represents the start of a group
+	def start(dist,angle):
+		self.d1 = dist
+		self.d2 = dist
+		self.a1 = angle
+		self.a2 = angle
+		self.inArc = True
+		self.valid = False
+
+	# Complete ppoint with what we have
+	def stop():
+		if self.inArc:
+			self.dist  = (self.d1+self.d2)/2.
+			self.angle = (self.a1+self.a2)/2.
+			self.inArc = False
+			self.valid = True
+			self.width = self.getWidth()
+			if self.width<2.*PILLAR_WIDTH or self.width>2*PILLAR_WIDTH:
+				rospy.loginfo("Park: Issue: pillar width: {:.2f}".format(width))
+				self.valid = False
+
+	# Point represents the continuation or completion of a group
+	def append(dist,angle):
+		if dist>self.d2+TOLERANCE:
+			self.stop()
+		else:
+			if dist<self.d1:
+				self.d1 = dist
+			elif dist>d2:
+				self.d2 = dist
+			self.a2 = angle
+
+	# Compute width of pillar using law of cosines
+	# If width is not reasonable, pillar will be discarded.
+	def getWidth(self):
+		a = self.d1
+		b = self.d2
+		theta = self.a2 - self.a1
+		width = math.sqrt(a*a+b*b-2.*a*b*math.cos(theta))
+		return width
+
 # Position consists of a name, distance and angle from the current
 # heading and position of the LIDAR. Distances in meters, angle in radians
 class Position:
@@ -178,74 +230,65 @@ class Parker:
 
 	# Search the scan results for the two closest pillars.
 	# Reject objects that are too narrow or wide.
-	# Handle the wrap
+	# Handle the wrap by postulating a third pillar. We may combine.
 	def find_parking_markers(self,scan):
 		delta  = scan.angle_increment
 		angle  = scan.angle_min-delta
 		pillar1 = Pillar()  # Closest
 		pillar2 = Pillar()  # Next closest
+		pillar3 = Pillar()  # In case of a wrap around origin.
 		for d in scan.ranges:
 			angle = angle + delta
 			if d < IGNORE:
 				continue
-			# New minimum not matter what
-			if d<pillar1.d1+TOLERANCE:
-				pillar1.d1 = d
-				pillar1.a1 = angle
-				rospy.loginfo("Park: Pillar1 in arc at "+str(angle))
-				pillar1.inArc = True
-				pillar2.inArc = False
-			elif not pillar1.inArc and d<pillar1.d1:
-				pillar1.d1 = d
-				pillar1.a1 = angle
-				pillar1.inArc = True
+			# New minimum, process no matter what
+			if d<pillar1.d1-TOLERANCE:
+				pillar1.stop()
+				pillar3.clone(pillar2)
+				pillar2.clone(pillar1)
+				pillar1.start(d,angle)
 				rospy.loginfo("Park: Pillar1 start arc at "+str(angle))
-			elif pillar1.inArc and d>(pillar1.dist+TOLERANCE):
-				pillar1.d2 = d
-				pillar1.a2 = angle
-				width = getWidth(self,pillar1)
-				if width<2.*PILLAR_WIDTH or width>2*PILLAR_WIDTH:
-					rospy.loginfo("Park: Issue: pillar1 width: {:.2f}".format(width))
-				else:
-					pillar2.valid = True
-					pillar2.dist = pillar1.dist
-					pillar2.angle= pillar1.angle
-					pillar2.width= pillar1.width
-					pillar1.dist = (pillar1.d1+pillar1.d2)/2.
-					pillar1.angle = (pillar1.a1+pillar1.a2)/2.
-					pillar1.width = width
-				pillar1.inArc = False
-				rospy.loginfo("Park: Pillar1 end arc at "+str(angle))
-			# Farther than pillar1, but closer than current pillar2
-			elif d<pillar2.d1+TOLERANCE:
-				pillar2.d1 = d
-				pillar2.a1 = angle
-				pillar2.inArc = True
-			elif not pillar2.inArc and d<pillar2.d1:
-				pillar2.d1 = d
-				pillar2.a1 = angle
-				pillar2.inArc = True
-			elif pillar2.inArc and d>(pillar2.dist+TOLERANCE):
-				pillar2.d2 = d
-				pillar2.a2 = angle
-				width = getWidth(self,pillar1)
-				if width<2.*PILLAR_WIDTH or width>2*PILLAR_WIDTH:
-					rospy.loginfo("Park: Issue: pillar2 width: {:.2f}".format(width))
-				else:
-					pillar2.valid= True
-					pillar2.dist = (pillar2.d1+pillar1.d2)/2.
-					pillar2.angle = (pillar2.a1+pillar1.a2)/2.
-					pillar2.width = width
-				pillar2.inArc = False
-				rospy.loginfo("Park: Pillar2 end arc at "+str(angle))
+			elif pillar1.inArc:
+				pillar1.append(d,angle) 
+				rospy.loginfo("Park: Pillar1 in arc at "+str(angle))
+			elif d<pillar2.d1-TOLERANCE:
+				# Farther than pillar1, but closer than current pillar2
+				pillar2.stop()
+				pillar3.clone(pillar2)
+				pillar2.start(d,angle)
+				rospy.loginfo("Park: Pillar2 start arc at "+str(angle))
+			elif pillar2.inArc:
+				pillar2.append(d,angle)
+				rospy.loginfo("Park: Pillar2 in arc at "+str(angle))
+			elif d<pillar3.d1-TOLERANCE
+				pillar3.stop()
+				pillar3.start(d,angle)
+				rospy.loginfo("Park: Pillar3 start arc at "+str(angle))
+			elif pillar3.inArc: 
+				pillar3.append(d,angle)
+				rospy.loginfo("Park: Pillar3 in arc at "+str(angle))
 
 		
-		if pillar1.angle>pillar2.angle:
-			self.rightTower = pillar1
-			self.leftTower  = pillar2
-		else:
+		# Check for wrap-around
+		if pillar1.inArc:
+			if pillar2.a1 == 0:
+				pillar1.combine(pillar2)
+				pillar2 = pillar3
+			else pillar1.stop()
+		elif pillar2.inArc:
+			if pillar1.a1==0:
+				pillar2.combine(pillar1)
+				pillar2 = pillar3
+			elif pillar3.a1==0
+				pillar2.combine(pillar3)
+
+		# Now assign the tower positions
+		if pillar1.angle<pillar2.angle:
 			self.leftTower  = pillar1
 			self.rightTower = pillar2
+		else:
+			self.leftTower  = pillar2
+			self.rightTower = pillar1
 
 		rospy.loginfo("Park: towers  {:.2f} {:.0f}, {:.2f} {:.0f}".format(\
 				self.leftTower.dist,180*self.leftTower.angle/math.pi,\
@@ -265,14 +308,6 @@ class Parker:
 			if self.towerSeparation<3*ROBOT_WIDTH:
 				self.towerSeparation = 3*ROBOT_WIDTH
 
-	# Compute width of a pillar using law of cosines and only temporary parts
-	# of the object. If width is not reasonable, object will be discarded.
-	def get_width(self,pillar):
-		a = pillar.d1
-		b = pillar.d2
-		theta = pillar.a2 - pillar.a1
-		width = math.sqrt(a*a+b*b-2.*a*b*math.cos(maxAngle-minAngle))
-		return position
 
 		
 
