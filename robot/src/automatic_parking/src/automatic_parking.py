@@ -54,7 +54,7 @@ class Pillar:
 		self.a2 = 0.0
 		self.inArc = False
 
-	def clone(pillar):
+	def clone(self,pillar):
 		self.valid = pillar.valid
 		self.dist = pillar.dist
 		self.angle= pillar.angle
@@ -66,7 +66,7 @@ class Pillar:
 		self.inArc = pillar.inArc
 
 	# Point represents the start of a group
-	def start(dist,angle):
+	def start(self,dist,angle):
 		self.d1 = dist
 		self.d2 = dist
 		self.a1 = angle
@@ -75,7 +75,7 @@ class Pillar:
 		self.valid = False
 
 	# Complete ppoint with what we have
-	def stop():
+	def stop(self):
 		if self.inArc:
 			self.dist  = (self.d1+self.d2)/2.
 			self.angle = (self.a1+self.a2)/2.
@@ -87,7 +87,7 @@ class Pillar:
 				self.valid = False
 
 	# Point represents the continuation or completion of a group
-	def append(dist,angle):
+	def append(self,dist,angle):
 		if dist>self.d2+TOLERANCE:
 			self.stop()
 		else:
@@ -260,7 +260,7 @@ class Parker:
 			elif pillar2.inArc:
 				pillar2.append(d,angle)
 				rospy.loginfo("Park: Pillar2 in arc at "+str(angle))
-			elif d<pillar3.d1-TOLERANCE
+			elif d<pillar3.d1-TOLERANCE:
 				pillar3.stop()
 				pillar3.start(d,angle)
 				rospy.loginfo("Park: Pillar3 start arc at "+str(angle))
@@ -274,12 +274,13 @@ class Parker:
 			if pillar2.a1 == 0:
 				pillar1.combine(pillar2)
 				pillar2 = pillar3
-			else pillar1.stop()
+			else:
+				 pillar1.stop()
 		elif pillar2.inArc:
 			if pillar1.a1==0:
 				pillar2.combine(pillar1)
 				pillar2 = pillar3
-			elif pillar3.a1==0
+			elif pillar3.a1==0:
 				pillar2.combine(pillar3)
 
 		# Now assign the tower positions
