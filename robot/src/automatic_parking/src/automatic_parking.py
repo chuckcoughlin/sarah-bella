@@ -83,7 +83,7 @@ class Pillar:
 			self.valid = True
 			self.width = self.getWidth()
 			if self.width<2.*PILLAR_WIDTH or self.width>2*PILLAR_WIDTH:
-				rospy.loginfo("Park: Issue: pillar width: {:.2f}".format(width))
+				rospy.loginfo("Park: Issue: pillar width: {:.2f}".format(self.width))
 				self.valid = False
 
 	# Point represents the continuation or completion of a group
@@ -93,7 +93,7 @@ class Pillar:
 		else:
 			if dist<self.d1:
 				self.d1 = dist
-			elif dist>d2:
+			elif dist>self.d2:
 				self.d2 = dist
 			self.a2 = angle
 
@@ -247,26 +247,26 @@ class Parker:
 				pillar3.clone(pillar2)
 				pillar2.clone(pillar1)
 				pillar1.start(d,angle)
-				rospy.loginfo("Park: Pillar1 start arc at "+str(angle))
+				rospy.loginfo('Park: Pillar1 start arc {0:.0f} {1:.2f}'.format(np.rad2deg(angle,d)
 			elif pillar1.inArc:
 				pillar1.append(d,angle) 
-				rospy.loginfo("Park: Pillar1 in arc at "+str(angle))
+				rospy.loginfo('Park: Pillar1 in arc {0:.0f} {1:.2f}'.format(np.rad2deg(angle,d)
 			elif d<pillar2.d1-TOLERANCE:
 				# Farther than pillar1, but closer than current pillar2
 				pillar2.stop()
 				pillar3.clone(pillar2)
 				pillar2.start(d,angle)
-				rospy.loginfo("Park: Pillar2 start arc at "+str(angle))
+				rospy.loginfo('Park: Pillar2 start arc {0:.0f} {1:.2f}'.format(np.rad2deg(angle,d)
 			elif pillar2.inArc:
 				pillar2.append(d,angle)
-				rospy.loginfo("Park: Pillar2 in arc at "+str(angle))
+				rospy.loginfo('Park: Pillar2 in arc {0:.0f} {1:.2f}'.format(np.rad2deg(angle,d)
 			elif d<pillar3.d1-TOLERANCE:
 				pillar3.stop()
 				pillar3.start(d,angle)
-				rospy.loginfo("Park: Pillar3 start arc at "+str(angle))
+				rospy.loginfo('Park: Pillar3 start {0:.0f} {1:.2f}'.format(np.rad2deg(angle,d)
 			elif pillar3.inArc: 
 				pillar3.append(d,angle)
-				rospy.loginfo("Park: Pillar3 in arc at "+str(angle))
+				rospy.loginfo('Park: Pillar3 in arc {0:.0f} {1:.2f}'.format(np.rad2deg(angle,d)
 
 		
 		# Check for wrap-around
