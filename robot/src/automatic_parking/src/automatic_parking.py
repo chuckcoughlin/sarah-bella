@@ -133,18 +133,20 @@ class Parker:
 		self.reset = Empty()
 		self.msg = TeleopStatus()
 
-		self.step = 0
 		# Publish status so that controller can keep track of state
 		self.spub = rospy.Publisher('sb_teleop_status',TeleopStatus,queue_size=1)
 		self.reset_pub = rospy.Publisher('/reset',Empty,queue_size=1)
+		self.initialize()
 		self.report("Parker: initialized.")
 		self.behavior = ""
+
+	def initialize():
 		self.leftTower = Pillar()
 		self.rightTower= Pillar()
 		self.towerSeparation = -1
 		self.targetX = -1.
 		self.targetY = -1.
-
+		self.step = 0
 
 	def report(self,text):
 		if self.msg.status!=text:
@@ -158,8 +160,8 @@ class Parker:
 		self.report("Parker: started ...");
 		# Publish movement commands to the turtlebot's base
 		self.pub = rospy.Publisher('/cmd_vel', Twist,queue_size=1)
-		self.step = 0
 		self.sub  = rospy.Subscriber("/scan_throttle",LaserScan,self.getScan)
+		self.initialize()
 
 	def stop(self):
 		if not self.stopped:
