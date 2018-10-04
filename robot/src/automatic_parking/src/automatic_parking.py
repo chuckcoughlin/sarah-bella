@@ -95,12 +95,13 @@ class Pillar:
 	# Combine partial pillars separated across zero degrees
 	# The argument is the pillar at 0 degrees
 	def combine(self,pillar):
-		if pillar.d1<self.d1:
-			self.d1 = pillar.d1
-		if pillar.d2>self.d2:
-			self.d2 = pillar.d2
-		self.a2 = self.a2+pillar.a2
-		self.stop()
+		if math.abs(pillar.dist-self.dist) < 2.*TOLERANCE:
+			if pillar.d1<self.d1:
+				self.d1 = pillar.d1
+			if pillar.d2>self.d2:
+				self.d2 = pillar.d2
+			self.a2 = self.a2+pillar.a2
+			self.stop()
 
 	# Compute width of pillar using law of cosines
 	# If width is not reasonable, pillar will be discarded.
