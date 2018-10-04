@@ -190,10 +190,10 @@ class Parker:
 	def park(self):
 		if self.step == 0:
 			self.report("Park0: searching for markers")
-			#rospy.loginfo(' Towers =  {:.2f} {:.0f}, {:.2f} {:.0f}'.format(\
-			#	self.leftTower.dist, np.rad2deg(self.leftTower.angle),\
-			#	self.rightTower.dist,np.rad2deg(self.rightTower.angle)))
-			self.step = 1
+			rospy.loginfo(' Towers =  {:.2f} {:.0f}, {:.2f} {:.0f}'.format(\
+				self.leftTower.dist, np.rad2deg(self.leftTower.angle),\
+				self.rightTower.dist,np.rad2deg(self.rightTower.angle)))
+			#self.step = 1
 			return  		
 		elif self.step == 1:
 			self.report("Park1: proceed to reference point")
@@ -252,7 +252,7 @@ class Parker:
 			if d < IGNORE:
 				continue
 			# We group readings in a potential pillar
-			if d<pillar1.d1-TOLERANCE and d>potential.d2_TOLERANCE:
+			if d<pillar1.d1-TOLERANCE and d>potential.d2+TOLERANCE:
 				potential.append(d,angle)
 			else:
 				potential.end(pillar2.dist)
@@ -265,7 +265,7 @@ class Parker:
 					elif potential.dist<pillar2.dist:
 						pillar2.clone(potential)
 						#rospy.loginfo('Park: Pillar2 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
-				potential.start(dist,angle)
+				potential.start(d,angle)
 
 		potential.end(pillar2.dist+TOLERANCE)		
 		# Check for wrap-around
@@ -316,9 +316,9 @@ class Parker:
 		# By law of sines, with c as angle at rightTower
 		sinc = self.leftTower.dist*math.sin(self.leftTower.angle-self.rightTower.angle)/\
 				    					self.towerSeparation
-		rospy.loginfo("ProjectionX: {:.2f} {:.2f} {:.2f} {:.2f}".format(\
-			sinc,self.leftTower.dist,math.sin(self.leftTower.angle-self.rightTower.angle),\
-			self.towerSeparation))
+		#rospy.loginfo("ProjectionX: {:.2f} {:.2f} {:.2f} {:.2f}".format(\
+		#	sinc,self.leftTower.dist,math.sin(self.leftTower.angle-self.rightTower.angle),\
+		#	self.towerSeparation))
 		cosc = math.sqrt(1. - sinc*sinc)
 		return cosc*self.leftTower.dist - self.towerSeparation
 
@@ -354,6 +354,7 @@ class Parker:
 		dy = self.projectionY()
 		x = x + dx
 		y = y + dy
+		rospy.loginfo("Park: current {:.2f},{:.2f}, target {:.2f},{.2f}".format(dx,dy,x,y))
 		self.twist.angular.z = math.atan2(x,y)
 		self.twist.linear.x  = math.sqrt(x*x+y*y)
 		if self.twist.linear.x<MAX_SPEED:
