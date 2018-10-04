@@ -31,10 +31,10 @@ import math
 import time
 
 MAX_ANGLE   = 0.5
-MAX_SPEED   = 0.2
+MAX_SPEED   = 0.1
 ROBOT_WIDTH = 0.2     # Robot width ~ m
-TOLERANCE   = 0.04
-PILLAR_WIDTH = 0.08    # Approx tower width ~ m
+TOLERANCE   = 0.02
+PILLAR_WIDTH = 0.08   # Approx tower width ~ m
 START_OFFSET= 1.0     # Dist from left tower to start ~ m
 IGNORE      = 0.02    # Ignore any distances less than this
 INFINITY    = 10.
@@ -52,7 +52,6 @@ class Pillar:
 		self.d2 = INFINITY
 		self.a1 = 0.0
 		self.a2 = 0.0
-		self.inArc = False
 
 	def clone(self,pillar):
 		self.valid = pillar.valid
@@ -63,7 +62,6 @@ class Pillar:
 		self.d2 = pillar.d2
 		self.a1 = pillar.a1
 		self.a2 = pillar.a2
-		self.inArc = pillar.inArc
 
 	# Point represents the start of a group
 	def start(self,dist,angle):
@@ -71,31 +69,28 @@ class Pillar:
 		self.d2 = dist
 		self.a1 = angle
 		self.a2 = angle
-		self.inArc = True
 		self.valid = False
 
-	# Complete ppoint with what we have
+	# Complete point with what we have
 	def stop(self):
-		if self.inArc:
+		if self.a1 == self.a2:
+			self.valid = False
+		else:
 			self.dist  = (self.d1+self.d2)/2.
 			self.angle = (self.a1+self.a2)/2.
-			self.inArc = False
 			self.valid = True
 			self.width = self.getWidth()
 			if self.width<PILLAR_WIDTH/2.:
-				rospy.loginfo("Park: Issue: pillar width: {:.2f}".format(self.width))
+				# rospy.loginfo("Park: Issue: pillar width: {:.2f}".format(self.width))
 				self.valid = False
 
 	# Point represents the continuation or completion of a group
 	def append(self,dist,angle):
-		if dist>self.d2+TOLERANCE:
-			self.stop()
-		else:
-			if dist<self.d1:
-				self.d1 = dist
-			elif dist>self.d2:
-				self.d2 = dist
-			self.a2 = angle
+		if dist<self.d1:
+			self.d1 = dist
+		elif dist>self.d2:
+			self.d2 = dist
+		self.a2 = angle
 
 	# Combine partial pillars separated across zero degrees
 	# The argument is the pillar at 0 degrees
@@ -191,9 +186,9 @@ class Parker:
 	def park(self):
 		if self.step == 0:
 			self.report("Park0: searching for markers")
-			rospy.loginfo(' Towers =  {:.2f} {:.0f}, {:.2f} {:.0f}'.format(\
-				self.leftTower.dist, np.rad2deg(self.leftTower.angle),\
-				self.rightTower.dist,np.rad2deg(self.rightTower.angle)))
+			#rospy.loginfo(' Towers =  {:.2f} {:.0f}, {:.2f} {:.0f}'.format(\
+			#	self.leftTower.dist, np.rad2deg(self.leftTower.angle),\
+			#	self.rightTower.dist,np.rad2deg(self.rightTower.angle)))
 			self.step = 1
 			return  		
 		elif self.step == 1:
@@ -241,83 +236,67 @@ class Parker:
 	# Search the scan results for the two closest pillars.
 	# Reject objects that are too narrow or wide.
 	# Handle the wrap by postulating a third pillar. We may combine.
+	# Return True if we've identified the two pillars.
 	def find_parking_markers(self,scan):
 		delta  = scan.angle_increment
 		angle  = scan.angle_min-delta
-		pillar1 = Pillar()  # Closest
-		pillar2 = Pillar()  # Next closest
-		pillar3 = Pillar()  # In case of a wrap around origin.
+		pillar1 = Pillar()  	# Closest
+		pillar2 = Pillar()  	# Next closest
+		potential = Pillar()  	# In case of a wrap around origin.
 		for d in scan.ranges:
 			angle = angle + delta
 			if d < IGNORE:
 				continue
-			# New minimum, process no matter what
-			if d<pillar1.d1-TOLERANCE:
-				pillar1.stop()
-				pillar3.clone(pillar2)
-				pillar2.clone(pillar1)
-				pillar1.start(d,angle)
-				#rospy.loginfo('Park: Pillar1 start {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
-			elif pillar1.inArc:
-				pillar1.append(d,angle) 
-				#rospy.loginfo('Park: Pillar1 in arc {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
-			elif d<pillar2.d1-TOLERANCE:
-				# Farther than pillar1, but closer than current pillar2
-				pillar2.stop()
-				pillar3.clone(pillar2)
-				pillar2.start(d,angle)
-				#rospy.loginfo('Park: Pillar2 start {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
-			elif pillar2.inArc:
-				pillar2.append(d,angle)
-				#rospy.loginfo('Park: Pillar2 in arc {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
-			elif d<pillar3.d1-TOLERANCE:
-				pillar3.stop()
-				pillar3.start(d,angle)
-				#rospy.loginfo('Park: Pillar3 start {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
-			elif pillar3.inArc: 
-				pillar3.append(d,angle)
-				#rospy.loginfo('Park: Pillar3 in arc {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
-
-		
-		# Check for wrap-around
-		if pillar1.inArc:
-			if pillar2.a1 == 0:
-				pillar1.combine(pillar2)
-				pillar2 = pillar3
+			# We group readings in a potential pillar
+			if d<pillar1.d1-TOLERANCE and d>potential.d2_TOLERANCE:
+				potential.append(d,angle)
 			else:
-				 pillar1.stop()
-		elif pillar2.inArc:
-			if pillar1.a1==0:
-				pillar2.combine(pillar1)
-				pillar2 = pillar3
-			elif pillar3.a1==0:
-				pillar2.combine(pillar3)
+				potential.stop()
+				if potential.valid:
+					if potential.dist<pillar1.dist:
+						if pillar1.valid:
+							pillar2.clone(pillar1)
+						pillar1.clone(potential)
+						#rospy.loginfo('Park: Pillar1 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
+					elif potential.dist<pillar2.dist:
+						pillar2.clone(potential)
+						#rospy.loginfo('Park: Pillar2 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
+				potential.start(dist,angle)
 
-		# Now assign the tower positions
-		if pillar1.angle<pillar2.angle:
-			self.leftTower  = pillar1
-			self.rightTower = pillar2
-		else:
-			self.leftTower  = pillar2
-			self.rightTower = pillar1
+		potential.stop()		
+		# Check for wrap-around
+		if potential.valid:
+			if pillar1.a1 == 0.:
+				pillar1.combine(potential)
+			elif pillar2.a1 == 0.:
+				pillar2.combine(potential)
 
-		rospy.loginfo("Park: towers {:.2f} {:.0f}, {:.2f} {:.0f}".format(\
+		# Now assign the tower positions if two are valid
+		if pillar1.valid and pillar2.valid:
+			if pillar1.angle<pillar2.angle:
+				self.leftTower  = pillar1
+				self.rightTower = pillar2
+			else:
+				self.leftTower  = pillar2
+				self.rightTower = pillar1
+
+			rospy.loginfo("Park: towers {:.2f} {:.0f}, {:.2f} {:.0f}".format(\
 				self.leftTower.dist,np.rad2deg(self.leftTower.angle),\
 				self.rightTower.dist,np.rad2deg(self.rightTower.angle)))
 
-		# If we've never computed distance between, do it and save it
-		# Use law of cosines again
-		if self.rightTower.valid and self.leftTower.valid \
-		  and  self.towerSeparation<0:
-			a = pillar1.dist
-			b = pillar2.dist
-			angle = pillar1.angle-pillar2.angle
-			self.towerSeparation = math.fabs(math.sqrt(a*a+b*b-2.*a*b*math.cos(angle)))
-			rospy.loginfo("Park: Tower separation {:.2f}".format(self.towerSeparation))
-			time.sleep(0.1)
-			rospy.loginfo(" a,b,angle: {:.2f} {:.2f} {:.0f}".format(a,b,np.rad2deg(angle)))
-			if self.towerSeparation<3*ROBOT_WIDTH:
-				self.towerSeparation = 3*ROBOT_WIDTH
+			# If we've never computed distance between, do it and save it
+			# Use law of cosines again
+			if self.rightTower.valid and self.leftTower.valid \
+		  		and  self.towerSeparation<0:
+				a = pillar1.dist
+				b = pillar2.dist
+				angle = pillar1.angle-pillar2.angle
+				self.towerSeparation = math.fabs(math.sqrt(a*a+b*b-2.*a*b*math.cos(angle)))
+				rospy.loginfo("Park: Tower separation {:.2f}".format(self.towerSeparation))
+				time.sleep(0.1)
+				rospy.loginfo(" a,b,angle: {:.2f} {:.2f} {:.0f}".format(a,b,np.rad2deg(angle)))
+				if self.towerSeparation<3*ROBOT_WIDTH:
+					self.towerSeparation = 3*ROBOT_WIDTH
 
 
 		
