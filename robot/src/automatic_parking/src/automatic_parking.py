@@ -243,7 +243,7 @@ class Parker:
 	# Return True if we've identified the two pillars.
 	def find_parking_markers(self,scan):
 		delta  = scan.angle_increment
-		angle  = scan.angle_min-delta
+		angle  = scan.angle_min-delta - math.pi/2.
 		pillar1 = Pillar()  	# Closest
 		pillar2 = Pillar()  	# Next closest
 		potential = Pillar()  	# In case of a wrap around origin.
@@ -261,10 +261,10 @@ class Parker:
 						if pillar1.valid:
 							pillar2.clone(pillar1)
 						pillar1.clone(potential)
-						#rospy.loginfo('Park: Pillar1 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
+						rospy.loginfo('Park: Pillar1 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
 					elif potential.dist<pillar2.dist:
 						pillar2.clone(potential)
-						#rospy.loginfo('Park: Pillar2 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
+						rospy.loginfo('Park: Pillar2 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
 				potential.start(d,angle)
 
 		potential.end(pillar2.dist+TOLERANCE)		
