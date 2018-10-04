@@ -254,7 +254,7 @@ class Parker:
 			if d < IGNORE:
 				continue
 			# We group readings in a potential pillar
-			if d<pillar1.d1-TOLERANCE and d>potential.d2+TOLERANCE:
+			if d<potential.d1-TOLERANCE and d>potential.d2+TOLERANCE:
 				potential.append(d,angle)
 			else:
 				potential.end(pillar2.dist)
