@@ -71,12 +71,15 @@ class Pillar:
 		self.a2 = angle
 		self.valid = False
 
-	# Complete point with what we have
-	def stop(self):
+	# Complete group of points that might be a pillar/
+	# Reject if dist greater than one we already have
+	def end(self,d):
+		self.dist  = (self.d1+self.d2)/2.
+		if self.dist>d:
+			self.valid = False
 		if self.a1 == self.a2:
 			self.valid = False
 		else:
-			self.dist  = (self.d1+self.d2)/2.
 			self.angle = (self.a1+self.a2)/2.
 			self.valid = True
 			self.width = self.getWidth()
@@ -101,7 +104,7 @@ class Pillar:
 			if pillar.d2>self.d2:
 				self.d2 = pillar.d2
 			self.a2 = self.a2+pillar.a2
-			self.stop()
+			self.end(0)
 
 	# Compute width of pillar using law of cosines
 	# If width is not reasonable, pillar will be discarded.
@@ -252,7 +255,7 @@ class Parker:
 			if d<pillar1.d1-TOLERANCE and d>potential.d2_TOLERANCE:
 				potential.append(d,angle)
 			else:
-				potential.stop()
+				potential.end(pillar2.dist)
 				if potential.valid:
 					if potential.dist<pillar1.dist:
 						if pillar1.valid:
@@ -264,7 +267,7 @@ class Parker:
 						#rospy.loginfo('Park: Pillar2 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
 				potential.start(dist,angle)
 
-		potential.stop()		
+		potential.end(pillar2.dist+TOLERANCE)		
 		# Check for wrap-around
 		if potential.valid:
 			if pillar1.a1 == 0.:
