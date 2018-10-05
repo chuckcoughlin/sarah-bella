@@ -88,12 +88,13 @@ class Pillar:
 				self.valid = False
 
 	# Point represents the continuation or completion of a group
+	# Angles are decreasing as we iterate
 	def append(self,dist,angle):
 		if dist<self.d1:
 			self.d1 = dist
 		elif dist>self.d2:
 			self.d2 = dist
-		self.a2 = angle
+		self.a1 = angle
 
 	# Combine partial pillars separated across zero degrees
 	# The argument is the pillar at 0 degrees
@@ -245,16 +246,18 @@ class Parker:
 	# Return True if we've identified the two pillars.
 	def find_parking_markers(self,scan):
 		delta  = scan.angle_increment
-		angle  = scan.angle_min-delta - math.pi/2.
+		angle  = scan.angle_max + delta
 		pillar1 = Pillar()  	# Closest
 		pillar2 = Pillar()  	# Next closest
 		potential = Pillar()  	# In case of a wrap around origin.
+		# Raw data is 0>2PI. 0 is straight ahead, counter-clockwise.
+		# Lidar pulley is toward front of assembly.
 		for d in scan.ranges:
-			angle = angle + delta
+			angle = angle - delta
 			if d < IGNORE:
 				continue
 			# We group readings in a potential pillar
-			if d<potential.d1-TOLERANCE and d>potential.d2+TOLERANCE:
+			if d>potential.d1-TOLERANCE and d<potential.d2+TOLERANCE:
 				potential.append(d,angle)
 			else:
 				potential.end(pillar2.dist)
@@ -291,6 +294,7 @@ class Parker:
 				self.rightTower.dist,np.rad2deg(self.rightTower.angle)))
 
 			# If we've never computed distance between, do it and save it
+		
 			# Use law of cosines again
 			if self.rightTower.valid and self.leftTower.valid \
 		  		and  self.towerSeparation<0:
@@ -304,8 +308,6 @@ class Parker:
 				if self.towerSeparation<3*ROBOT_WIDTH:
 					self.towerSeparation = 3*ROBOT_WIDTH
 
-
-		
 
 	# Angle is with respect to x-axis (leftTower>rightTower)
 	def pivot(self,angle):
