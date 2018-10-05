@@ -186,7 +186,7 @@ class Parker:
 			# Proceed with application
 			self.report("Park: finding markers")
 			if not self.initialized:
-				if self.findParkingMarkers(scan)
+				if self.findParkingMarkers(scan):
 					self.sub.unregister()
 					self.initialized = True
 					self.park()
@@ -339,9 +339,9 @@ class Parker:
 		self.pub.publish(self.twist)
 		self.rate.sleep()
 
-	def euclideanDistance(self,from,to):
-		a = from.x - to.x
-		b = from.y - to.y
+	def euclideanDistance(self,p1,p2):
+		a = p1.x - p2.x
+		b = p1.y - p2.y
 		return math.sqrt(a*a+b*b)
 
 		
