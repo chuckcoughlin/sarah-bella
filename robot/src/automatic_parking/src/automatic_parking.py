@@ -22,7 +22,7 @@
 import rospy
 import sys
 from sensor_msgs.msg import LaserScan
-from geometry_msgs.msg import Twist, Pose, Position
+from geometry_msgs.msg import Twist, Pose, Point
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Empty
 from teleop_service.msg import Behavior,TeleopStatus
@@ -138,8 +138,8 @@ class Parker:
 		self.behavior = ""
 
 	def initialize(self):
-		self.leftPillar = Position() # Raw coordinates
-		self.rightPillar= Position() # Raw coordinates
+		self.leftPillar = Point() # Raw coordinates
+		self.rightPillar= Point() # Raw coordinates
 		self.initialized = False # Pillars not located yet
 
 	def report(self,text):
@@ -290,8 +290,8 @@ class Parker:
 		x = p2.dist*cosB
 		y = p2.dist*sinB
 		
-		self.rightPillar = Position()
-		self.leftPillar  = Position()
+		self.rightPillar = Point()
+		self.leftPillar  = Point()
 		self.rightPillar.x= self.pose.position.x + x
 		self.leftPillar.x = self.pose.position.x - c + x
 		self.rightPillar.y= self.pose.position.y - y
@@ -304,7 +304,7 @@ class Parker:
 	# If the left tower is the origin and the right tower on the x-axis,
 	# then the reference point is at (0,ROBOT_WIDTH+START_OFFSET)
 	def moveToTarget(self,x,y,forward):
-		target = Position()
+		target = Point()
 		target.x = self.pose.position.x + x
 		target.y = self.pose.position.y + y
 		rospy.loginfo("Park: move {:.2f},{:.2f} -> {:.2f},{.2f}".format(\
