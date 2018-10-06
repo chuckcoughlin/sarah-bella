@@ -22,7 +22,7 @@
 import rospy
 import sys
 from sensor_msgs.msg import LaserScan
-from geometry_msgs.msg import Twist, Pose
+from geometry_msgs.msg import Twist, Pose, Position
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Empty
 from teleop_service.msg import Behavior,TeleopStatus
@@ -123,6 +123,7 @@ class Parker:
 	def __init__(self):
 		self.stopped = True
 
+		# Pose.position and Pose.orintation (a Quaternion)
 		# Create a Twist message, and fill in the fields.
 		self.pose  = Pose()   # Current position of the robot (raw)
 		self.twist = Twist()  # Used to command movement
@@ -137,8 +138,8 @@ class Parker:
 		self.behavior = ""
 
 	def initialize(self):
-		self.leftPillar = Pose() # Raw coordinates
-		self.rightPillar= Pose() # Raw coordinates
+		self.leftPillar = Position() # Raw coordinates
+		self.rightPillar= Position() # Raw coordinates
 		self.initialized = False # Pillars not located yet
 
 	def report(self,text):
@@ -173,7 +174,7 @@ class Parker:
 		if not behaviorName=="park":
 			self.stop()
 		else:
-			self.pose = odom.pose
+			self.pose = odom.pose.pose
 
 	# Receive a "throttled" scan message (once per second)
 	# We leave this running just long enough to find the pillars
@@ -182,7 +183,18 @@ class Parker:
 		if rospy.is_shutdown() or self.stopped:
 			return
 		if not behaviorName=="park":
-			self.stop()
+			censed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+self.stop()
 		else:
 			# Proceed with application
 			self.report("Park: finding markers")
@@ -260,9 +272,9 @@ class Parker:
 		# Now assign the tower positions if two are valid
 		if pillar1.valid and pillar2.valid:
 			if pillar1.angle<pillar2.angle:
-				self.pillarsToPoses(pillar1,pillar2)
+				self.pillarsToPositions(pillar1,pillar2)
 			else:
-				self.pillarsToPoses(pillar2,pillar1)
+				self.pillarsToPositions(pillar2,pillar1)
 
 			rospy.loginfo("Park: pillars {:.2f} {:.0f}, {:.2f} {:.0f}".format(\
 				pillar1.dist,np.rad2deg(pillar1.angle),\
@@ -274,10 +286,10 @@ class Parker:
 
 
 	# First argument is the left pillar.
-	# Convert both pillars to pose coordinates offset by thosse of origin.
+	# Convert both pillars to position coordinates offset by those of origin.
 	# Angles A,B,C are at p1,p2 and origin
 	# Sides a,b,c are opposite corresponding angles
-	def pillarsToPoses(self,p1,p2):
+	def pillarsToPositions(self,p1,p2):
 		# By law of cosines
 		a = p1.dist
 		b = p2.dist
@@ -289,12 +301,12 @@ class Parker:
 		x = p2.dist*cosB
 		y = p2.dist*sinB
 		
-		self.rightPillar = Pose()
-		self.leftPillar  = Pose()
-		self.rightPillar.x= self.pose.x + x
-		self.leftPillar.x = self.pose.x - c + x
-		self.rightPillar.y= self.pose.y - y
-		self.leftPillar.y = self.pose.y - y
+		self.rightPillar = Position()
+		self.leftPillar  = Position()
+		self.rightPillar.x= self.pose.position.x + x
+		self.leftPillar.x = self.pose.position.x - c + x
+		self.rightPillar.y= self.pose.position.y - y
+		self.leftPillar.y = self.pose.position.y - y
 
 
 	# Specify the target destination in terms of a reference system
@@ -303,20 +315,20 @@ class Parker:
 	# If the left tower is the origin and the right tower on the x-axis,
 	# then the reference point is at (0,ROBOT_WIDTH+START_OFFSET)
 	def moveToTarget(self,x,y,forward):
-		target = Pose()
-		target.x = self.pose.x + x
-		target.y = self.pose.y + y
+		target = Position()
+		target.x = self.pose.position.x + x
+		target.y = self.pose.position.y + y
 		rospy.loginfo("Park: move {:.2f},{:.2f} -> {:.2f},{.2f}".format(\
-			self.pose.x,self.pose.y,target.x,target.y))
+			self.pose.position.x,self.pose.position.y,target.x,target.y))
 
-		err = euclideanDistance(self.pose,target)
+		err = euclideanDistance(self.pose.position,target)
 		while err>LOCATION_TOLERANCE:
 			lin_vel = err*VEL_FACTOR
 			if lin_vel>MAX_LINEAR:
 				lin_vel = MAX_LINEAR
 
-			dx = target.x-self.pose.y
-			dy = target.y-self.pose.y
+			dx = target.x-self.pose.position.x
+			dy = target.y-self.pose.position.y
 			offset = math.atan2(dy,dx)
 			if not forward:
 				offset = offset-math.pi
@@ -332,7 +344,7 @@ class Parker:
 			self.pub.publish(self.twist)
 			self.rate.sleep()
 
-			err = euclideanDistance(self.pose,target)
+			err = euclideanDistance(self.pose.position,target)
 			
 		# Once we've reached our destination, stop
 		self.twist.angular.z = 0.0
