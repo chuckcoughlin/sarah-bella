@@ -22,7 +22,7 @@
 import rospy
 import sys
 from sensor_msgs.msg import LaserScan
-from geometry_msgs.msg import Twist, Pose, Point
+from geometry_msgs.msg import Twist, Pose, Point, Quaternion
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Empty
 from teleop_service.msg import Behavior,TeleopStatus
@@ -35,7 +35,8 @@ MAX_LINEAR  = 0.1
 VEL_FACTOR  = 1.5     # Multiply distance to get velocity
 ROBOT_WIDTH = 0.2     # Robot width ~ m
 TOLERANCE   = 0.02    # Variation in consecutive cloud points in group
-POS_TOLERANCE= 0.05    # Distance to target considered close enough
+ANG_TOLERANCE= 0.05   # Directional correction to target considered adequate
+POS_TOLERANCE= 0.05   # Distance to target considered close enough
 PILLAR_WIDTH = 0.08   # Approx tower width ~ m
 START_OFFSET= 1.0     # Dist from left tower to start ~ m
 IGNORE      = 0.02    # Ignore any scan distances less than this
@@ -128,7 +129,7 @@ class Parker:
 		self.pose  = Pose()   # Current position of the robot (raw)
 		self.twist = Twist()  # Used to command movement
 		self.reset = Empty()
-		self.rate = rospy.Rate(1)
+		self.rate = rospy.Rate(.2) # 5 secs for now
 		self.msg = TeleopStatus()
 
 		# Publish status so that controller can keep track of state
@@ -207,14 +208,14 @@ class Parker:
 			self.rightPillar.x,self.rightPillar.y))
 		self.report("Park: proceeding to reference point")
 		self.moveToTarget(0,START_OFFSET+ROBOT_WIDTH,True)
-		self.report("Park: downwind leg")
-		self.moveToTarget(START_OFFSET,START_OFFSET+ROBOT_WIDTH,True)
-		self.report("Park: base leg")
-		self.moveToTarget(START_OFFSET,1.5*ROBOT_WIDTH,True)
-		self.report("Park: final approach")
-		self.moveToTarget(1.5*ROBOT_WIDTH,1.5*ROBOT_WIDTH,True)
-		self.report("Park: reverse diagonal")
-		self.moveToTarget(self.towerSeparation/2.,0.,False)
+		#self.report("Park: downwind leg")
+		#self.moveToTarget(START_OFFSET,START_OFFSET+ROBOT_WIDTH,True)
+		#self.report("Park: base leg")
+		#self.moveToTarget(START_OFFSET,1.5*ROBOT_WIDTH,True)
+		#self.report("Park: final approach")
+		#self.moveToTarget(1.5*ROBOT_WIDTH,1.5*ROBOT_WIDTH,True)
+		#self.report("Park: reverse diagonal")
+		#self.moveToTarget(self.towerSeparation/2.,0.,False)
 		self.report("Auto_parking complete.")
 		self.reset_pub.publish(self,reset)
 		self.stop()
@@ -305,22 +306,41 @@ class Parker:
 	# we start the maneuvers. We travel to this point and pivot.
 	# If the left tower is the origin and the right tower on the x-axis,
 	# then the reference point is at (0,ROBOT_WIDTH+START_OFFSET)
+	# TEST ONLY: Turn to correct orientation, then stop
 	def moveToTarget(self,x,y,forward):
 		target = Point()
 		target.x = self.pose.position.x + x
 		target.y = self.pose.position.y + y
-		rospy.loginfo("Park: move {:.2f},{:.2f} -> {:.2f},{:.2f}".format(\
-			self.pose.position.x,self.pose.position.y,target.x,target.y))
 
+		# First aim the robot at the target
+		dtheta = ANG_TOLERANCE
+		while dtheta>ANG_TOLERANCE:
+			dx = target.x-self.pose.position.x
+			dy = target.y-self.pose.position.y
+			theta = math.atan2(dy,dx)  # Target direction
+			yaw   = self.quaternionToYaw(self.pose.orientation)
+			rospy.loginfo("Park: rotate {:.2f} -> {:.2f}".format(yaw,theta))
+			dtheta = theta - yaw
+			dtheta = MAX_ANGLE  if dtheta > MAX_ANGLE else dtheta
+			dtheta = -MAX_ANGLE if dtheta <-MAX_ANGLE else dtheta
+			self.twist.angular.z = dtheta
+			self.twist.linear.x  = 0.0
+			self.pub.publish(self.twist)
+			self.rate.sleep()
+		
+		# Next move in a straight line to target
 		err = self.euclideanDistance(self.pose.position,target)
+		err = 0  # Temporary
 		while err>POS_TOLERANCE:
+			rospy.loginfo("Park: move {:.2f},{:.2f} -> {:.2f},{:.2f}".format(\
+				self.pose.position.x,self.pose.position.y,target.x,target.y))
 			lin_vel = err*VEL_FACTOR
 			if lin_vel>MAX_LINEAR:
 				lin_vel = MAX_LINEAR
 
 			dx = target.x-self.pose.position.x
 			dy = target.y-self.pose.position.y
-			offset = math.atan2(dy,dx)
+			theta = math.atan2(dy,dx)
 			if not forward:
 				offset = offset-math.pi
 				lin_vel = -lin_vel
@@ -329,6 +349,7 @@ class Parker:
 			elif offset<-MAX_ANGLE:
 				offset = -MAX_ANGLE
 
+			rospy.loginfo("Park: move err {:2f}, vel {:2f},{:2f}".format(err,lin_vel,offset))
 			# Make progress toward destination
 			self.twist.angular.z = offset
 			self.twist.linear.x  = lin_vel
@@ -348,7 +369,13 @@ class Parker:
 		b = p1.y - p2.y
 		return math.sqrt(a*a+b*b)
 
-		
+	# From www.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+	def quaternionToYaw(self,q):
+		t3 = 2.0*(q.w*q.z+q.x*q.y)
+		t4 = 1.0 - 2.0*(q.y*q.y+q.z*q.z)
+		yaw = math.atan2(t3,t4)
+		return yaw
+				
 
 
 # The overall behavior has changed. Start the folower if state is "follow".
