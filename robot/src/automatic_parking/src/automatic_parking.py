@@ -23,6 +23,7 @@ import rospy
 import sys
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist, Pose
+from nav_msgs.msg import Odometry
 from std_msgs.msg import Empty
 from teleop_service.msg import Behavior,TeleopStatus
 import numpy as np
@@ -100,7 +101,7 @@ class Pillar:
 	# Combine partial pillars separated across zero degrees
 	# The argument is the potential pillar at 0 degrees
 	def combine(self,pillar):
-		if math.abs(pillar.dist-self.dist) < 2.*TOLERANCE:
+		if math.fabs(pillar.dist-self.dist) < 2.*TOLERANCE:
 			if pillar.d1<self.d1:
 				self.d1 = pillar.d1
 			if pillar.d2>self.d2:
@@ -164,7 +165,7 @@ class Parker:
 			self.odom.unregister()
 
 	#
-	# Update the current position
+	# Odometry callback. Update the current position
 	def updatePose(self,odom):
 		global behaviorNameo
 		if rospy.is_shutdown() or self.stopped:
@@ -172,7 +173,7 @@ class Parker:
 		if not behaviorName=="park":
 			self.stop()
 		else:
-			self.pose = odom
+			self.pose = odom.pose
 
 	# Receive a "throttled" scan message (once per second)
 	# We leave this running just long enough to find the pillars
@@ -202,15 +203,15 @@ class Parker:
 			self.leftPillar.dist, np.rad2deg(self.leftPillar.angle),\
 			self.rightPillar.dist,np.rad2deg(self.rightPillar.angle)))
 		self.report("Park: proceeding to reference point")
-		self.moveToTarget(0,START_OFFSET+ROBOT_WIDTH)
+		self.moveToTarget(0,START_OFFSET+ROBOT_WIDTH,True)
 		self.report("Park: downwind leg")
-		self.moveToTarget(START_OFFSET,START_OFFSET+ROBOT_WIDTH)
+		self.moveToTarget(START_OFFSET,START_OFFSET+ROBOT_WIDTH,True)
 		self.report("Park: base leg")
-		self.moveToTarget(START_OFFSET,1.5*ROBOT_WIDTH)
+		self.moveToTarget(START_OFFSET,1.5*ROBOT_WIDTH,True)
 		self.report("Park: final approach")
-		self.moveToTarget(1.5*ROBOT_WIDTH,1.5*ROBOT_WIDTH)
+		self.moveToTarget(1.5*ROBOT_WIDTH,1.5*ROBOT_WIDTH,True)
 		self.report("Park: reverse diagonal")
-		self.moveToTargetInReverse(self.towerSeparation/2.,0.)
+		self.moveToTarget(self.towerSeparation/2.,0.,False)
 		self.report("Auto_parking complete.")
 		self.reset_pub.publish(self,reset)
 		self.stop()
@@ -301,7 +302,7 @@ class Parker:
 	# we start the maneuvers. We travel to this point and pivot.
 	# If the left tower is the origin and the right tower on the x-axis,
 	# then the reference point is at (0,ROBOT_WIDTH+START_OFFSET)
-	def moveToTarget(self,x,y):
+	def moveToTarget(self,x,y,forward):
 		target = Pose()
 		target.x = self.pose.x + x
 		target.y = self.pose.y + y
@@ -316,8 +317,8 @@ class Parker:
 
 			dx = target.x-self.pose.y
 			dy = target.y-self.pose.y
-			offset = 0
-			if offset>math.pi/2.:
+			offset = math.atan2(dy,dx)
+			if not forward:
 				offset = offset-math.pi
 				lin_vel = -lin_vel
 			if offset>MAX_ANGLE:
