@@ -200,9 +200,9 @@ class Parker:
 	# =============================== Parking Sequence ========================
 	# We have discovered and positioned the pillars. Now move through the pattern.
 	def park(self):
-		rospy.loginfo(' Towers =  {:.2f} {:.0f}, {:.2f} {:.0f}'.format(\
-			self.leftPillar.dist, np.rad2deg(self.leftPillar.angle),\
-			self.rightPillar.dist,np.rad2deg(self.rightPillar.angle)))
+		rospy.loginfo(' Towers =  {:.2f} {:.2f}, {:.2f} {:.2f}'.format(\
+			self.leftPillar.x, self.leftPillar.y),\
+			self.rightPillar.x,self.rightPillar.y))
 		self.report("Park: proceeding to reference point")
 		self.moveToTarget(0,START_OFFSET+ROBOT_WIDTH,True)
 		self.report("Park: downwind leg")
