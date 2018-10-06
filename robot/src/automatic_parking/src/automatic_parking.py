@@ -217,7 +217,7 @@ class Parker:
 		#self.report("Park: reverse diagonal")
 		#self.moveToTarget(self.towerSeparation/2.,0.,False)
 		self.report("Auto_parking complete.")
-		self.reset_pub.publish(self,reset)
+		self.reset_pub.publish(self,self.reset)
 		self.stop()
 	# =============================== End of Steps ========================
 
@@ -313,8 +313,8 @@ class Parker:
 		target.y = self.pose.position.y + y
 
 		# First aim the robot at the target
-		dtheta = ANG_TOLERANCE
-		while dtheta>ANG_TOLERANCE:
+		dtheta = ANG_TOLERANCE+1
+		while dtheta > ANG_TOLERANCE:
 			dx = target.x-self.pose.position.x
 			dy = target.y-self.pose.position.y
 			theta = math.atan2(dy,dx)  # Target direction
