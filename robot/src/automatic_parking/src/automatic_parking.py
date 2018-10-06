@@ -35,7 +35,7 @@ MAX_LINEAR  = 0.1
 VEL_FACTOR  = 1.5     # Multiply distance to get velocity
 ROBOT_WIDTH = 0.2     # Robot width ~ m
 TOLERANCE   = 0.02    # Variation in consecutive cloud points in group
-LOCATION_TOL= 0.05    # Distance to target considered close enough
+POS_TOLERANCE= 0.05    # Distance to target considered close enough
 PILLAR_WIDTH = 0.08   # Approx tower width ~ m
 START_OFFSET= 1.0     # Dist from left tower to start ~ m
 IGNORE      = 0.02    # Ignore any scan distances less than this
@@ -128,6 +128,7 @@ class Parker:
 		self.pose  = Pose()   # Current position of the robot (raw)
 		self.twist = Twist()  # Used to command movement
 		self.reset = Empty()
+		self.rate = rospy.Rate(1)
 		self.msg = TeleopStatus()
 
 		# Publish status so that controller can keep track of state
@@ -200,9 +201,9 @@ class Parker:
 	# =============================== Parking Sequence ========================
 	# We have discovered and positioned the pillars. Now move through the pattern.
 	def park(self):
-		rospy.loginfo(' Origin: {:2f} {:2f} Towers:  {:.2f} {:.2f}, {:.2f} {:.2f}'.format(\
+		rospy.loginfo(' Origin: {:.2f} {:.2f} Towers:  {:.2f} {:.2f}, {:.2f} {:.2f}'.format(\
 			self.pose.position.x,self.pose.position.y,\
-			self.leftPillar.x, self.leftPillar.y),\
+			self.leftPillar.x, self.leftPillar.y,\
 			self.rightPillar.x,self.rightPillar.y))
 		self.report("Park: proceeding to reference point")
 		self.moveToTarget(0,START_OFFSET+ROBOT_WIDTH,True)
@@ -308,11 +309,11 @@ class Parker:
 		target = Point()
 		target.x = self.pose.position.x + x
 		target.y = self.pose.position.y + y
-		rospy.loginfo("Park: move {:.2f},{:.2f} -> {:.2f},{.2f}".format(\
+		rospy.loginfo("Park: move {:.2f},{:.2f} -> {:.2f},{:.2f}".format(\
 			self.pose.position.x,self.pose.position.y,target.x,target.y))
 
-		err = euclideanDistance(self.pose.position,target)
-		while err>LOCATION_TOLERANCE:
+		err = self.euclideanDistance(self.pose.position,target)
+		while err>POS_TOLERANCE:
 			lin_vel = err*VEL_FACTOR
 			if lin_vel>MAX_LINEAR:
 				lin_vel = MAX_LINEAR
@@ -334,7 +335,7 @@ class Parker:
 			self.pub.publish(self.twist)
 			self.rate.sleep()
 
-			err = euclideanDistance(self.pose.position,target)
+			err = self.euclideanDistance(self.pose.position,target)
 			
 		# Once we've reached our destination, stop
 		self.twist.angular.z = 0.0
