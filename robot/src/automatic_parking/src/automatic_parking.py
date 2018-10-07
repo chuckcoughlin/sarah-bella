@@ -314,7 +314,7 @@ class Parker:
 
 		# First aim the robot at the target
 		dtheta = ANG_TOLERANCE+1
-		while dtheta > ANG_TOLERANCE:
+		while dtheta > ANG_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
 			dx = target.x-self.pose.position.x
 			dy = target.y-self.pose.position.y
 			theta = math.atan2(dy,dx)  # Target direction
@@ -331,7 +331,7 @@ class Parker:
 		# Next move in a straight line to target
 		err = self.euclideanDistance(self.pose.position,target)
 		err = 0  # Temporary
-		while err>POS_TOLERANCE:
+		while err>POS_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
 			rospy.loginfo("Park: move {:.2f},{:.2f} -> {:.2f},{:.2f}".format(\
 				self.pose.position.x,self.pose.position.y,target.x,target.y))
 			lin_vel = err*VEL_FACTOR
