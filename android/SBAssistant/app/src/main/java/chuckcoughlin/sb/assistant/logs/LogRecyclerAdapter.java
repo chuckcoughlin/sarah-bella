@@ -141,7 +141,8 @@ public class LogRecyclerAdapter extends RecyclerView.Adapter<LogViewHolder> impl
     }
 
 
-
+    // It is important that the widget and backing manager be in synch
+    // with respect to item count.
     @Override
     public int getItemCount() {return logManager.getLogs().size(); }
 
@@ -156,15 +157,25 @@ public class LogRecyclerAdapter extends RecyclerView.Adapter<LogViewHolder> impl
 
     /**
      * A log message has been appended to the visible list.
+     * We get a crash in the android code when inserting log
+     * files too fast? or from different threads?
+     * The notification must be made on the UI thread
      */
     @Override
     public void notifyListAppended() {
-        final int size = getItemCount();
         if( context!=null ) {
             Activity activity = (Activity)context;
             activity.runOnUiThread(new Runnable() {
                 public void run() {
-                    notifyItemRangeInserted(size-1,1);
+                    synchronized(LogRecyclerAdapter.this) {
+                        try {
+                            final int size = getItemCount();
+                            notifyItemRangeInserted(size - 1, 1);
+                        }
+                        catch(Exception ex) {
+                            android.util.Log.w(CLSS,String.format("Exception adding to log (%s)",ex.getLocalizedMessage()));
+                        }
+                    }
                 }
             });
         }
@@ -175,7 +186,7 @@ public class LogRecyclerAdapter extends RecyclerView.Adapter<LogViewHolder> impl
      * and is on the UI thread.
      */
     @Override
-    public void notifyListCleared() {
+    public synchronized void notifyListCleared() {
         int size = getItemCount();
         notifyDataSetChanged();
     }

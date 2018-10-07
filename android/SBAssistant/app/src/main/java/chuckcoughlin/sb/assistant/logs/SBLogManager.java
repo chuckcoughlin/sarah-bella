@@ -148,7 +148,7 @@ public class SBLogManager implements SBApplicationStatusListener {
             }
         }
     }
-
+    //
     private void notifyObserversOfLogAddition() {
         for(LogListObserver observer:observers) {
             if( observer!=null ) {
@@ -171,11 +171,13 @@ public class SBLogManager implements SBApplicationStatusListener {
 
             if( !frozen ) {
                 android.util.Log.i(CLSS, String.format("%s", msg.getMsg()));
-                logList.add(msg);
-                notifyObserversOfLogAddition();
+                synchronized(logList) {
+                    logList.add(msg);
+                    notifyObserversOfLogAddition();
+                }
             }
             else {
-                android.util.Log.i(CLSS, String.format("Ignored log message - %s", msg.getMsg()));
+                android.util.Log.i(CLSS, String.format("%s", msg.getMsg()));
             }
         }
     }

@@ -512,7 +512,9 @@ public class TeleopFragment extends BasicAssistantFragment implements SBApplicat
                                     });
                                 }
                             }
-                            Log.i(TAG, String.format("call: ONLINE, but twist service client is NULL"));
+                            else {
+                                Log.i(TAG, String.format("call: ONLINE, but twist service client is NULL"));
+                            }
                         }
                     }
                     else {
