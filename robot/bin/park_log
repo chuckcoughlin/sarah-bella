@@ -1,0 +1,6 @@
+#!/bin/sh
+# Cat the log of the parking application. The log transmitteed to the tablet
+# is not reliable. It drops messages.
+#
+cd ~/.ros/log/latest
+grep rosout sb_park-*.log

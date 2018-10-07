@@ -22,8 +22,8 @@
 import rospy
 import sys
 from sensor_msgs.msg import LaserScan
+from geometry_msgs.msg import Twist, Pose, Point, Quaternion
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Twist
 from std_msgs.msg import Empty
 from teleop_service.msg import Behavior,TeleopStatus
 import numpy as np
@@ -31,16 +31,19 @@ import math
 import time
 
 MAX_ANGLE   = 0.5
-MAX_SPEED   = 0.2
+MAX_LINEAR  = 0.1
+VEL_FACTOR  = 1.5     # Multiply distance to get velocity
 ROBOT_WIDTH = 0.2     # Robot width ~ m
-TOLERANCE   = 0.04
-PILLAR_WIDTH = 0.09    # Approx tower width ~ m
+TOLERANCE   = 0.02    # Variation in consecutive cloud points in group
+ANG_TOLERANCE= 0.05   # Directional correction to target considered adequate
+POS_TOLERANCE= 0.05   # Distance to target considered close enough
+PILLAR_WIDTH = 0.08   # Approx tower width ~ m
 START_OFFSET= 1.0     # Dist from left tower to start ~ m
-IGNORE      = 0.02    # Ignore any distances less than this
+IGNORE      = 0.02    # Ignore any scan distances less than this
 INFINITY    = 10.
 
 
-# A pillar describes the position of a target pillar in coordinates of the LIDAR
+# A pillar describes the position of a reference pillar in coordinates of the LIDAR
 # measurements. It carries attributes used in the calculation.
 class Pillar:
 	def __init__(self):
@@ -52,38 +55,94 @@ class Pillar:
 		self.d2 = INFINITY
 		self.a1 = 0.0
 		self.a2 = 0.0
-		self.inArc = False
 
-# Position consists of a name, distance and angle from the current
-# heading and position of the LIDAR. Distances in meters, angle in radians
-class Position:
-	def __init__(self, name):
+	def clone(self,pillar):
+		self.valid = pillar.valid
+		self.dist = pillar.dist
+		self.angle= pillar.angle
+		self.width = pillar.width
+		self.d1 = pillar.d1
+		self.d2 = pillar.d2
+		self.a1 = pillar.a1
+		self.a2 = pillar.a2
+
+	# Point represents the start of a group
+	def start(self,dist,angle):
+		self.d1 = dist
+		self.d2 = dist
+		self.a1 = angle
+		self.a2 = angle
 		self.valid = False
-		self.name = name
-		self.dist = 0.0
-		self.angle = 0.0
 
+	# Complete the group of points that might be a pillar.
+	# Reject if dist greater than one we already have
+	def end(self,d):
+		self.dist  = (self.d1+self.d2)/2.
+		if self.dist>d:
+			self.valid = False
+		if self.a1 == self.a2:
+			self.valid = False
+		else:
+			self.angle = (self.a1+self.a2)/2.
+			self.valid = True
+			self.width = self.getWidth()
+			if self.width<PILLAR_WIDTH/2.:
+				# rospy.loginfo("Park: Issue: pillar width: {:.2f}".format(self.width))
+				self.valid = False
+
+	# Point represents the continuation or completion of a group
+	# Angles are decreasing as we iterate
+	def append(self,dist,angle):
+		if dist<self.d1:
+			self.d1 = dist
+		elif dist>self.d2:
+			self.d2 = dist
+		self.a1 = angle
+
+	# Combine partial pillars separated across zero degrees
+	# The argument is the potential pillar at 0 degrees
+	def combine(self,pillar):
+		if math.fabs(pillar.dist-self.dist) < 2.*TOLERANCE:
+			if pillar.d1<self.d1:
+				self.d1 = pillar.d1
+			if pillar.d2>self.d2:
+				self.d2 = pillar.d2
+			self.a2 = self.a2+pillar.a2
+			self.end(0)
+
+	# Compute width of pillar using law of cosines
+	# If width is not reasonable, pillar will be discarded.
+	def getWidth(self):
+		a = self.d1
+		b = self.d2
+		theta = self.a2 - self.a1
+		width = math.sqrt(a*a+b*b-2.*a*b*math.cos(theta))
+		return width
+
+# NOTE: "raw" coordinates are with respect to current Odometry
 class Parker:
 	def __init__(self):
 		self.stopped = True
 
+		# Pose.position and Pose.orintation (a Quaternion)
 		# Create a Twist message, and fill in the fields.
-		self.twist = Twist()
+		self.pose  = Pose()   # Current position of the robot (raw)
+		self.twist = Twist()  # Used to command movement
 		self.reset = Empty()
+		self.rate = rospy.Rate(.2) # 5 secs for now
 		self.msg = TeleopStatus()
 
-		self.step = 0
 		# Publish status so that controller can keep track of state
 		self.spub = rospy.Publisher('sb_teleop_status',TeleopStatus,queue_size=1)
 		self.reset_pub = rospy.Publisher('/reset',Empty,queue_size=1)
+		self.initialize()
 		self.report("Parker: initialized.")
 		self.behavior = ""
-		self.leftTower = Pillar()
-		self.rightTower= Pillar()
-		self.towerSeparation = -1
-		self.targetX = -1.
-		self.targetY = -1.
 
+	def initialize(self):
+		self.leftPillar = Point() # Raw coordinates
+		self.rightPillar= Point() # Raw coordinates
+		self.initialized = False # Pillars not located yet
 
 	def report(self,text):
 		if self.msg.status!=text:
@@ -97,16 +156,30 @@ class Parker:
 		self.report("Parker: started ...");
 		# Publish movement commands to the turtlebot's base
 		self.pub = rospy.Publisher('/cmd_vel', Twist,queue_size=1)
-		self.step = 0
 		self.sub  = rospy.Subscriber("/scan_throttle",LaserScan,self.getScan)
+		self.odom = rospy.Subscriber("/odom",Odometry,self.updatePose)
+		self.initialize()
 
 	def stop(self):
 		if not self.stopped:
 			self.stopped = True
 			self.report("Parker: stopped.")
 			self.sub.unregister()
+			self.odom.unregister()
+
+	#
+	# Odometry callback. Update the current position
+	def updatePose(self,odom):
+		global behaviorNameo
+		if rospy.is_shutdown() or self.stopped:
+			return
+		if not behaviorName=="park":
+			self.stop()
+		else:
+			self.pose = odom.pose.pose
 
 	# Receive a "throttled" scan message (once per second)
+	# We leave this running just long enough to find the pillars
 	def getScan(self,scan):
 		global behaviorName
 		if rospy.is_shutdown() or self.stopped:
@@ -115,214 +188,194 @@ class Parker:
 			self.stop()
 		else:
 			# Proceed with application
-			self.find_parking_markers(scan)
-			if self.rightTower.valid and self.leftTower.valid:
-				self.park()
+			self.report("Park: finding markers")
+			if not self.initialized:
+				if self.findParkingMarkers(scan):
+					self.sub.unregister()
+					self.initialized = True
+					self.park()
 			else:
 				rospy.loginfo("Park: Failed to find towers")
 
 
 
 	# =============================== Parking Sequence ========================
-	# Note that negative is forward.
-	# Raw angles are 0-2*PI. 0 is straight ahead.
+	# We have discovered and positioned the pillars. Now move through the pattern.
 	def park(self):
-		if self.step == 0:
-			self.report("Park0: searching for markers")
-			rospy.loginfo(' towers:  {:.2f} {1:.0f}, {:.2f} {:.0f}'.format(\
-				self.leftTower.dist, np.rad2deg(self.leftTower.angle),\
-				self.rightTower.dist,np.rad2deg(self.rightTower.angle)))
-			self.step = 1
-			return  		
-		elif self.step == 1:
-			self.report("Park1: proceed to reference point")
-			self.setTarget(0,START_OFFSET+ROBOT_WIDTH)
-			if self.twist.linear.x<IGNORE:
-				self.reset_pub.publish(self,reset)
-				self.step = 2
-				return
-		elif self.step == 2:
-			self.report("Park2: pivot")
-			self.pivot(0.0)
-			self.step = 3
-		elif self.step == 3:
-			self.report("Park3: downwind leg")
-			self.setTarget(START_OFFSET,START_OFFSET+ROBOT_WIDTH)
-			if self.twist.linear.x<IGNORE:
-				self.step = 4
-		elif self.step == 4:
-			self.report("Park4: base leg")
-			self.setTarget(START_OFFSET,1.5*ROBOT_WIDTH)
-			if self.twist.linear.x<IGNORE:
-				self.step = 5
-		elif self.step == 5:
-			self.report("Park5: final approach")
-			self.setTarget(1.5*ROBOT_WIDTH,1.5*ROBOT_WIDTH)
-			if self.twist.linear.x<IGNORE:
-				self.step = 6
-		elif self.step == 6:
-			self.report("Park6: reverse diagonal")
-			self.setTarget(self.towerSeparation/2.,0.)
-			self.reverse()
-			if self.twist.linear.x<IGNORE:
-				self.step = 7
-		elif self.step==7:
-			self.report("Auto_parking complete.")
-			self.reset_pub.publish(self,reset)
-			self.pivot(0.0)
-			self.stop()
-
-		self.pub.publish(self.twist)
-
+		rospy.loginfo(' Origin: {:.2f} {:.2f} Towers:  {:.2f} {:.2f}, {:.2f} {:.2f}'.format(\
+			self.pose.position.x,self.pose.position.y,\
+			self.leftPillar.x, self.leftPillar.y,\
+			self.rightPillar.x,self.rightPillar.y))
+		self.report("Park: proceeding to reference point")
+		self.moveToTarget(0,START_OFFSET+ROBOT_WIDTH,True)
+		#self.report("Park: downwind leg")
+		#self.moveToTarget(START_OFFSET,START_OFFSET+ROBOT_WIDTH,True)
+		#self.report("Park: base leg")
+		#self.moveToTarget(START_OFFSET,1.5*ROBOT_WIDTH,True)
+		#self.report("Park: final approach")
+		#self.moveToTarget(1.5*ROBOT_WIDTH,1.5*ROBOT_WIDTH,True)
+		#self.report("Park: reverse diagonal")
+		#self.moveToTarget(self.towerSeparation/2.,0.,False)
+		self.report("Auto_parking complete.")
+		self.reset_pub.publish(self,self.reset)
+		self.stop()
 	# =============================== End of Steps ========================
 
 	# Search the scan results for the two closest pillars.
-	# Reject objects that wre too narrow or wide.
-	def find_parking_markers(self,scan):
+	# Reject objects that are too narrow or wide.
+	# Handle the wrap by postulating a third pillar. We may combine.
+	# Return True if we've identified the two pillars.
+	def findParkingMarkers(self,scan):
 		delta  = scan.angle_increment
-		angle  = scan.angle_min-delta
-		pillar1 = Pillar()  # Closest
-		pillar2 = Pillar()  # Next closest
+		angle  = scan.angle_max + delta
+		pillar1 = Pillar()  	# Closest
+		pillar2 = Pillar()  	# Next closest
+		potential = Pillar()  	# In case of a wrap around origin.
+		# Raw data is 0>2PI. 0 is straight ahead, counter-clockwise.
+		# Lidar pulley is toward front of assembly.
 		for d in scan.ranges:
-			angle = angle + delta
+			angle = angle - delta
 			if d < IGNORE:
 				continue
-			# New minimum not matter what
-			if d<pillar1.d1-TOLERANCE:
-				pillar1.d1 = d
-				pillar1.a1 = angle
-				pillar1.inArc = True
-				pillar2.inArc = False
-			elif not pillar1.inArc and d<pillar1.d1:
-				pillar1.d1 = d
-				pillar1.a1 = angle
-				pillar1.inArc = True
-			elif pillar1.inArc and d>(pillar1.dist+TOLERANCE):
-				pillar1.d2 = d
-				pillar1.a2 = angle
-				width = getWidth(self,pillar1)
-				if width<2.*PILLAR_WIDTH or width>2*PILLAR_WIDTH:
-					rospy.loginfo("Park: Issue: pillar1 width: {:.2f}".format(width))
-				else:
-					pillar2.valid = True
-					pillar2.dist = pillar1.dist
-					pillar2.angle= pillar1.angle
-					pillar2.width= pillar1.width
-					pillar1.dist = (pillar1.d1+pillar1.d2)/2.
-					pillar1.angle = (pillar1.a1+pillar1.a2)/2.
-					pillar1.width = width
-				pillar1.inArc = False
-			# Farther than pillar1, but closer than current pillar2
-			elif d<pillar2.d1-TOLERANCE:
-				pillar2.d1 = d
-				pillar2.a1 = angle
-				pillar2.inArc = True
-			elif not pillar2.inArc and d<pillar2.d1:
-				pillar2.d1 = d
-				pillar2.a1 = angle
-				pillar2.inArc = True
-			elif pillar2.inArc and d>(pillar2.dist+TOLERANCE):
-				pillar2.d2 = d
-				pillar2.a2 = angle
-				width = getWidth(self,pillar1)
-				if width<2.*PILLAR_WIDTH or width>2*PILLAR_WIDTH:
-					rospy.loginfo("Park: Issue: pillar2 width: {:.2f}".format(width))
-				else:
-					pillar2.valid= True
-					pillar2.dist = (pillar2.d1+pillar1.d2)/2.
-					pillar2.angle = (pillar2.a1+pillar1.a2)/2.
-					pillar2.width = width
-				pillar2.inArc = False
+			# We group readings in a potential pillar
+			if d>potential.d1-TOLERANCE and d<potential.d2+TOLERANCE:
+				potential.append(d,angle)
+			else:
+				potential.end(pillar2.dist)
+				if potential.valid:
+					if potential.dist<pillar1.dist:
+						if pillar1.valid:
+							pillar2.clone(pillar1)
+						pillar1.clone(potential)
+						rospy.loginfo('Park: Pillar1 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
+					elif potential.dist<pillar2.dist:
+						pillar2.clone(potential)
+						rospy.loginfo('Park: Pillar2 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
+				potential.start(d,angle)
 
-		
-		if pillar1.angle>pillar2.angle:
-			self.rightTower = pillar1
-			self.leftTower  = pillar2
+		potential.end(pillar2.dist+TOLERANCE)		
+		# Check for wrap-around
+		if potential.valid:
+			if pillar1.a2 >= scan.angle_max-2*delta:
+				pillar1.combine(potential)
+			elif pillar2.a2 >= scan.angle_max-2*delta:
+				pillar2.combine(potential)
+
+		# Now assign the tower positions if two are valid
+		if pillar1.valid and pillar2.valid:
+			if pillar1.angle<pillar2.angle:
+				self.pillarsToPositions(pillar1,pillar2)
+			else:
+				self.pillarsToPositions(pillar2,pillar1)
+
+			rospy.loginfo("Park: pillars {:.2f} {:.0f}, {:.2f} {:.0f}".format(\
+				pillar1.dist,np.rad2deg(pillar1.angle),\
+				pillar2.dist,np.rad2deg(pillar2.angle)))
+
+			return True
 		else:
-			self.leftTower  = pillar1
-			self.rightTower = pillar2
+			return False
 
-		rospy.loginfo("Park: towers  {:.2f} {:.0f}, {:.2f} {:.0f}".format(\
-				self.leftTower.dist,180*self.leftTower.angle/math.pi,\
-				self.rightTower.dist,180*self.rightTower.angle/math.pi))
 
-		# If we've never computed distance between, do it and save it
-		# Use law of cosines again
-		if self.towerSeparation<0:
-			a = pillar1.dist
-			b = pillar2.dist
-			angle = pillar1.angle-pillar2.angle
-			self.towerSeparation = math.fabs(math.sqrt(a*a+b*b-2.*a*b*math.cos(angle)))
-			rospy.loginfo("Park: Tower separation {:.2f}".format(self.towerSeparation))
-			time.sleep(0.1)
-			rospy.loginfo(" a,b,angle: {:.2f} {:.2f} {:.2f}".format(a,b,angle))
-			if self.towerSeparation<3*ROBOT_WIDTH:
-				self.towerSeparation = 3*ROBOT_WIDTH
-
-	# Compute width of a pillar using law of cosines and only temporary parts
-	# of the object. If width is not reasonable, object will be discarded.
-	def get_width(self,pillar):
-		a = pillar.d1
-		b = pillar.d2
-		theta = pillar.a2 - pillar.a1
-		width = math.sqrt(a*a+b*b-2.*a*b*math.cos(maxAngle-minAngle))
-		return position
-
+	# First argument is the left pillar.
+	# Convert both pillars to position coordinates offset by those of origin.
+	# Angles A,B,C are at p1,p2 and origin
+	# Sides a,b,c are opposite corresponding angles
+	def pillarsToPositions(self,p1,p2):
+		# By law of cosines
+		a = p1.dist
+		b = p2.dist
+		C = p2.angle-p1.angle
+		c = math.fabs(math.sqrt(a*a+b*b-2.*a*b*math.cos(C)))
+		# Use law of sines
+		sinB = math.sin(C)*b/c
+		cosB = math.sqrt(1-sinB*sinB)
+		x = p2.dist*cosB
+		y = p2.dist*sinB
 		
+		self.rightPillar = Point()
+		self.leftPillar  = Point()
+		self.rightPillar.x= self.pose.position.x + x
+		self.leftPillar.x = self.pose.position.x - c + x
+		self.rightPillar.y= self.pose.position.y - y
+		self.leftPillar.y = self.pose.position.y - y
 
-	# Angle is with respect to x-axis (leftTower>rightTower)
-	def pivot(self,angle):
-		self.twist.linear.x  = 0.0
-		self.twist.angular.z = 0.0
-
-	# Compute the current position as a projection on the x-axis
-	# We have the LIDAR positions to the tower.
-	def projectionX(self):
-		# By law of sines, with c as angle at rightTower
-		sinc = self.leftTower.dist*math.sin(self.leftTower.angle-self.rightTower.angle)/\
-				    					self.towerSeparation
-		rospy.loginfo("ProjectionX: {:.2f} {:.2f} {:.2f} {:.2f}".format(\
-			sinc,self.leftTower.dist,math.sin(self.leftTower.angle-self.rightTower.angle),\
-			self.towerSeparation))
-		cosc = math.sqrt(1. - sinc*sinc)
-		return cosc*self.leftTower.dist - self.towerSeparation
-
-	def projectionY(self):
-		# By law of sines, with c as angle at rightTower
-		sinc = self.leftTower.dist*math.sin(self.leftTower.angle-self.rightTower.angle)/\
-				    					self.towerSeparation
-		return sinc*self.leftTower.dist
-
-	# Turn toward target. Target 0->2PI.
-	def rampedAngle(self):
-		angle = self.targetDirection
-		if angle>math.pi:
-			angle = angle - 2*math.pi
-		if angle<0.0:
-			if angle<-MAX_ANGLE:
-				angle = -MAX_ANGLE
-		else:
-			if angle>MAX_ANGLE:
-				angle = MAX_ANGLE
-		return -angle
-
-	def reverse(self):
-		self.twist.linear.x = -self.twist.linear.x
 
 	# Specify the target destination in terms of a reference system
 	# origin at leftTower with x-axis through rightTower.
 	# we start the maneuvers. We travel to this point and pivot.
 	# If the left tower is the origin and the right tower on the x-axis,
 	# then the reference point is at (0,ROBOT_WIDTH+START_OFFSET)
-	def setTarget(self,x,y):
-		dx = self.projectionX()
-		dy = self.projectionY()
-		x = x + dx
-		y = y + dy
-		self.twist.angular.z = math.atan2(x,y)
-		self.twist.linear.x  = math.sqrt(x*x+y*y)
-		if self.twist.linear.x<MAX_SPEED:
-			self.twist.linear.x = MAX_SPEED
+	# TEST ONLY: Turn to correct orientation, then stop
+	def moveToTarget(self,x,y,forward):
+		target = Point()
+		target.x = self.pose.position.x + x
+		target.y = self.pose.position.y + y
+
+		# First aim the robot at the target
+		dtheta = ANG_TOLERANCE+1
+		while dtheta > ANG_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
+			dx = target.x-self.pose.position.x
+			dy = target.y-self.pose.position.y
+			theta = math.atan2(dy,dx)  # Target direction
+			yaw   = self.quaternionToYaw(self.pose.orientation)
+			rospy.loginfo("Park: rotate {:.2f} -> {:.2f}".format(yaw,theta))
+			dtheta = theta - yaw
+			dtheta = MAX_ANGLE  if dtheta > MAX_ANGLE else dtheta
+			dtheta = -MAX_ANGLE if dtheta <-MAX_ANGLE else dtheta
+			self.twist.angular.z = dtheta
+			self.twist.linear.x  = 0.0
+			self.pub.publish(self.twist)
+			self.rate.sleep()
+		
+		# Next move in a straight line to target
+		err = self.euclideanDistance(self.pose.position,target)
+		err = 0  # Temporary
+		while err>POS_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
+			rospy.loginfo("Park: move {:.2f},{:.2f} -> {:.2f},{:.2f}".format(\
+				self.pose.position.x,self.pose.position.y,target.x,target.y))
+			lin_vel = err*VEL_FACTOR
+			if lin_vel>MAX_LINEAR:
+				lin_vel = MAX_LINEAR
+
+			dx = target.x-self.pose.position.x
+			dy = target.y-self.pose.position.y
+			theta = math.atan2(dy,dx)
+			if not forward:
+				offset = offset-math.pi
+				lin_vel = -lin_vel
+			if offset>MAX_ANGLE:
+				offset = MAX_ANGLE
+			elif offset<-MAX_ANGLE:
+				offset = -MAX_ANGLE
+
+			rospy.loginfo("Park: move err {:2f}, vel {:2f},{:2f}".format(err,lin_vel,offset))
+			# Make progress toward destination
+			self.twist.angular.z = offset
+			self.twist.linear.x  = lin_vel
+			self.pub.publish(self.twist)
+			self.rate.sleep()
+
+			err = self.euclideanDistance(self.pose.position,target)
+			
+		# Once we've reached our destination, stop
+		self.twist.angular.z = 0.0
+		self.twist.linear.x  = 0.0
+		self.pub.publish(self.twist)
+		self.rate.sleep()
+
+	def euclideanDistance(self,p1,p2):
+		a = p1.x - p2.x
+		b = p1.y - p2.y
+		return math.sqrt(a*a+b*b)
+
+	# From www.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+	def quaternionToYaw(self,q):
+		t3 = 2.0*(q.w*q.z+q.x*q.y)
+		t4 = 1.0 - 2.0*(q.y*q.y+q.z*q.z)
+		yaw = math.atan2(t3,t4)
+		return yaw
+				
 
 
 # The overall behavior has changed. Start the folower if state is "follow".
