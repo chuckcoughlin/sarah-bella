@@ -222,13 +222,13 @@ class Parker:
 			self.leftPillar.x, self.leftPillar.y,\
 			self.rightPillar.x,self.rightPillar.y))
 		self.report("Park: proceeding to reference point")
-		self.moveToTarget(0,START_OFFSET+ROBOT_WIDTH,True)
+		self.moveToTarget(0,-START_OFFSET-ROBOT_WIDTH,True)
 		#self.report("Park: downwind leg")
-		#self.moveToTarget(START_OFFSET,START_OFFSET+ROBOT_WIDTH,True)
+		#self.moveToTarget(START_OFFSET,-START_OFFSET-ROBOT_WIDTH,True)
 		#self.report("Park: base leg")
-		#self.moveToTarget(START_OFFSET,1.5*ROBOT_WIDTH,True)
+		#self.moveToTarget(START_OFFSET,-1.5*ROBOT_WIDTH,True)
 		#self.report("Park: final approach")
-		#self.moveToTarget(1.5*ROBOT_WIDTH,1.5*ROBOT_WIDTH,True)
+		#self.moveToTarget(1.5*ROBOT_WIDTH,-1.5*ROBOT_WIDTH,True)
 		#self.report("Park: reverse diagonal")
 		#self.moveToTarget(self.towerSeparation/2.,0.,False)
 		self.report("Auto_parking complete.")
@@ -327,7 +327,7 @@ class Parker:
 		target.x = self.pose.position.x + x
 		target.y = self.pose.position.y + y
 
-		# First aim the robot at the target
+		# First aim the robot at the target coordinates
 		dtheta = ANG_TOLERANCE+1
 		while math.fabs(dtheta) > ANG_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
 			dx = target.x-self.pose.position.x
