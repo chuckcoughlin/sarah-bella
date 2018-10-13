@@ -24,7 +24,6 @@ import sys
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist, Pose, Point, Quaternion
 from nav_msgs.msg import Odometry
-from std_msgs.msg import Empty
 from teleop_service.msg import Behavior,TeleopStatus
 import numpy as np
 import math
@@ -128,13 +127,17 @@ class Parker:
 		# Create a Twist message, and fill in the fields.
 		self.pose  = Pose()   # Current position of the robot (raw)
 		self.twist = Twist()  # Used to command movement
-		self.reset = Empty()
+		self.twist.linear.x = 0.0
+		self.twist.linear.y = 0.0
+		self.twist.linear.z = 0.0
+		self.twist.angular.x = 0.0
+		self.twist.angular.y = 0.0
+		self.twist.angular.z = 0.0
 		self.rate = rospy.Rate(.2) # 5 secs for now
 		self.msg = TeleopStatus()
 
 		# Publish status so that controller can keep track of state
 		self.spub = rospy.Publisher('sb_teleop_status',TeleopStatus,queue_size=1)
-		self.reset_pub = rospy.Publisher('/reset',Empty,queue_size=1)
 		self.initialize()
 		self.report("Parker: initialized.")
 		self.behavior = ""
@@ -144,18 +147,30 @@ class Parker:
 		self.rightPillar= Point() # Raw coordinates
 		self.initialized = False # Pillars not located yet
 
+	def rampedAngle(self,angle):
+		if angle>math.pi:
+			angle = angle - 2*math.pi
+		angle = MAX_ANGLE  if angle > MAX_ANGLE else angle
+		angle = -MAX_ANGLE if angle <-MAX_ANGLE else angle
+		return angle
+
 	def report(self,text):
 		if self.msg.status!=text:
 			self.msg.status = text
 			self.spub.publish(self.msg)
     
+	def reset(self):
+		self.twist.linear.x = 0.0
+		self.twist.angular.z = 0.0
+		self.pub.publish(self.twist)
+
 	# Start by finding the parking spot
 	# We start here every time.
 	def start(self):
 		self.stopped = False
 		self.report("Parker: started ...");
 		# Publish movement commands to the turtlebot's base
-		self.pub = rospy.Publisher('/cmd_vel', Twist,queue_size=1)
+		self.pub = rospy.Publisher('/cmd_vel',Twist,queue_size=1)
 		self.sub  = rospy.Subscriber("/scan_throttle",LaserScan,self.getScan)
 		self.odom = rospy.Subscriber("/odom",Odometry,self.updatePose)
 		self.initialize()
@@ -217,7 +232,7 @@ class Parker:
 		#self.report("Park: reverse diagonal")
 		#self.moveToTarget(self.towerSeparation/2.,0.,False)
 		self.report("Auto_parking complete.")
-		self.reset_pub.publish(self,self.reset)
+		self.reset()
 		self.stop()
 	# =============================== End of Steps ========================
 
@@ -319,12 +334,10 @@ class Parker:
 			dy = target.y-self.pose.position.y
 			theta = math.atan2(dy,dx)  # Target direction
 			yaw   = self.quaternionToYaw(self.pose.orientation)
-			rospy.loginfo("Park: rotate {:.2f} -> {:.2f}".format(yaw,theta))
 			dtheta = theta - yaw
-			dtheta = MAX_ANGLE  if dtheta > MAX_ANGLE else dtheta
-			dtheta = -MAX_ANGLE if dtheta <-MAX_ANGLE else dtheta
-			self.twist.angular.z = dtheta
-			self.twist.linear.x  = 0.0
+			rospy.loginfo("Park: rotate {:.2f} -> {:.2f} ({:.2f})".format(yaw,theta,dtheta))
+			self.twist.angular.z = self.rampedAngle(dtheta)
+			self.twist.linear.x  = 0.01
 			self.pub.publish(self.twist)
 			self.rate.sleep()
 		
