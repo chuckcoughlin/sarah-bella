@@ -349,6 +349,8 @@ class Parker:
 			lin_vel = err*VEL_FACTOR
 			if lin_vel>MAX_LINEAR:
 				lin_vel = MAX_LINEAR
+			elif lin_vel<-MAX_LINEAR:
+				lin_vel = -MAX_LINEAR
 
 			dx = target.x-self.pose.position.x
 			dy = target.y-self.pose.position.y
@@ -357,10 +359,10 @@ class Parker:
 				theta = theta-math.pi
 				lin_vel = -lin_vel
 
-			rospy.loginfo("Park: move err {:2f}, vel {:2f},{:2f}".format(err,lin_vel,theta))
+			#rospy.loginfo("Park: move err {:2f}, vel {:2f},{:2f}".format(err,lin_vel,theta))
 			# Make progress toward destination
 			self.twist.angular.z = self.rampedAngle(theta)
-			self.twist.linear.x  = lin_vel
+			self.twist.linear.x  = -lin_vel
 			self.pub.publish(self.twist)
 			self.rate.sleep()
 
