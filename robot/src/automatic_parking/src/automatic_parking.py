@@ -133,7 +133,7 @@ class Parker:
 		self.twist.angular.x = 0.0
 		self.twist.angular.y = 0.0
 		self.twist.angular.z = 0.0
-		self.rate = rospy.Rate(2) # 1/2 sec for now
+		self.rate = rospy.Rate(4) # 1/4 sec for now
 		self.msg = TeleopStatus()
 
 		# Publish status so that controller can keep track of state
@@ -332,19 +332,18 @@ class Parker:
 		while math.fabs(dtheta) > ANG_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
 			dx = target.x-self.pose.position.x
 			dy = target.y-self.pose.position.y
-			theta = math.atan2(dy,dx)  # Target direction
+			theta = math.atan2(dy,dx) - math.pi/2. # Target direction
 			yaw   = self.quaternionToYaw(self.pose.orientation)
 			dtheta = theta - yaw
 			rospy.loginfo("Park: rotate {:.2f} -> {:.2f} ({:.2f})".format(yaw,theta,dtheta))
 			self.twist.angular.z = self.rampedAngle(dtheta)
-			self.twist.linear.x  = 0.01
+			self.twist.linear.x  = 0.0
 			self.pub.publish(self.twist)
 			self.rate.sleep()
 		
 		# Next move in a straight line to target
 		err = self.euclideanDistance(self.pose.position,target)
-		err = 0  # Temporary
-		while err>POS_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
+		while math.fabs(err)>POS_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
 			rospy.loginfo("Park: move {:.2f},{:.2f} -> {:.2f},{:.2f}".format(\
 				self.pose.position.x,self.pose.position.y,target.x,target.y))
 			lin_vel = err*VEL_FACTOR
@@ -353,18 +352,14 @@ class Parker:
 
 			dx = target.x-self.pose.position.x
 			dy = target.y-self.pose.position.y
-			theta = math.atan2(dy,dx)
+			theta = math.atan2(dy,dx) - math.pi/2.
 			if not forward:
-				offset = offset-math.pi
+				theta = theta-math.pi
 				lin_vel = -lin_vel
-			if offset>MAX_ANGLE:
-				offset = MAX_ANGLE
-			elif offset<-MAX_ANGLE:
-				offset = -MAX_ANGLE
 
-			rospy.loginfo("Park: move err {:2f}, vel {:2f},{:2f}".format(err,lin_vel,offset))
+			rospy.loginfo("Park: move err {:2f}, vel {:2f},{:2f}".format(err,lin_vel,theta))
 			# Make progress toward destination
-			self.twist.angular.z = offset
+			self.twist.angular.z = self.rampedAngle(theta)
 			self.twist.linear.x  = lin_vel
 			self.pub.publish(self.twist)
 			self.rate.sleep()
