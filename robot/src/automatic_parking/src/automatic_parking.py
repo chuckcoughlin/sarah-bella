@@ -29,7 +29,7 @@ import numpy as np
 import math
 import time
 
-MAX_ANGLE   = 0.5
+MAX_ANGLE   = 0.2
 MAX_LINEAR  = 0.1
 VEL_FACTOR  = 1.5     # Multiply distance to get velocity
 ROBOT_WIDTH = 0.2     # Robot width ~ m
@@ -133,7 +133,7 @@ class Parker:
 		self.twist.angular.x = 0.0
 		self.twist.angular.y = 0.0
 		self.twist.angular.z = 0.0
-		self.rate = rospy.Rate(.2) # 5 secs for now
+		self.rate = rospy.Rate(2) # 1/2 sec for now
 		self.msg = TeleopStatus()
 
 		# Publish status so that controller can keep track of state
@@ -329,7 +329,7 @@ class Parker:
 
 		# First aim the robot at the target
 		dtheta = ANG_TOLERANCE+1
-		while dtheta > ANG_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
+		while math.fabs(dtheta) > ANG_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
 			dx = target.x-self.pose.position.x
 			dy = target.y-self.pose.position.y
 			theta = math.atan2(dy,dx)  # Target direction
