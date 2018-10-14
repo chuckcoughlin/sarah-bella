@@ -29,7 +29,7 @@ import numpy as np
 import math
 import time
 
-MAX_ANGLE   = 0.2
+MAX_ANGLE   = 0.4
 MAX_LINEAR  = 0.05
 VEL_FACTOR  = 1.0     # Multiply distance to get velocity
 ROBOT_WIDTH = 0.1     # Robot width ~ m
