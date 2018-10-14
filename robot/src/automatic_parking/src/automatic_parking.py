@@ -37,7 +37,8 @@ TOLERANCE   = 0.02    # Variation in consecutive cloud points in group
 ANG_TOLERANCE= 0.05   # Directional correction to target considered adequate
 POS_TOLERANCE= 0.05   # Distance to target considered close enough
 PILLAR_WIDTH = 0.08   # Approx tower width ~ m
-START_OFFSET= 0.6     # Dist from left tower to start ~ m
+LEG_X       = 0.3	  # Length of downwind leg
+REFERENCE_Y = 0.4     # Dist from left tower to reference point ~ m
 IGNORE      = 0.02    # Ignore any scan distances less than this
 INFINITY    = 10.
 
@@ -224,11 +225,11 @@ class Parker:
 			self.leftPillar.x, self.leftPillar.y,\
 			self.rightPillar.x,self.rightPillar.y))
 		self.report("Park: proceeding to reference point")
-		self.moveToTarget(0,-START_OFFSET-ROBOT_WIDTH,True)
+		self.moveToTarget(0,-REFERENCE_Y-ROBOT_WIDTH,True)
 		self.report("Park: downwind leg")
-		self.moveToTarget(START_OFFSET,-START_OFFSET-ROBOT_WIDTH,True)
+		self.moveToTarget(LEG_X,-REFERENCE_Y-ROBOT_WIDTH,True)
 		self.report("Park: base leg")
-		self.moveToTarget(START_OFFSET,-1.5*ROBOT_WIDTH,True)
+		self.moveToTarget(LEG_X,-1.5*ROBOT_WIDTH,True)
 		self.report("Park: final approach")
 		self.moveToTarget(1.5*ROBOT_WIDTH,-1.5*ROBOT_WIDTH,True)
 		self.report("Park: reverse diagonal")
@@ -318,12 +319,11 @@ class Parker:
 		self.rightPillar.y= self.pose.position.y - y
 		self.leftPillar.y = self.pose.position.y - y
 
-
 	# Specify the target destination in terms of a reference system
 	# origin at leftTower with x-axis through rightTower.
 	# As we start the maneuvers, we travel to this point and pivot.
 	# If the left tower is the origin and the right tower on the x-axis,
-	# then the reference point is at (0,-ROBOT_WIDTH-START_OFFSET)
+	# then the reference point is at (0,-ROBOT_WIDTH-REFERENCE_Y)
 	# Note that pose.position.x is with respect to the front 
 	def moveToTarget(self,x,y,forward):
 		target = Point()
@@ -339,7 +339,7 @@ class Parker:
 			theta = math.atan2(dy,dx) + math.pi/2. # Target direction
 			yaw   = self.quaternionToYaw(self.pose.orientation)
 			dtheta = self.rampedAngle(theta - yaw)
-			rospy.loginfo("Park: rotate {:.2f} -> {:.2f} ({:.2f})".format(yaw,theta,dtheta))
+			rospy.loginfo("Park: rotate {:.0f} -> {:.0f} ({:.0f})".format(math.degrees(yaw),\								math.degrees(theta),math.degrees(dtheta)))
 			self.twist.angular.z = dtheta
 			self.twist.linear.x  = 0.0
 			self.pub.publish(self.twist)
@@ -365,7 +365,8 @@ class Parker:
 				lin_vel = -lin_vel
 
 			theta = self.rampedAngle(theta)
-			rospy.loginfo("Park: move err {:2f}, vel {:2f},{:2f}".format(err,lin_vel,theta))
+			rospy.loginfo("Park: move err {:.2f}, vel {:.2f},{:.0f}".format(err,lin_vel,\
+						math.degrees(theta)))
 			# Make progress toward destination
 			self.twist.angular.z = 0.0  # Instead of theta
 			self.twist.linear.x  = -lin_vel
