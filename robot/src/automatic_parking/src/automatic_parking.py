@@ -150,6 +150,8 @@ class Parker:
 	def rampedAngle(self,angle):
 		if angle>math.pi:
 			angle = angle - 2*math.pi
+		elif angle<math.pi:
+			angle = angle + 2*math.pi
 		angle = MAX_ANGLE  if angle > MAX_ANGLE else angle
 		angle = -MAX_ANGLE if angle <-MAX_ANGLE else angle
 		return angle
@@ -328,21 +330,23 @@ class Parker:
 		target.y = self.pose.position.y + y
 
 		# First aim the robot at the target coordinates
+		# atan2() returns a number between pi and -pi
 		dtheta = ANG_TOLERANCE+1
 		while math.fabs(dtheta) > ANG_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
 			dx = target.x-self.pose.position.x
 			dy = target.y-self.pose.position.y
-			theta = math.atan2(dy,dx) - math.pi/2. # Target direction
+			theta = math.atan2(dy,dx) + math.pi/2. # Target direction
 			yaw   = self.quaternionToYaw(self.pose.orientation)
-			dtheta = theta - yaw
+			dtheta = self.rampedAngle(theta - yaw)
 			rospy.loginfo("Park: rotate {:.2f} -> {:.2f} ({:.2f})".format(yaw,theta,dtheta))
-			self.twist.angular.z = self.rampedAngle(dtheta)
+			self.twist.angular.z = dtheta
 			self.twist.linear.x  = 0.0
 			self.pub.publish(self.twist)
 			self.rate.sleep()
 		
 		# Next move in a straight line to target
 		err = self.euclideanDistance(self.pose.position,target)
+		err = 0.0
 		while math.fabs(err)>POS_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
 			rospy.loginfo("Park: move {:.2f},{:.2f} -> {:.2f},{:.2f}".format(\
 				self.pose.position.x,self.pose.position.y,target.x,target.y))
@@ -354,14 +358,15 @@ class Parker:
 
 			dx = target.x-self.pose.position.x
 			dy = target.y-self.pose.position.y
-			theta = math.atan2(dy,dx) - math.pi/2.
+			theta = math.atan2(dy,dx) + math.pi/2.
 			if not forward:
 				theta = theta-math.pi
 				lin_vel = -lin_vel
 
+			theta = self.rampedAngle(theta)
 			#rospy.loginfo("Park: move err {:2f}, vel {:2f},{:2f}".format(err,lin_vel,theta))
 			# Make progress toward destination
-			self.twist.angular.z = self.rampedAngle(theta)
+			self.twist.angular.z = theta
 			self.twist.linear.x  = -lin_vel
 			self.pub.publish(self.twist)
 			self.rate.sleep()
