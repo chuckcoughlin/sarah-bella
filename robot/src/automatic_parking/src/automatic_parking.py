@@ -180,6 +180,7 @@ class Parker:
 		self.initialize()
 
 	def stop(self):
+		self.initialized = False
 		if not self.stopped:
 			self.stopped = True
 			self.report("Parker: stopped.")
@@ -221,10 +222,9 @@ class Parker:
 	# =============================== Parking Sequence ========================
 	# We have discovered and positioned the pillars. Now move through the pattern.
 	def park(self):
-		rospy.loginfo(' Origin: {:.2f} {:.2f} Towers:  {:.2f} {:.2f}, {:.2f} {:.2f}'.format(\
-			self.pose.position.x,self.pose.position.y,\
-			self.leftPillar.x, self.leftPillar.y,\
-			self.rightPillar.x,self.rightPillar.y))
+		rospy.loginfo('Position vs Pillar1 (pillar coords):  {:.2f} {:.2f} ({.0f})'.format(\
+			-(self.pose.position.y+self.leftPillar.y),\
+			self.pose.position.x+self.leftPillar.x))
 		self.report("Park: proceeding to reference point")
 		self.moveToTarget(0,-REFERENCE_Y-ROBOT_WIDTH,True)
 		#self.report("Park: downwind leg")
