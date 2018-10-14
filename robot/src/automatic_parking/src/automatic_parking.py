@@ -37,8 +37,8 @@ TOLERANCE   = 0.02    # Variation in consecutive cloud points in group
 ANG_TOLERANCE= 0.05   # Directional correction to target considered adequate
 POS_TOLERANCE= 0.05   # Distance to target considered close enough
 PILLAR_WIDTH = 0.08   # Approx tower width ~ m
-LEG_X       = 0.3	  # Length of downwind leg
-REFERENCE_Y = 0.4     # Dist from left tower to reference point ~ m
+LEG_X       = 0.2	  # Length of downwind leg
+REFERENCE_Y = 0.3     # Dist from left tower to reference point ~ m
 IGNORE      = 0.02    # Ignore any scan distances less than this
 INFINITY    = 10.
 
@@ -144,8 +144,9 @@ class Parker:
 		self.behavior = ""
 
 	def initialize(self):
-		self.leftPillar = Point() # Raw coordinates
-		self.rightPillar= Point() # Raw coordinates
+		self.leftPillar = Point() # Odometric coordinates
+		self.rightPillar= Point() # Odometric coordinates
+		self.pillarSeparation = 0.0
 		self.initialized = False # Pillars not located yet
 
 	def rampedAngle(self,angle):
@@ -226,15 +227,14 @@ class Parker:
 			self.rightPillar.x,self.rightPillar.y))
 		self.report("Park: proceeding to reference point")
 		self.moveToTarget(0,-REFERENCE_Y-ROBOT_WIDTH,True)
-		self.report("Park: downwind leg")
-		self.moveToTarget(LEG_X,-REFERENCE_Y-ROBOT_WIDTH,True)
-		self.report("Park: base leg")
-		self.moveToTarget(LEG_X,-1.5*ROBOT_WIDTH,True)
-		self.report("Park: final approach")
-		self.moveToTarget(1.5*ROBOT_WIDTH,-1.5*ROBOT_WIDTH,True)
-		self.report("Park: reverse diagonal")
-		separation = self.rightPillar.x-self.leftPillar.x
-		self.moveToTarget(separation/2.,0.,False)
+		#self.report("Park: downwind leg")
+		#self.moveToTarget(LEG_X,-REFERENCE_Y-ROBOT_WIDTH,True)
+		#self.report("Park: base leg")
+		#self.moveToTarget(LEG_X,-1.5*ROBOT_WIDTH,True)
+		#self.report("Park: final approach")
+		#self.moveToTarget(1.5*ROBOT_WIDTH,-1.5*ROBOT_WIDTH,True)
+		#self.report("Park: reverse diagonal")
+		#self.moveToTarget(self.pillarSeparation/2.,0.,False)
 		self.report("Auto_parking complete.")
 		self.reset()
 		self.stop()
@@ -298,6 +298,7 @@ class Parker:
 
 	# First argument is the left pillar.
 	# Convert both pillars to position coordinates offset by those of origin.
+	# Use obom coordinates. x is forward, y is left.
 	# Angles A,B,C are at p1,p2 and origin
 	# Sides a,b,c are opposite corresponding angles
 	def pillarsToPositions(self,p1,p2):
@@ -314,32 +315,35 @@ class Parker:
 		
 		self.rightPillar = Point()
 		self.leftPillar  = Point()
-		self.rightPillar.x= self.pose.position.x + x
-		self.leftPillar.x = self.pose.position.x - c + x
-		self.rightPillar.y= self.pose.position.y - y
-		self.leftPillar.y = self.pose.position.y - y
+		self.pillarSeparation = c
+		self.rightPillar.x= self.pose.position.x  + y
+		self.leftPillar.x = -self.pose.position.x + y
+		self.rightPillar.y= self.pose.position.y - x - c
+		self.leftPillar.y = self.pose.position.y - x
 
-	# Specify the target destination in terms of a reference system
+	# Request the target destination in terms of a reference system
 	# origin at leftTower with x-axis through rightTower.
-	# As we start the maneuvers, we travel to this point and pivot.
-	# If the left tower is the origin and the right tower on the x-axis,
-	# then the reference point is at (0,-ROBOT_WIDTH-REFERENCE_Y)
-	# Note that pose.position.x is with respect to the front 
+	# As we start the maneuver, we pivot to the correct direction,
+	# then move to the target. All calculations are in terms of 
+	# the odometry coordinates.
+	# Note that pose.position.x is forward, pos.position.y is left.
 	def moveToTarget(self,x,y,forward):
+		# Specify the target in terms of odometry map frame.
 		target = Point()
-		target.x = self.pose.position.y + x
-		target.y = self.pose.position.x + y
+		target.x = self.leftPillar.x + y
+		target.y = self.leftPillar.y + x
 
 		# First aim the robot at the target coordinates
 		# atan2() returns a number between pi and -pi
 		dtheta = ANG_TOLERANCE+1
 		while math.fabs(dtheta) > ANG_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
-			dx = target.x-self.pose.position.y
-			dy = target.y-self.pose.position.x
-			theta = math.atan2(dy,dx) + math.pi/2. # Target direction
+			dx = target.x-self.pose.position.x
+			dy = target.y-self.pose.position.y
+			theta = math.atan2(dy,dx) # Target direction
 			yaw   = self.quaternionToYaw(self.pose.orientation)
 			dtheta = self.rampedAngle(theta - yaw)
-			rospy.loginfo("Park: rotate {:.0f} -> {:.0f} ({:.0f})".format(math.degrees(yaw),\								math.degrees(theta),math.degrees(dtheta)))
+			rospy.loginfo("Park: rotate {:.0f} -> {:.0f} ({:.0f})".format(math.degrees(yaw),\
+								math.degrees(theta),math.degrees(dtheta)))
 			self.twist.angular.z = dtheta
 			self.twist.linear.x  = 0.0
 			self.pub.publish(self.twist)
@@ -348,6 +352,7 @@ class Parker:
 		# Next move in a straight line to target
 		# We have found that we are more accurate ignoring direction once we've turned
 		err = self.euclideanDistance(self.pose.position,target)
+		err = 0
 		while math.fabs(err)>POS_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
 			rospy.loginfo("Park: move {:.2f},{:.2f} -> {:.2f},{:.2f}".format(\
 				self.pose.position.y,self.pose.position.x,target.x,target.y))
