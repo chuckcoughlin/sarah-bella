@@ -232,7 +232,8 @@ class Parker:
 		self.report("Park: final approach")
 		self.moveToTarget(1.5*ROBOT_WIDTH,-1.5*ROBOT_WIDTH,True)
 		self.report("Park: reverse diagonal")
-		self.moveToTarget(self.towerSeparation/2.,0.,False)
+		separation = self.rightPillar.x-self.leftPillar.x
+		self.moveToTarget(separation/2.,0.,False)
 		self.report("Auto_parking complete.")
 		self.reset()
 		self.stop()
@@ -364,7 +365,7 @@ class Parker:
 				lin_vel = -lin_vel
 
 			theta = self.rampedAngle(theta)
-			#rospy.loginfo("Park: move err {:2f}, vel {:2f},{:2f}".format(err,lin_vel,theta))
+			rospy.loginfo("Park: move err {:2f}, vel {:2f},{:2f}".format(err,lin_vel,theta))
 			# Make progress toward destination
 			self.twist.angular.z = 0.0  # Instead of theta
 			self.twist.linear.x  = -lin_vel
