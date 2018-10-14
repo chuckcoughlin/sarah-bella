@@ -30,8 +30,8 @@ import math
 import time
 
 MAX_ANGLE   = 0.2
-MAX_LINEAR  = 0.1
-VEL_FACTOR  = 1.5     # Multiply distance to get velocity
+MAX_LINEAR  = 0.05
+VEL_FACTOR  = 1.0     # Multiply distance to get velocity
 ROBOT_WIDTH = 0.2     # Robot width ~ m
 TOLERANCE   = 0.02    # Variation in consecutive cloud points in group
 ANG_TOLERANCE= 0.05   # Directional correction to target considered adequate
@@ -150,7 +150,7 @@ class Parker:
 	def rampedAngle(self,angle):
 		if angle>math.pi:
 			angle = angle - 2*math.pi
-		elif angle<math.pi:
+		elif angle<-math.pi:
 			angle = angle + 2*math.pi
 		angle = MAX_ANGLE  if angle > MAX_ANGLE else angle
 		angle = -MAX_ANGLE if angle <-MAX_ANGLE else angle
@@ -320,21 +320,21 @@ class Parker:
 
 	# Specify the target destination in terms of a reference system
 	# origin at leftTower with x-axis through rightTower.
-	# we start the maneuvers. We travel to this point and pivot.
+	# As we start the maneuvers, we travel to this point and pivot.
 	# If the left tower is the origin and the right tower on the x-axis,
-	# then the reference point is at (0,ROBOT_WIDTH+START_OFFSET)
-	# TEST ONLY: Turn to correct orientation, then stop
+	# then the reference point is at (0,-ROBOT_WIDTH-START_OFFSET)
+	# Note that pose.position.x is with respect to the front 
 	def moveToTarget(self,x,y,forward):
 		target = Point()
-		target.x = self.pose.position.x + x
-		target.y = self.pose.position.y + y
+		target.x = self.pose.position.y + x
+		target.y = self.pose.position.x + y
 
 		# First aim the robot at the target coordinates
 		# atan2() returns a number between pi and -pi
 		dtheta = ANG_TOLERANCE+1
 		while math.fabs(dtheta) > ANG_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
-			dx = target.x-self.pose.position.x
-			dy = target.y-self.pose.position.y
+			dx = target.x-self.pose.position.y
+			dy = target.y-self.pose.position.x
 			theta = math.atan2(dy,dx) + math.pi/2. # Target direction
 			yaw   = self.quaternionToYaw(self.pose.orientation)
 			dtheta = self.rampedAngle(theta - yaw)
@@ -346,18 +346,17 @@ class Parker:
 		
 		# Next move in a straight line to target
 		err = self.euclideanDistance(self.pose.position,target)
-		err = 0.0
 		while math.fabs(err)>POS_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
 			rospy.loginfo("Park: move {:.2f},{:.2f} -> {:.2f},{:.2f}".format(\
-				self.pose.position.x,self.pose.position.y,target.x,target.y))
+				self.pose.position.y,self.pose.position.x,target.x,target.y))
 			lin_vel = err*VEL_FACTOR
 			if lin_vel>MAX_LINEAR:
 				lin_vel = MAX_LINEAR
 			elif lin_vel<-MAX_LINEAR:
 				lin_vel = -MAX_LINEAR
 
-			dx = target.x-self.pose.position.x
-			dy = target.y-self.pose.position.y
+			dx = target.x-self.pose.position.y
+			dy = target.y-self.pose.position.x
 			theta = math.atan2(dy,dx) + math.pi/2.
 			if not forward:
 				theta = theta-math.pi
@@ -379,9 +378,10 @@ class Parker:
 		self.pub.publish(self.twist)
 		self.rate.sleep()
 
+	# Note: two poses have different meanings of x/y
 	def euclideanDistance(self,p1,p2):
-		a = p1.x - p2.x
-		b = p1.y - p2.y
+		a = p1.y - p2.x
+		b = p1.x - p2.y
 		return math.sqrt(a*a+b*b)
 
 	# From www.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
