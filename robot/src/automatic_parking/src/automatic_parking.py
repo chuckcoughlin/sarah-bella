@@ -32,12 +32,12 @@ import time
 MAX_ANGLE   = 0.2
 MAX_LINEAR  = 0.05
 VEL_FACTOR  = 1.0     # Multiply distance to get velocity
-ROBOT_WIDTH = 0.2     # Robot width ~ m
+ROBOT_WIDTH = 0.1     # Robot width ~ m
 TOLERANCE   = 0.02    # Variation in consecutive cloud points in group
 ANG_TOLERANCE= 0.05   # Directional correction to target considered adequate
 POS_TOLERANCE= 0.05   # Distance to target considered close enough
 PILLAR_WIDTH = 0.08   # Approx tower width ~ m
-START_OFFSET= 1.0     # Dist from left tower to start ~ m
+START_OFFSET= 0.6     # Dist from left tower to start ~ m
 IGNORE      = 0.02    # Ignore any scan distances less than this
 INFINITY    = 10.
 
@@ -225,14 +225,14 @@ class Parker:
 			self.rightPillar.x,self.rightPillar.y))
 		self.report("Park: proceeding to reference point")
 		self.moveToTarget(0,-START_OFFSET-ROBOT_WIDTH,True)
-		#self.report("Park: downwind leg")
-		#self.moveToTarget(START_OFFSET,-START_OFFSET-ROBOT_WIDTH,True)
-		#self.report("Park: base leg")
-		#self.moveToTarget(START_OFFSET,-1.5*ROBOT_WIDTH,True)
-		#self.report("Park: final approach")
-		#self.moveToTarget(1.5*ROBOT_WIDTH,-1.5*ROBOT_WIDTH,True)
-		#self.report("Park: reverse diagonal")
-		#self.moveToTarget(self.towerSeparation/2.,0.,False)
+		self.report("Park: downwind leg")
+		self.moveToTarget(START_OFFSET,-START_OFFSET-ROBOT_WIDTH,True)
+		self.report("Park: base leg")
+		self.moveToTarget(START_OFFSET,-1.5*ROBOT_WIDTH,True)
+		self.report("Park: final approach")
+		self.moveToTarget(1.5*ROBOT_WIDTH,-1.5*ROBOT_WIDTH,True)
+		self.report("Park: reverse diagonal")
+		self.moveToTarget(self.towerSeparation/2.,0.,False)
 		self.report("Auto_parking complete.")
 		self.reset()
 		self.stop()
@@ -345,6 +345,7 @@ class Parker:
 			self.rate.sleep()
 		
 		# Next move in a straight line to target
+		# We have found that we are more accurate ignoring direction once we've turned
 		err = self.euclideanDistance(self.pose.position,target)
 		while math.fabs(err)>POS_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
 			rospy.loginfo("Park: move {:.2f},{:.2f} -> {:.2f},{:.2f}".format(\
@@ -365,7 +366,7 @@ class Parker:
 			theta = self.rampedAngle(theta)
 			#rospy.loginfo("Park: move err {:2f}, vel {:2f},{:2f}".format(err,lin_vel,theta))
 			# Make progress toward destination
-			self.twist.angular.z = theta
+			self.twist.angular.z = 0.0  # Instead of theta
 			self.twist.linear.x  = -lin_vel
 			self.pub.publish(self.twist)
 			self.rate.sleep()
