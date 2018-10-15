@@ -144,8 +144,8 @@ class Parker:
 		self.behavior = ""
 
 	def initialize(self):
-		self.leftPillar = Point() # Odometric coordinates
-		self.rightPillar= Point() # Odometric coordinates
+		self.leftPillar = Point() # Raw coordinates
+		self.rightPillar= Point() # Raw coordinates
 		self.pillarSeparation = 0.0
 		self.initialized = False # Pillars not located yet
 
@@ -222,7 +222,7 @@ class Parker:
 	# =============================== Parking Sequence ========================
 	# We have discovered and positioned the pillars. Now move through the pattern.
 	def park(self):
-		rospy.loginfo('Position vs Pillar1 (pillar coords):  {:.2f} {:.2f} ({.0f})'.format(\
+		rospy.loginfo('Position vs Pillar1 (pillar coords):  {:.2f} {:.2f}'.format(\
 			-(self.pose.position.y+self.leftPillar.y),\
 			self.pose.position.x+self.leftPillar.x))
 		self.report("Park: proceeding to reference point")
@@ -316,10 +316,10 @@ class Parker:
 		self.rightPillar = Point()
 		self.leftPillar  = Point()
 		self.pillarSeparation = c
-		self.rightPillar.x= self.pose.position.x  + y
-		self.leftPillar.x = -self.pose.position.x + y
-		self.rightPillar.y= self.pose.position.y - x - c
-		self.leftPillar.y = self.pose.position.y - x
+		self.rightPillar.x= self.pose.position.x  + x
+		self.leftPillar.x = self.pose.position.x + x -c
+		self.rightPillar.y= self.pose.position.y - y
+		self.leftPillar.y = self.pose.position.y - y
 
 	# Request the target destination in terms of a reference system
 	# origin at leftTower with x-axis through rightTower.
@@ -330,16 +330,16 @@ class Parker:
 	def moveToTarget(self,x,y,forward):
 		# Specify the target in terms of odometry map frame.
 		target = Point()
-		target.x = self.leftPillar.x + y
-		target.y = self.leftPillar.y + x
+		target.x = self.pose.position.y + x
+		target.y = self.pose.position.x + y
 
 		# First aim the robot at the target coordinates
 		# atan2() returns a number between pi and -pi
 		dtheta = ANG_TOLERANCE+1
 		while math.fabs(dtheta) > ANG_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
-			dx = target.x-self.pose.position.x
-			dy = target.y-self.pose.position.y
-			theta = math.atan2(dy,dx) # Target direction
+			dx = target.x-self.pose.position.y
+			dy = target.y-self.pose.position.x
+			theta = math.atan2(dy,dx) + math.pi/2. # Target direction
 			yaw   = self.quaternionToYaw(self.pose.orientation)
 			dtheta = self.rampedAngle(theta - yaw)
 			rospy.loginfo("Park: rotate {:.0f} -> {:.0f} ({:.0f})".format(math.degrees(yaw),\
