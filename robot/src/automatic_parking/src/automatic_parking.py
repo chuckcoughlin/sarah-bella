@@ -147,6 +147,7 @@ class Parker:
 		self.leftPillar = Point() # Raw coordinates
 		self.rightPillar= Point() # Raw coordinates
 		self.pillarSeparation = 0.0
+		self.origin   = Point()
 		self.origin.x = 0.0 # Start position of a leg, reference co-ordinates
 		self.origin.y = 0.0
 		self.yawCorrection = 0.0 # Difference between reference and odometric direction
@@ -290,8 +291,7 @@ class Parker:
 				self.setReferenceCoordinates(pillar2,pillar1)
 
 			rospy.loginfo("Park: Initial origin {:.2f} {:.2f} {:.0f}".format(\
-				self.origin.x, self.origin.y, math.degrees(self.yawCorrection)
-
+				self.origin.x, self.origin.y, math.degrees(self.yawCorrection)))
 			return True
 		else:
 			return False
