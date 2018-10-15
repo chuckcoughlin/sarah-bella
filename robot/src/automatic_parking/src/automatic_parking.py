@@ -66,7 +66,7 @@ class Pillar:
 		self.a1 = pillar.a1
 		self.a2 = pillar.a2
 
-	# Point represents the start of a group
+	# Represents the start of a group
 	def start(self,dist,angle):
 		self.d1 = dist
 		self.d2 = dist
@@ -90,7 +90,7 @@ class Pillar:
 				# rospy.loginfo("Park: Issue: pillar width: {:.2f}".format(self.width))
 				self.valid = False
 
-	# Point represents the continuation or completion of a group
+	# Represents the continuation or completion of a group
 	# Angles are decreasing as we iterate
 	def append(self,dist,angle):
 		if dist<self.d1:
@@ -111,7 +111,7 @@ class Pillar:
 			self.end(0)
 
 	# Compute width of pillar using law of cosines
-	# If width is not reasonable, pillar will be discarded.
+	# If width is not reasonable, "pillar" will be discarded.
 	def getWidth(self):
 		a = self.d1
 		b = self.d2
@@ -147,6 +147,10 @@ class Parker:
 		self.leftPillar = Point() # Raw coordinates
 		self.rightPillar= Point() # Raw coordinates
 		self.pillarSeparation = 0.0
+		self.origin.x = 0.0 # Start position of a leg, reference co-ordinates
+		self.origin.y = 0.0
+		self.yawCorrection = 0.0 # Difference between reference and odometric direction
+
 		self.initialized = False # Pillars not located yet
 
 	def rampedAngle(self,angle):
@@ -221,10 +225,8 @@ class Parker:
 
 	# =============================== Parking Sequence ========================
 	# We have discovered and positioned the pillars. Now move through the pattern.
+	# Reset the "origin" at the beginning of each leg.
 	def park(self):
-		rospy.loginfo('Position vs Pillar1 (pillar coords):  {:.2f} {:.2f}'.format(\
-			-(self.pose.position.y+self.leftPillar.y),\
-			self.pose.position.x+self.leftPillar.x))
 		self.report("Park: proceeding to reference point")
 		self.moveToTarget(0,-REFERENCE_Y-ROBOT_WIDTH,True)
 		#self.report("Park: downwind leg")
@@ -266,10 +268,10 @@ class Parker:
 						if pillar1.valid:
 							pillar2.clone(pillar1)
 						pillar1.clone(potential)
-						rospy.loginfo('Park: Pillar1 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
+						# rospy.loginfo('Park: Pillar1 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
 					elif potential.dist<pillar2.dist:
 						pillar2.clone(potential)
-						rospy.loginfo('Park: Pillar2 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
+						# rospy.loginfo('Park: Pillar2 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
 				potential.start(d,angle)
 
 		potential.end(pillar2.dist+TOLERANCE)		
@@ -280,28 +282,26 @@ class Parker:
 			elif pillar2.a2 >= scan.angle_max-2*delta:
 				pillar2.combine(potential)
 
-		# Now assign the tower positions if two are valid
+		# Now assign the pillar positions if two are valid
 		if pillar1.valid and pillar2.valid:
 			if pillar1.angle<pillar2.angle:
-				self.pillarsToPositions(pillar1,pillar2)
+				self.setReferenceCoordinates(pillar1,pillar2)
 			else:
-				self.pillarsToPositions(pillar2,pillar1)
+				self.setReferenceCoordinates(pillar2,pillar1)
 
-			rospy.loginfo("Park: pillars {:.2f} {:.0f}, {:.2f} {:.0f}".format(\
-				pillar1.dist,np.rad2deg(pillar1.angle),\
-				pillar2.dist,np.rad2deg(pillar2.angle)))
+			rospy.loginfo("Park: Initial origin {:.2f} {:.2f} {:.0f}".format(\
+				self.origin.x, self.origin.y, math.degrees(self.yawCorrection)
 
 			return True
 		else:
 			return False
 
 
-	# First argument is the left pillar.
-	# Convert both pillars to position coordinates offset by those of origin.
-	# Use obom coordinates. x is forward, y is left.
-	# Angles A,B,C are at p1,p2 and origin
+	# First argument is the left pillar. It is the origin of our reference 
+	# system. Use pillar geometry to set our first leg origin.
+	# For calculations, angles A,B,C are at p1,p2 and origin
 	# Sides a,b,c are opposite corresponding angles
-	def pillarsToPositions(self,p1,p2):
+	def setReferenceCoordinates(self,p1,p2):
 		# By law of cosines
 		a = p1.dist
 		b = p2.dist
@@ -316,34 +316,37 @@ class Parker:
 		self.rightPillar = Point()
 		self.leftPillar  = Point()
 		self.pillarSeparation = c
-		self.rightPillar.x= self.pose.position.x  + x
-		self.leftPillar.x = self.pose.position.x + x -c
-		self.rightPillar.y= self.pose.position.y - y
-		self.leftPillar.y = self.pose.position.y - y
+		self.leftPillar.x = 0.0
+		self.leftPillar.y = 0.0
+		self.rightPillar.x= c
+		self.rightPillar.y= 0.0
+		self.origin.x = x
+		self.origin.y = y
+		theta = math.atan2(dy,dx)  # Direction leg origin to pillar1
+		yaw   = self.quaternionToYaw(self.pose.orientation)
+		self.yawCorrection = theta - yaw
 
 	# Request the target destination in terms of a reference system
-	# origin at leftTower with x-axis through rightTower.
+	# with origin at leftTower with x-axis through rightTower.
 	# As we start the maneuver, we pivot to the correct direction,
 	# then move to the target. All calculations are in terms of 
-	# the odometry coordinates.
+	# the reference coordinates.
 	# Note that pose.position.x is forward, pos.position.y is left.
 	def moveToTarget(self,x,y,forward):
-		# Specify the target in terms of odometry map frame.
+		# Compute the target direction, distance with respect to the current leg origin
 		target = Point()
-		target.x = self.pose.position.y + x
-		target.y = self.pose.position.x + y
+		target.x = x - self.origin.x
+		target.y = y - self.origin.y
+		theta = math.atan2(target.y,target.x) - self.yawCorrection # Target direction
 
 		# First aim the robot at the target coordinates
 		# atan2() returns a number between pi and -pi
 		dtheta = ANG_TOLERANCE+1
 		while math.fabs(dtheta) > ANG_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
-			dx = target.x-self.pose.position.y
-			dy = target.y-self.pose.position.x
-			theta = math.atan2(dy,dx) + math.pi/2. # Target direction
 			yaw   = self.quaternionToYaw(self.pose.orientation)
-			dtheta = self.rampedAngle(theta - yaw)
-			rospy.loginfo("Park: rotate {:.0f} -> {:.0f} ({:.0f})".format(math.degrees(yaw),\
-								math.degrees(theta),math.degrees(dtheta)))
+			dtheta = self.rampedAngle(theta + yaw)
+			rospy.loginfo("Park: rotate {:.0f} -> {:.0f} ({:.0f} {0.f})".format(math.degrees(yaw),\
+						math.degrees(theta),math.degrees(dtheta),math.degrees(self.yawCorrection)))
 			self.twist.angular.z = dtheta
 			self.twist.linear.x  = 0.0
 			self.pub.publish(self.twist)
