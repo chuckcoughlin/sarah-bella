@@ -337,14 +337,14 @@ class Parker:
 		target = Point()
 		target.x = x - self.origin.x
 		target.y = y - self.origin.y
-		theta = math.atan2(target.y,target.x) - self.yawCorrection # Target direction
+		theta = math.atan2(target.y,target.x) # True target direction
 
 		# First aim the robot at the target coordinates
 		# atan2() returns a number between pi and -pi
 		dtheta = ANG_TOLERANCE+1
 		while math.fabs(dtheta) > ANG_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
 			yaw   = self.quaternionToYaw(self.pose.orientation)
-			dtheta = self.rampedAngle(theta + yaw)
+			dtheta = self.rampedAngle(theta + yaw -self.yawCorrection)
 			rospy.loginfo("Park: rotate {:.0f} -> {:.0f} ({:.0f} {0.f})".format(math.degrees(yaw),\
 						math.degrees(theta),math.degrees(dtheta),math.degrees(self.yawCorrection)))
 			self.twist.angular.z = dtheta
