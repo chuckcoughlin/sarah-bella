@@ -147,10 +147,12 @@ class Parker:
 		self.leftPillar = Point() # Raw coordinates
 		self.rightPillar= Point() # Raw coordinates
 		self.pillarSeparation = 0.0
-		self.origin   = Point()
-		self.origin.x = 0.0 # Start position of a leg, reference co-ordinates
-		self.origin.y = 0.0
-		self.originalYaw = 0.0   # From odometry
+		# Position/heading refer to current reference coordinates
+		# except while move is in process. 
+		self.position   = Point()
+		self.position.x = 0.0
+		self.position.y = 0.0
+		self.heading  = 0.0
 		self.initialized = False # Pillars not located yet
 
 	def rampedAngle(self,angle):
@@ -192,7 +194,7 @@ class Parker:
 			self.odom.unregister()
 
 	#
-	# Odometry callback. Update the current position
+	# Odometry callback. Update the current instantaneous pose
 	def updatePose(self,odom):
 		global behaviorNameo
 		if rospy.is_shutdown() or self.stopped:
@@ -225,7 +227,7 @@ class Parker:
 
 	# =============================== Parking Sequence ========================
 	# We have discovered and positioned the pillars. Now move through the pattern.
-	# Reset the "origin" at the beginning of each leg.
+	# Reset the "position" as we finish each leg to the start of the next.
 	def park(self):
 		self.report("Park: proceeding to reference point")
 		self.moveToTarget(0,-REFERENCE_Y-ROBOT_WIDTH,True)
@@ -251,50 +253,7 @@ class Parker:
 		angle  = scan.angle_max + delta
 		pillar1 = Pillar()  	# Closest
 		pillar2 = Pillar()  	# Next closest
-		potential = Pillar()  	# In case of a wrap around origin.
-		# Raw data is 0>2PI. 0 is straight ahead, counter-clockwise.
-		# Lidar pulley is toward front of assembly.
-		for d in scan.ranges:
-			angle = angle - delta
-			if d < IGNORE:
-				continue
-			# We group readings in a potential pillar
-			if d>potential.d1-TOLERANCE and d<potential.d2+TOLERANCE:
-				potential.append(d,angle)
-			else:
-				potential.end(pillar2.dist)
-				if potential.valid:
-					if potential.dist<pillar1.dist:
-						if pillar1.valid:
-							pillar2.clone(pillar1)
-						pillar1.clone(potential)
-						# rospy.loginfo('Park: Pillar1 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
-					elif potential.dist<pillar2.dist:
-						pillar2.clone(potential)
-						# rospy.loginfo('Park: Pillar2 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
-				potential.start(d,angle)
-
-		potential.end(pillar2.dist+TOLERANCE)		
-		# Check for wrap-around
-		if potential.valid:
-			if pillar1.a2 >= scan.angle_max-2*delta:
-				pillar1.combine(potential)
-			elif pillar2.a2 >= scan.angle_max-2*delta:
-				pillar2.combine(potential)
-
-		# Now assign the pillar positions if two are valid
-		if pillar1.valid and pillar2.valid:
-			if pillar1.angle<pillar2.angle:
-				self.setReferenceCoordinates(pillar1,pillar2)
-			else:
-				self.setReferenceCoordinates(pillar2,pillar1)
-
-			return True
-		else:
-			return False
-
-
-	# First argument is the left pillar. It is the origin of our reference 
+		potential = Pillar()  	# In case of a wrap around origin of our reference 
 	# system. Use pillar geometry to set our first leg origin.
 	# For calculations, angles A,B,C are at p1,p2 and origin
 	# Sides a,b,c are opposite corresponding angles
@@ -317,13 +276,12 @@ class Parker:
 		self.leftPillar.y = 0.0
 		self.rightPillar.x= c
 		self.rightPillar.y= 0.0
-		self.origin.x = x
-		self.origin.y = y
-		theta = math.atan2(y,x)  # Direction leg origin to pillar1
-		self.originalYaw = self.quaternionToYaw(self.pose.orientation)
-		rospy.loginfo("Park: Initial origin (xy,abc,theta,C,yaw) {:.2f} {:.2f},{:.2f} {:.2f} {:.2f} {:.0f} {:.0f}".format(\
-				self.origin.x, self.origin.y,a,b,c, \
-				math.degrees(theta),math.degrees(C),math.degrees(yaw)))
+		self.position.x = x
+		self.position.y = y
+		self.heading = math.atan2(y,x)  # Direction current position to pillar1
+		rospy.loginfo("Park: Initial origin (xy,abc,heading,C) {:.2f},{:.2f} ({:.2f},{:.2f},{:.2f}) {:.0f} {:.0f}".format(\
+				self.position.x, self.position.y,a,b,c, \
+				math.degrees(self.heading),math.degrees(C)))
 
 	# Request the target destination in terms of a reference system
 	# with origin at leftTower with x-axis through rightTower.
@@ -333,19 +291,21 @@ class Parker:
 	# Note that pose.position.x is forward, pos.position.y is left.
 	def moveToTarget(self,x,y,forward):
 		# Compute the target direction, distance with respect to the current leg origin
-		target = Point()
-		target.x = x - self.origin.x
-		target.y = y - self.origin.y
-		theta = math.atan2(target.y,target.x) # True target direction
+		dx = x - self.position.x
+		dy = y - self.position.y
+		targetHeading = math.atan2(dy,dx) # True target direction from current position
+		targetYaw = self.quaternionToYaw(self.pose.orientation) + targetHeading - self.heading
+		rospy.loginfo("Park: ref rotate {:.0f} -> {:.0f} ({:.0f})".format(\
+				math.degrees(self.heading),math.degrees(targetHeading),math.degrees(targetYaw)))
 
 		# First aim the robot at the target coordinates
 		# atan2() returns a number between pi and -pi
-		dtheta = ANG_TOLERANCE+1
+		dtheta = ANG_TOLERANCE-1
 		while math.fabs(dtheta) > ANG_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
 			yaw   = self.quaternionToYaw(self.pose.orientation)
-			dtheta = self.rampedAngle(theta + yaw -self.originalYaw)
-			rospy.loginfo("Park: rotate {:.0f} -> {:.0f} ({:.0f} {:.0f})".format(math.degrees(yaw),\
-						math.degrees(theta),math.degrees(dtheta),math.degrees(self.originalYaw)))
+			dtheta = self.rampedAngle(yaw - targetYaw)
+			rospy.loginfo("Park: rotate {:.0f} -> {:.0f} ({:.0f}})".format(math.degrees(yaw),\
+						math.degrees(targetYaw),math.degrees(dtheta)))
 			self.twist.angular.z = dtheta
 			self.twist.linear.x  = 0.0
 			self.pub.publish(self.twist)
