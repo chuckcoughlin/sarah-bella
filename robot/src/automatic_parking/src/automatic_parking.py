@@ -254,6 +254,53 @@ class Parker:
 		pillar1 = Pillar()  	# Closest
 		pillar2 = Pillar()  	# Next closest
 		potential = Pillar()  	# In case of a wrap around origin of our reference 
+		# Raw data is 0>2PI. 0 is straight ahead, counter-clockwise.
+		# Lidar pulley is toward front of assembly.
+		for d in scan.ranges:
+			angle = angle - delta
+			if d < IGNORE:
+				continue
+			# We group readings in a potential pillar
+			if d>potential.d1-TOLERANCE and d<potential.d2+TOLERANCE:
+				potential.append(d,angle)
+			else:
+				potential.end(pillar2.dist)
+				if potential.valid:
+					if potential.dist<pillar1.dist:
+						if pillar1.valid:
+							pillar2.clone(pillar1)
+						pillar1.clone(potential)
+						rospy.loginfo('Park: Pillar1 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
+					elif potential.dist<pillar2.dist:
+						pillar2.clone(potential)
+						rospy.loginfo('Park: Pillar2 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
+				potential.start(d,angle)
+
+		potential.end(pillar2.dist+TOLERANCE)		
+		# Check for wrap-around
+		if potential.valid:
+			if pillar1.a2 >= scan.angle_max-2*delta:
+				pillar1.combine(potential)
+			elif pillar2.a2 >= scan.angle_max-2*delta:
+				pillar2.combine(potential)
+
+		# Now assign the tower positions if two are valid
+		if pillar1.valid and pillar2.valid:
+			if pillar1.angle<pillar2.angle:
+				self.setReferenceCoordinates(pillar1,pillar2)
+			else:
+				self.setReferenceCoordinates(pillar2,pillar1)
+
+			rospy.loginfo("Park: pillars {:.2f} {:.0f}, {:.2f} {:.0f}".format(\
+				pillar1.dist,np.rad2deg(pillar1.angle),\
+				pillar2.dist,np.rad2deg(pillar2.angle)))
+
+			return True
+		else:
+			return False
+
+
+	# First argument is the left pillar. It is the origin of our reference
 	# system. Use pillar geometry to set our first leg origin.
 	# For calculations, angles A,B,C are at p1,p2 and origin
 	# Sides a,b,c are opposite corresponding angles
