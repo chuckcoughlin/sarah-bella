@@ -306,15 +306,15 @@ class Parker:
 	# Sides a,b,c are opposite corresponding angles
 	def setReferenceCoordinates(self,p1,p2):
 		# By law of cosines
-		a = p1.dist
-		b = p2.dist
+		a = p2.dist
+		b = p1.dist
 		C = p2.angle-p1.angle
 		c = math.fabs(math.sqrt(a*a+b*b-2.*a*b*math.cos(C)))
 		# Use law of sines
 		sinB = math.sin(C)*b/c
 		cosB = math.sqrt(1-sinB*sinB)
-		x = p2.dist*cosB
-		y = p2.dist*sinB
+		x = c - a*cosB
+		y = -sinB
 		
 		self.rightPillar = Point()
 		self.leftPillar  = Point()
@@ -326,9 +326,9 @@ class Parker:
 		self.position.x = x
 		self.position.y = y
 		self.heading = math.atan2(y,x)  # Direction current position to pillar1
-		self.report("Park: Initial origin (xy,abc,heading,C) {:.2f},{:.2f} ({:.2f},{:.2f},{:.2f}) {:.0f} {:.0f}".format(\
-				self.position.x, self.position.y,a,b,c, \
-				math.degrees(self.heading),math.degrees(C)))
+		self.report("Park: Initial origin (xy,abc,heading) {:.2f},{:.2f} ({:.2f} {:.0f},{:.2f} {:0f},{:.2f} {:.0f}) {:.0f}".format(\
+				self.position.x, self.position.y,a,math.degrees(p1.angle),b,math.degrees(p2.angle),\
+				c,math.degrees(C),math.degrees(self.heading)))
 
 	# Request the target destination in terms of a reference system
 	# with origin at leftTower with x-axis through rightTower.
