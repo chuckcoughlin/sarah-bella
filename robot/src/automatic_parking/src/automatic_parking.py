@@ -150,8 +150,7 @@ class Parker:
 		self.origin   = Point()
 		self.origin.x = 0.0 # Start position of a leg, reference co-ordinates
 		self.origin.y = 0.0
-		self.yawCorrection = 0.0 # Difference between reference and odometric direction
-
+		self.originalYaw = 0.0   # From odometry
 		self.initialized = False # Pillars not located yet
 
 	def rampedAngle(self,angle):
@@ -290,8 +289,6 @@ class Parker:
 			else:
 				self.setReferenceCoordinates(pillar2,pillar1)
 
-			rospy.loginfo("Park: Initial origin {:.2f} {:.2f} {:.0f}".format(\
-				self.origin.x, self.origin.y, math.degrees(self.yawCorrection)))
 			return True
 		else:
 			return False
@@ -322,9 +319,11 @@ class Parker:
 		self.rightPillar.y= 0.0
 		self.origin.x = x
 		self.origin.y = y
-		theta = math.atan2(dy,dx)  # Direction leg origin to pillar1
-		yaw   = self.quaternionToYaw(self.pose.orientation)
-		self.yawCorrection = theta - yaw
+		theta = math.atan2(y,x)  # Direction leg origin to pillar1
+		self.originalYaw = self.quaternionToYaw(self.pose.orientation)
+		rospy.loginfo("Park: Initial origin (xy,abc,theta,C,yaw) {:.2f} {:.2f},{:.2f} {:.2f} {:.2f} {:.0f} {:.0f}".format(\
+				self.origin.x, self.origin.y,a,b,c, \
+				math.degrees(theta),math.degrees(C),math.degrees(yaw)))
 
 	# Request the target destination in terms of a reference system
 	# with origin at leftTower with x-axis through rightTower.
@@ -344,9 +343,9 @@ class Parker:
 		dtheta = ANG_TOLERANCE+1
 		while math.fabs(dtheta) > ANG_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
 			yaw   = self.quaternionToYaw(self.pose.orientation)
-			dtheta = self.rampedAngle(theta + yaw -self.yawCorrection)
-			rospy.loginfo("Park: rotate {:.0f} -> {:.0f} ({:.0f} {0.f})".format(math.degrees(yaw),\
-						math.degrees(theta),math.degrees(dtheta),math.degrees(self.yawCorrection)))
+			dtheta = self.rampedAngle(theta + yaw -self.originalYaw)
+			rospy.loginfo("Park: rotate {:.0f} -> {:.0f} ({:.0f} {:.0f})".format(math.degrees(yaw),\
+						math.degrees(theta),math.degrees(dtheta),math.degrees(self.originalYaw)))
 			self.twist.angular.z = dtheta
 			self.twist.linear.x  = 0.0
 			self.pub.publish(self.twist)
@@ -399,7 +398,7 @@ class Parker:
 	def quaternionToYaw(self,q):
 		t3 = 2.0*(q.w*q.z+q.x*q.y)
 		t4 = 1.0 - 2.0*(q.y*q.y+q.z*q.z)
-		yaw = math.atan2(t3,t4)
+		yaw = -math.atan2(t3,t4)
 		return yaw
 				
 
