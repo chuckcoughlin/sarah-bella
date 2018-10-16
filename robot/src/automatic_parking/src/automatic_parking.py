@@ -221,7 +221,7 @@ class Parker:
 					self.initialized = True
 					self.park()
 			else:
-				rospy.loginfo("Park: Failed to find towers")
+				self.report("Park: Failed to find towers")
 
 
 
@@ -270,10 +270,10 @@ class Parker:
 						if pillar1.valid:
 							pillar2.clone(pillar1)
 						pillar1.clone(potential)
-						rospy.loginfo('Park: Pillar1 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
+						#rospy.loginfo('Park: Pillar1 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
 					elif potential.dist<pillar2.dist:
 						pillar2.clone(potential)
-						rospy.loginfo('Park: Pillar2 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
+						#rospy.loginfo('Park: Pillar2 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
 				potential.start(d,angle)
 
 		potential.end(pillar2.dist+TOLERANCE)		
@@ -286,15 +286,15 @@ class Parker:
 
 		# Now assign the tower positions if two are valid
 		if pillar1.valid and pillar2.valid:
+			# Normalize angles from -pi to +pi
+			if pillar1.angle>math.pi:
+				pillar1.angle = pillar1.angle-2*math.pi
+			if pillar2.angle>math.pi:
+				pillar2.angle = pillar2.angle-2*math.pi
 			if pillar1.angle<pillar2.angle:
 				self.setReferenceCoordinates(pillar1,pillar2)
 			else:
 				self.setReferenceCoordinates(pillar2,pillar1)
-
-			rospy.loginfo("Park: pillars {:.2f} {:.0f}, {:.2f} {:.0f}".format(\
-				pillar1.dist,np.rad2deg(pillar1.angle),\
-				pillar2.dist,np.rad2deg(pillar2.angle)))
-
 			return True
 		else:
 			return False
@@ -326,7 +326,7 @@ class Parker:
 		self.position.x = x
 		self.position.y = y
 		self.heading = math.atan2(y,x)  # Direction current position to pillar1
-		rospy.loginfo("Park: Initial origin (xy,abc,heading,C) {:.2f},{:.2f} ({:.2f},{:.2f},{:.2f}) {:.0f} {:.0f}".format(\
+		self.report("Park: Initial origin (xy,abc,heading,C) {:.2f},{:.2f} ({:.2f},{:.2f},{:.2f}) {:.0f} {:.0f}".format(\
 				self.position.x, self.position.y,a,b,c, \
 				math.degrees(self.heading),math.degrees(C)))
 
@@ -342,12 +342,13 @@ class Parker:
 		dy = y - self.position.y
 		targetHeading = math.atan2(dy,dx) # True target direction from current position
 		targetYaw = self.quaternionToYaw(self.pose.orientation) + targetHeading - self.heading
-		rospy.loginfo("Park: ref rotate {:.0f} -> {:.0f} ({:.0f})".format(\
+		self.report("Park: ref rotate {:.0f} -> {:.0f} ({:.0f})".format(\
 				math.degrees(self.heading),math.degrees(targetHeading),math.degrees(targetYaw)))
 
 		# First aim the robot at the target coordinates
 		# atan2() returns a number between pi and -pi
 		dtheta = ANG_TOLERANCE+1
+		dtheta = 0
 		while math.fabs(dtheta) > ANG_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
 			yaw   = self.quaternionToYaw(self.pose.orientation)
 			dtheta = self.rampedAngle(yaw - targetYaw)
@@ -399,7 +400,7 @@ class Parker:
 		self.rate.sleep()
 
 	# Note: two poses have different meanings of x/y
-	def euclideanDistance(self,x0,y0,x1,y1)
+	def euclideanDistance(self,x0,y0,x1,y1):
 		a = x1 - x0
 		b = y1 - y0
 		return math.sqrt(a*a+b*b)
