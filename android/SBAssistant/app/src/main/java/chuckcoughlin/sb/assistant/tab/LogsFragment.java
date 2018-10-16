@@ -58,6 +58,7 @@ public class LogsFragment extends BasicAssistantFragment implements SBApplicatio
                 clearButtonClicked();
             }
         });
+        SBLogManager.getInstance().freeze();
         button = (Button) rootView.findViewById(R.id.freezeButton);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
