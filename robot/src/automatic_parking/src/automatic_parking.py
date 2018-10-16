@@ -325,7 +325,7 @@ class Parker:
 		self.rightPillar.y= 0.0
 		self.position.x = x
 		self.position.y = y
-		self.heading = math.atan2(y,x)  # Direction current position to pillar1
+		self.heading = p1.angle + math.pi/2. - math.asin(sinB)
 		self.report("Park: Initial origin (xy,abc,heading) {:.2f},{:.2f} ({:.2f} {:.0f},{:.2f} {:0f},{:.2f} {:.0f}) {:.0f}".format(\
 				self.position.x, self.position.y,a,math.degrees(p1.angle),b,math.degrees(p2.angle),\
 				c,math.degrees(C),math.degrees(self.heading)))
