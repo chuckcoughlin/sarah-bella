@@ -347,24 +347,27 @@ class Parker:
 
 		# First aim the robot at the target coordinates
 		# atan2() returns a number between pi and -pi
-		dtheta = ANG_TOLERANCE-1
+		dtheta = ANG_TOLERANCE+1
 		while math.fabs(dtheta) > ANG_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
 			yaw   = self.quaternionToYaw(self.pose.orientation)
 			dtheta = self.rampedAngle(yaw - targetYaw)
-			rospy.loginfo("Park: rotate {:.0f} -> {:.0f} ({:.0f}})".format(math.degrees(yaw),\
+			rospy.loginfo("Park: rotate {:.0f} -> {:.0f} ({:.0f})".format(math.degrees(yaw),\
 						math.degrees(targetYaw),math.degrees(dtheta)))
 			self.twist.angular.z = dtheta
 			self.twist.linear.x  = 0.0
 			self.pub.publish(self.twist)
 			self.rate.sleep()
 		
-		# Next move in a straight line to target
-		# We have found that we are more accurate ignoring direction once we've turned
-		err = self.euclideanDistance(self.pose.position,target)
+		# Next move in a straight line to target. We check to see how far we've travelled.
+		dist = math.sqrt(dx*dx+dy*dy)
+		x0  = self.pose.position.x
+		y0  = self.pose.position.y
+		err = dist  # Initially
 		err = 0
 		while math.fabs(err)>POS_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
-			rospy.loginfo("Park: move {:.2f},{:.2f} -> {:.2f},{:.2f}".format(\
-				self.pose.position.y,self.pose.position.x,target.x,target.y))
+			x1 = self.pose.position.x
+			y1 = self.pose.position.y
+			rospy.loginfo("Park: move {:.2f},{:.2f} -> {:.2f},{:.2f}".format(x0,y0,x1,y1))
 			lin_vel = err*VEL_FACTOR
 			if lin_vel>MAX_LINEAR:
 				lin_vel = MAX_LINEAR
@@ -387,7 +390,7 @@ class Parker:
 			self.pub.publish(self.twist)
 			self.rate.sleep()
 
-			err = self.euclideanDistance(self.pose.position,target)
+			err = dist - self.euclideanDistance(x0,y0,x1,y1)
 			
 		# Once we've reached our destination, stop
 		self.twist.angular.z = 0.0
@@ -396,9 +399,9 @@ class Parker:
 		self.rate.sleep()
 
 	# Note: two poses have different meanings of x/y
-	def euclideanDistance(self,p1,p2):
-		a = p1.y - p2.x
-		b = p1.x - p2.y
+	def euclideanDistance(self,x0,y0,x1,y1)
+		a = x1 - x0
+		b = y1 - y0
 		return math.sqrt(a*a+b*b)
 
 	# From www.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
