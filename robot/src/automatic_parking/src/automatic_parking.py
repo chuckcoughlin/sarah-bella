@@ -309,6 +309,8 @@ class Parker:
 		a = p2.dist
 		b = p1.dist
 		C = p2.angle-p1.angle
+		if C>math.pi:
+			C = 2*math.pi - C
 		c = math.fabs(math.sqrt(a*a+b*b-2.*a*b*math.cos(C)))
 		# Use law of sines
 		sinA = math.sin(C)*a/c
@@ -329,10 +331,10 @@ class Parker:
 			y = -a*sinB
 				
 		# Heading between -pi and pi
-		self.heading = p1.angle + math.pi/2. - math.asin(sinB)
+		self.heading = -p1.angle - math.pi/2. + math.asin(sinB)
 		if self.heading>math.pi:
 			self.heading = self.heading - 2*math.pi
-		elif self.heading<math.pi:
+		elif self.heading<-math.pi:
 			self.heading = self.heading + 2*math.pi
 		
 		self.rightPillar = Point()
