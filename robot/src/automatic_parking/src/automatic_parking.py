@@ -273,7 +273,6 @@ class Parker:
 						#rospy.loginfo('Park: Pillar1 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
 					elif potential.dist<pillar2.dist:
 						pillar2.clone(potential)
-						#rospy.loginfo('Park: Pillar2 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
 				potential.start(d,angle)
 
 		potential.end(pillar2.dist+TOLERANCE)		
@@ -286,19 +285,20 @@ class Parker:
 
 		# Now assign the tower positions if two are valid
 		if pillar1.valid and pillar2.valid:
-			# Normalize angles from -pi to +pi
-			if pillar1.angle>math.pi:
-				pillar1.angle = pillar1.angle-2*math.pi
-			elif pillar1.angle<-math.pi:
-				pillar1.angle = pillar1.angle+2*math.pi
-			if pillar2.angle>math.pi:
-				pillar2.angle = pillar2.angle-2*math.pi
-			elif pillar2.angle<-math.pi:
-				pillar2.angle = pillar2.angle+2*math.pi
-			if pillar1.angle<pillar2.angle:
-				self.setReferenceCoordinates(pillar1,pillar2)
+			# Choose the pillar to the left as "p1" 
+			# angles are 0->2*PI
+			# If we subtract and the difference < PI, then lesser is "left"
+			delta = pillar1.angle - pillar2.angle
+			if math.fabs(delta) < math.pi:
+				if pillar1.angle<pillar2.angle:
+					self.setReferenceCoordinates(pillar1,pillar2)
+				else:
+					self.setReferenceCoordinates(pillar2,pillar1)
 			else:
-				self.setReferenceCoordinates(pillar2,pillar1)
+				if pillar1.angle>pillar2.angle:
+					self.setReferenceCoordinates(pillar1,pillar2)
+				else:
+					self.setReferenceCoordinates(pillar2,pillar1)
 			return True
 		else:
 			return False
@@ -312,7 +312,7 @@ class Parker:
 		# By law of cosines
 		a = p2.dist
 		b = p1.dist
-		C = p2.angle-p1.angle
+		C = math.fabs(p2.angle-p1.angle)
 		if C>math.pi:
 			C = 2*math.pi - C
 		c = math.fabs(math.sqrt(a*a+b*b-2.*a*b*math.cos(C)))
