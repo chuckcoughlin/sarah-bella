@@ -311,10 +311,29 @@ class Parker:
 		C = p2.angle-p1.angle
 		c = math.fabs(math.sqrt(a*a+b*b-2.*a*b*math.cos(C)))
 		# Use law of sines
+		sinA = math.sin(C)*a/c
+		cosA = math.sqrt(1-sinA*sinA)
 		sinB = math.sin(C)*b/c
 		cosB = math.sqrt(1-sinB*sinB)
-		x = c - a*cosB
-		y = -sinB
+		# ====== To the right of the towers ========
+		if p2.angle<0:
+			x = b*cosA
+			y = -b*sinA
+		# ====== To the left of the towers =========
+		elif p1.angle>0:
+			x = a*cosB - c
+			y = a*sinB
+		# ====== In front of the towers =========
+		else:
+			x = c - a*cosB
+			y = -a*sinB
+				
+		self.heading = p1.angle + math.pi/2. - math.asin(sinB)
+		if p1.angle > math.pi/2. or p1.angle<math.pi/2.:
+			y = -y
+			self.heading = self.heading+math.pi
+		if self.heading>math.pi:
+			self.heading = self.heading - 2*math.pi
 		
 		self.rightPillar = Point()
 		self.leftPillar  = Point()
@@ -325,7 +344,6 @@ class Parker:
 		self.rightPillar.y= 0.0
 		self.position.x = x
 		self.position.y = y
-		self.heading = p1.angle + math.pi/2. - math.asin(sinB)
 		self.report("Park: Initial origin (xy,abc,heading) {:.2f},{:.2f} ({:.2f} {:.0f},{:.2f} {:0f},{:.2f} {:.0f}) {:.0f}".format(\
 				self.position.x, self.position.y,a,math.degrees(p1.angle),b,math.degrees(p2.angle),\
 				c,math.degrees(C),math.degrees(self.heading)))
@@ -348,7 +366,6 @@ class Parker:
 		# First aim the robot at the target coordinates
 		# atan2() returns a number between pi and -pi
 		dtheta = ANG_TOLERANCE+1
-		dtheta = 0
 		while math.fabs(dtheta) > ANG_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
 			yaw   = self.quaternionToYaw(self.pose.orientation)
 			dtheta = self.rampedAngle(yaw - targetYaw)
