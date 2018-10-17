@@ -316,11 +316,11 @@ class Parker:
 		sinB = math.sin(C)*b/c
 		cosB = math.sqrt(1-sinB*sinB)
 		# ====== To the right of the towers ========
-		if p2.angle<0:
+		if b*b>a*a+c*c:
 			x = b*cosA
 			y = -b*sinA
 		# ====== To the left of the towers =========
-		elif p1.angle>0:
+		elif a*a>b*b+c*c:
 			x = a*cosB - c
 			y = a*sinB
 		# ====== In front of the towers =========
@@ -366,6 +366,13 @@ class Parker:
 				math.degrees(self.heading),math.degrees(targetHeading),\
 				math.degrees(yaw),math.degrees(targetYaw)))
 
+		# Avoid the discontinuity at 0
+		offset = 0
+		if yaw<0 and targetYaw>0:
+			offset = -2*math.pi
+		elif yaw>0 and targetYaw<0:
+			offset= 2*math.pi
+		targetYaw = targetYaw+offset
 		# First aim the robot at the target coordinates
 		# atan2() returns a number between pi and -pi
 		dtheta = ANG_TOLERANCE+1
