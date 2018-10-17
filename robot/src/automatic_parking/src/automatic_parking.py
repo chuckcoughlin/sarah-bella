@@ -289,8 +289,12 @@ class Parker:
 			# Normalize angles from -pi to +pi
 			if pillar1.angle>math.pi:
 				pillar1.angle = pillar1.angle-2*math.pi
+			elif pillar1.angle<-math.pi:
+				pillar1.angle = pillar1.angle+2*math.pi
 			if pillar2.angle>math.pi:
 				pillar2.angle = pillar2.angle-2*math.pi
+			elif pillar2.angle<-math.pi:
+				pillar2.angle = pillar2.angle+2*math.pi
 			if pillar1.angle<pillar2.angle:
 				self.setReferenceCoordinates(pillar1,pillar2)
 			else:
