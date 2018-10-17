@@ -322,18 +322,18 @@ class Parker:
 		# ====== To the left of the towers =========
 		elif a*a>b*b+c*c:
 			x = a*cosB - c
-			y = a*sinB
+			y = -a*sinB
 		# ====== In front of the towers =========
 		else:
 			x = c - a*cosB
 			y = -a*sinB
 				
+		# Heading between -pi and pi
 		self.heading = p1.angle + math.pi/2. - math.asin(sinB)
-		if p1.angle > math.pi/2. or p1.angle<math.pi/2.:
-			y = -y
-			self.heading = self.heading+math.pi
 		if self.heading>math.pi:
 			self.heading = self.heading - 2*math.pi
+		elif self.heading<math.pi:
+			self.heading = self.heading + 2*math.pi
 		
 		self.rightPillar = Point()
 		self.leftPillar  = Point()
