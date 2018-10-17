@@ -250,11 +250,12 @@ class Parker:
 	# Return True if we've identified the two pillars.
 	def findParkingMarkers(self,scan):
 		delta  = scan.angle_increment
-		angle  = scan.angle_max + delta
+		angle  = 2.*math.pi - scan.angle_min + delta
 		pillar1 = Pillar()  	# Closest
 		pillar2 = Pillar()  	# Next closest
 		potential = Pillar()  	# In case of a wrap around origin of our reference 
 		# Raw data is 0>2PI. 0 is straight ahead, counter-clockwise.
+		# We subtract from 2*PI for clockwise coordinates.
 		# Lidar pulley is toward front of assembly.
 		for d in scan.ranges:
 			angle = angle - delta
@@ -270,9 +271,12 @@ class Parker:
 						if pillar1.valid:
 							pillar2.clone(pillar1)
 						pillar1.clone(potential)
-						#rospy.loginfo('Park: Pillar1 {0:.0f} {1:.2f}'.format(np.rad2deg(angle),d))
+						rospy.loginfo('Park: Pillar1 {0:.0f} {1:.2f}'.format(\
+						math.degrees(pillar1.angle),pillar1.dist))
 					elif potential.dist<pillar2.dist:
 						pillar2.clone(potential)
+						rospy.loginfo('Park: Pillar2 {0:.0f} {1:.2f}'.format(\
+						math.degrees(pillar2.angle),pillar2.dist))
 				potential.start(d,angle)
 
 		potential.end(pillar2.dist+TOLERANCE)		
@@ -368,9 +372,9 @@ class Parker:
 		targetHeading = math.atan2(dy,dx) # True target direction from current position
 		yaw = self.quaternionToYaw(self.pose.orientation)
 		targetYaw = yaw + targetHeading - self.heading
-		self.report("Park: Move {:.0f}->{:.0f} ({:.0f}->{:.0f})".format(\
-				math.degrees(self.heading),math.degrees(targetHeading),\
-				math.degrees(yaw),math.degrees(targetYaw)))
+		#self.report("Park: Move {:.0f}->{:.0f} ({:.0f}->{:.0f})".format(\
+		#		math.degrees(self.heading),math.degrees(targetHeading),\
+		#		math.degrees(yaw),math.degrees(targetYaw)))
 
 		# Avoid the discontinuity at 0
 		offset = 0
