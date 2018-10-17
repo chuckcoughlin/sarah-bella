@@ -134,7 +134,7 @@ class Parker:
 		self.twist.angular.x = 0.0
 		self.twist.angular.y = 0.0
 		self.twist.angular.z = 0.0
-		self.rate = rospy.Rate(4) # 1/4 sec for now
+		self.rate = rospy.Rate(2) # 1/2 sec for now
 		self.msg = TeleopStatus()
 
 		# Publish status so that controller can keep track of state
@@ -344,9 +344,10 @@ class Parker:
 		self.rightPillar.y= 0.0
 		self.position.x = x
 		self.position.y = y
-		self.report("Park: Initial origin (xy,abc,heading) {:.2f},{:.2f} ({:.2f} {:.0f},{:.2f} {:0f},{:.2f} {:.0f}) {:.0f}".format(\
+		self.report("Park: Initial origin (xy,abc,heading) {:.2f},{:.2f} ({:.2f} {:.0f},{:.2f} {:.0f},{:.2f} {:.0f}) {:.0f}".format(\
 				self.position.x, self.position.y,a,math.degrees(p1.angle),b,math.degrees(p2.angle),\
 				c,math.degrees(C),math.degrees(self.heading)))
+		self.rate.sleep()
 
 	# Request the target destination in terms of a reference system
 	# with origin at leftTower with x-axis through rightTower.
@@ -359,13 +360,16 @@ class Parker:
 		dx = x - self.position.x
 		dy = y - self.position.y
 		targetHeading = math.atan2(dy,dx) # True target direction from current position
-		targetYaw = self.quaternionToYaw(self.pose.orientation) + targetHeading - self.heading
-		self.report("Park: ref rotate {:.0f} -> {:.0f} ({:.0f})".format(\
-				math.degrees(self.heading),math.degrees(targetHeading),math.degrees(targetYaw)))
+		yaw = self.quaternionToYaw(self.pose.orientation)
+		targetYaw = yaw + targetHeading - self.heading
+		self.report("Park: Move {:.0f}->{:.0f} ({:.0f}->{:.0f})".format(\
+				math.degrees(self.heading),math.degrees(targetHeading),\
+				math.degrees(yaw),math.degrees(targetYaw)))
 
 		# First aim the robot at the target coordinates
 		# atan2() returns a number between pi and -pi
 		dtheta = ANG_TOLERANCE+1
+		dtheta = 0.0
 		while math.fabs(dtheta) > ANG_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
 			yaw   = self.quaternionToYaw(self.pose.orientation)
 			dtheta = self.rampedAngle(yaw - targetYaw)
