@@ -281,12 +281,8 @@ class Parker:
 						if pillar1.valid:
 							pillar2.clone(pillar1)
 						pillar1.clone(potential)
-						rospy.loginfo('Park: Pillar1 {0:.0f} {1:.2f}'.format(\
-						math.degrees(pillar1.angle),pillar1.dist))
 					elif potential.dist<pillar2.dist:
 						pillar2.clone(potential)
-						rospy.loginfo('Park: Pillar2 {0:.0f} {1:.2f}'.format(\
-						math.degrees(pillar2.angle),pillar2.dist))
 				potential.start(d,angle)
 
 		potential.end(pillar2.dist+TOLERANCE)		
