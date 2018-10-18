@@ -21,6 +21,7 @@
 
 import rospy
 import sys
+import threading
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist, Pose, Point, Quaternion
 from nav_msgs.msg import Odometry
@@ -119,7 +120,7 @@ class Pillar:
 		width = math.sqrt(a*a+b*b-2.*a*b*math.cos(theta))
 		return width
 
-# NOTE: "raw" coordinates are with respect to current Odometry
+# ==================== Main Class ====================
 class Parker:
 	def __init__(self):
 		self.stopped = True
@@ -142,6 +143,7 @@ class Parker:
 		self.initialize()
 		self.report("Parker: initialized.")
 		self.behavior = ""
+		self.lock = threading.Lock()
 
 	def initialize(self):
 		self.leftPillar = Point() # Raw coordinates
@@ -206,6 +208,8 @@ class Parker:
 
 	# Receive a "throttled" scan message (once per second)
 	# We leave this running just long enough to find the pillars
+	# We have had touble with synchronization. Use a lock, ignore 
+	# subsequent requests that arrive too quickly.
 	def getScan(self,scan):
 		global behaviorName
 		if rospy.is_shutdown() or self.stopped:
@@ -214,14 +218,20 @@ class Parker:
 			self.stop()
 		else:
 			# Proceed with application
-			self.report("Park: finding markers")
-			if not self.initialized:
-				if self.findParkingMarkers(scan):
-					self.sub.unregister()
-					self.initialized = True
-					self.park()
-			else:
-				self.report("Park: Failed to find towers")
+			locked = self.lock.acquire(0)
+			try:
+				if locked:
+					self.report("Park: finding markers")
+					if not self.initialized:
+						if self.findParkingMarkers(scan):
+							self.sub.unregister()
+							self.initialized = True
+							self.park()
+						else:
+							self.report("Park: Failed to find towers")
+			finally:
+				if locked:
+					self.lock.release()
 
 
 
