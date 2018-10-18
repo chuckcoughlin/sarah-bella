@@ -267,6 +267,7 @@ class Parker:
 		# Raw data is 0>2PI. 0 is straight ahead, counter-clockwise.
 		# We subtract from 2*PI for clockwise coordinates.
 		# Lidar pulley is toward front of assembly.
+		trace=""
 		for d in scan.ranges:
 			angle = angle - delta
 			if d < IGNORE:
@@ -280,9 +281,12 @@ class Parker:
 					if potential.dist<pillar1.dist:
 						if pillar1.valid:
 							pillar2.clone(pillar1)
+							trace=trace+" {:.0f}: Pillar2: {:.0f} {:.2f}".format(math.degrees(angle),math.degrees(pillar2.angle),pillar2.dist)
 						pillar1.clone(potential)
+						trace=trace+" {:.0f}: Pillar1: {:.0f} {:.2f}".format(math.degrees(angle),math.degrees(pillar1.angle),pillar2.dist)
 					elif potential.dist<pillar2.dist:
 						pillar2.clone(potential)
+						trace=trace+" {:.0f}: Pillar2: {:.0f} {:.2f}".format(math.degrees(angle),math.degrees(pillar2.angle),pillar2.dist)
 				potential.start(d,angle)
 
 		potential.end(pillar2.dist+TOLERANCE)		
@@ -290,11 +294,14 @@ class Parker:
 		if potential.valid:
 			if pillar1.a2 >= scan.angle_max-2*delta:
 				pillar1.combine(potential)
+				trace=trace+" {:.0f}: Pillar2: {:.0f} {:.2f}".format(math.degrees(pillar1.angle),pillar1.dist)
 			elif pillar2.a2 >= scan.angle_max-2*delta:
 				pillar2.combine(potential)
+				trace=trace+" Combine: Pillar2: {:.0f} {:.2f}".format(math.degrees(pillar2.angle),pillar2.dist)
 
 		# Now assign the tower positions if two are valid
 		if pillar1.valid and pillar2.valid:
+			rospy.loginfo(trace)
 			# Choose the pillar to the left as "p1" 
 			# angles are 0->2*PI
 			# If we subtract and the difference < PI, then lesser is "left"
