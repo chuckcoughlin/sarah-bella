@@ -38,8 +38,8 @@ TOLERANCE   = 0.02    # Variation in consecutive cloud points in group
 ANG_TOLERANCE= 0.05   # Directional correction to target considered adequate
 POS_TOLERANCE= 0.05   # Distance to target considered close enough
 PILLAR_WIDTH = 0.08   # Approx tower width ~ m
-LEG_X       = 0.2	  # Length of downwind leg
-REFERENCE_Y = 0.3     # Dist from left tower to reference point ~ m
+LEG_X       = 0.6	  # Length of downwind leg
+REFERENCE_Y = 0.5     # Dist from left tower to reference point ~ m
 IGNORE      = 0.02    # Ignore any scan distances less than this
 INFINITY    = 10.
 
@@ -394,11 +394,10 @@ class Parker:
 		# First aim the robot at the target coordinates
 		# atan2() returns a number between pi and -pi
 		dtheta = ANG_TOLERANCE+1
-		dtheta = 0.0
 		while math.fabs(dtheta) > ANG_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
 			yaw   = self.quaternionToYaw(self.pose.orientation)
 			dtheta = self.rampedAngle(yaw - targetYaw)
-			rospy.loginfo("Park: rotate {:.0f} -> {:.0f} ({:.0f})".format(math.degrees(yaw),\
+			rospy.loginfo("Park: rotate {:.0f}->{:.0f} ({:.0f})".format(math.degrees(yaw),\
 						math.degrees(targetYaw),math.degrees(dtheta)))
 			self.twist.angular.z = dtheta
 			self.twist.linear.x  = 0.0
@@ -410,11 +409,10 @@ class Parker:
 		x0  = self.pose.position.x
 		y0  = self.pose.position.y
 		err = dist  # Initially
-		err = 0
 		while math.fabs(err)>POS_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
 			x1 = self.pose.position.x
 			y1 = self.pose.position.y
-			rospy.loginfo("Park: move {:.2f},{:.2f} -> {:.2f},{:.2f}".format(x0,y0,x1,y1))
+			rospy.loginfo("Park: move {:.2f},{:.2f}->{:.2f},{:.2f} (".2f})".format(x0,y0,x1,y1,err))
 			lin_vel = err*VEL_FACTOR
 			if lin_vel>MAX_LINEAR:
 				lin_vel = MAX_LINEAR
@@ -444,6 +442,11 @@ class Parker:
 		self.twist.linear.x  = 0.0
 		self.pub.publish(self.twist)
 		self.rate.sleep()
+
+		# Finally, update heading and current position
+		self.position.x = target.x
+		self.position.y = target.y
+		self.heading = targetHeading
 
 	# Note: two poses have different meanings of x/y
 	def euclideanDistance(self,x0,y0,x1,y1):
