@@ -347,7 +347,7 @@ class Parker:
 			y = -a*sinB
 				
 		# Heading between -pi and pi with respect to reference coordinates
-		self.heading = p1.angle + math.atan(x/(-y))
+		self.heading = -p1.angle - math.atan(x/(-y))
 		if self.heading>math.pi:
 			self.heading = self.heading - 2*math.pi
 		elif self.heading<-math.pi:
@@ -362,9 +362,9 @@ class Parker:
 		self.rightPillar.y= 0.0
 		self.position.x = x
 		self.position.y = y
-		self.report("Park: Initial origin (xy,heading,abc) {:.2f},{:.2f} {:.0f} ({:.2f} {:.0f}, {:.2f} {:.0f}, {:.2f} {:.0f})".format(\
-				self.position.x, self.position.y,math.degrees(self.heading),\
-				b,math.degrees(p1.angle),a,math.degrees(p2.angle),c,math.degrees(C)))
+		#self.report("Park: Initial origin (xy,heading,abc) {:.2f},{:.2f} {:.0f} ({:.2f} {:.0f}, {:.2f} {:.0f}, {:.2f} {:.0f})".format(\
+		#		self.position.x, self.position.y,math.degrees(self.heading),\
+		#		b,math.degrees(p1.angle),a,math.degrees(p2.angle),c,math.degrees(C)))
 		self.rate.sleep()
 
 	# Request the target destination in terms of a reference system
@@ -377,12 +377,12 @@ class Parker:
 		# Compute the target direction, distance with respect to the current leg origin
 		dx = x - self.position.x
 		dy = y - self.position.y
-		targetHeading = math.atan2(dy,dx) # True target direction from current position
+		targetHeading = math.atan2(dx,dy) # True target direction from current position
 		yaw = self.quaternionToYaw(self.pose.orientation)
 		targetYaw = yaw + targetHeading - self.heading
-		self.report("Park: Move {:.0f}->{:.0f} ({:.0f}->{:.0f})".format(\
+		self.report("Park: Move {:.0f}->{:.0f} ({:.2f},{:.2f}->{:.2f},{:.2f})".format(\
 				math.degrees(self.heading),math.degrees(targetHeading),\
-				math.degrees(yaw),math.degrees(targetYaw)))
+				self.position.x,self.position.y,x,y))
 
 		# Avoid the discontinuity at 0
 		offset = 0
