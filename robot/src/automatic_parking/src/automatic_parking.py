@@ -297,7 +297,6 @@ class Parker:
 
 		# Now assign the tower positions if two are valid
 		if pillar1.valid and pillar2.valid:
-			rospy.loginfo(trace)
 			# Choose the pillar to the left as "p1" 
 			# angles are 0->2*PI
 			# If we subtract and the difference < PI, then lesser is "left"
@@ -348,7 +347,7 @@ class Parker:
 			y = -a*sinB
 				
 		# Heading between -pi and pi
-		self.heading = -p1.angle - math.pi/2. + math.asin(sinB)
+		self.heading = -p1.angle + math.atan2(x,-y)
 		if self.heading>math.pi:
 			self.heading = self.heading - 2*math.pi
 		elif self.heading<-math.pi:
