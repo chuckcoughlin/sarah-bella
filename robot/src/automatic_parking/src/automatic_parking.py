@@ -258,6 +258,8 @@ class Parker:
 	# Reject objects that are too narrow or wide.
 	# Handle the wrap by postulating a third pillar. We may combine.
 	# Return True if we've identified the two pillars.
+	# scan.angle_min = 0
+	# scan.angle.max = 2*pi
 	def findParkingMarkers(self,scan):
 		delta  = scan.angle_increment
 		angle  = 2.*math.pi - scan.angle_min + delta
@@ -267,7 +269,6 @@ class Parker:
 		# Raw data is 0>2PI. 0 is straight ahead, counter-clockwise.
 		# We subtract from 2*PI for clockwise coordinates.
 		# Lidar pulley is toward front of assembly.
-		trace="Scan: {:.2f}->{:.2f} by {:.2f} ==".format(scan.angle_min,scan.angle_max,delta)
 		for d in scan.ranges:
 			angle = angle - delta
 			if d < IGNORE:
@@ -281,12 +282,9 @@ class Parker:
 					if potential.dist<pillar1.dist:
 						if pillar1.valid:
 							pillar2.clone(pillar1)
-							trace=trace+"|{:.0f}: P2 {:.0f} {:.2f}".format(math.degrees(angle),math.degrees(pillar2.angle),pillar2.dist)
 						pillar1.clone(potential)
-						trace=trace+"|{:.0f}: P1: {:.0f} {:.2f}".format(math.degrees(angle),math.degrees(pillar1.angle),pillar1.dist)
 					elif potential.dist<pillar2.dist:
 						pillar2.clone(potential)
-						trace=trace+"|{:.0f}: P2: {:.0f} {:.2f}".format(math.degrees(angle),math.degrees(pillar2.angle),pillar2.dist)
 				potential.start(d,angle)
 
 		potential.end(pillar2.dist+TOLERANCE)		
@@ -294,10 +292,8 @@ class Parker:
 		if potential.valid:
 			if pillar1.a2 >= scan.angle_max-2*delta:
 				pillar1.combine(potential)
-				trace=trace+" {:.0f}: P1: {:.0f} {:.2f}".format(math.degrees(pillar1.angle),pillar1.dist)
 			elif pillar2.a2 >= scan.angle_max-2*delta:
 				pillar2.combine(potential)
-				trace=trace+" Combine: P2: {:.0f} {:.2f}".format(math.degrees(pillar2.angle),pillar2.dist)
 
 		# Now assign the tower positions if two are valid
 		if pillar1.valid and pillar2.valid:
@@ -367,9 +363,9 @@ class Parker:
 		self.rightPillar.y= 0.0
 		self.position.x = x
 		self.position.y = y
-		self.report("Park: Initial origin (xy,abc,heading) {:.2f},{:.2f} ({:.2f} {:.0f},{:.2f} {:.0f},{:.2f} {:.0f}) {:.0f}".format(\
-				self.position.x, self.position.y,a,math.degrees(p1.angle),b,math.degrees(p2.angle),\
-				c,math.degrees(C),math.degrees(self.heading)))
+		self.report("Park: Initial origin (xy,heading,abc) {:.2f},{:.2f} {:.0f} ({:.2f} {:.0f}, {:.2f} {:.0f}, {:.2f} {:.0f})".format(\
+				self.position.x, self.position.y,math.degrees(self.heading),\
+				b,math.degrees(p1.angle),a,math.degrees(p2.angle),c,math.degrees(C)))
 		self.rate.sleep()
 
 	# Request the target destination in terms of a reference system
