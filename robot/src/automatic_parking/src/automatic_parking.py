@@ -101,14 +101,14 @@ class Pillar:
 		self.a1 = angle
 
 	# Combine partial pillars separated across zero degrees
-	# The argument is the potential pillar at 0 degrees
+	# The argument is the potential pillar at 360 degrees
 	def combine(self,pillar):
 		if math.fabs(pillar.dist-self.dist) < 2.*TOLERANCE:
 			if pillar.d1<self.d1:
 				self.d1 = pillar.d1
 			if pillar.d2>self.d2:
 				self.d2 = pillar.d2
-			self.a2 = self.a2+pillar.a2
+			self.a2 = self.a2+(2.*math.pi-pillar.a2)
 			self.end(0)
 
 	# Compute width of pillar using law of cosines
@@ -346,8 +346,8 @@ class Parker:
 			x = c - a*cosB
 			y = -a*sinB
 				
-		# Heading between -pi and pi
-		self.heading = -p1.angle + math.atan2(x,-y)
+		# Heading between -pi and pi with respect to reference coordinates
+		self.heading = p1.angle + math.atan(x/(-y))
 		if self.heading>math.pi:
 			self.heading = self.heading - 2*math.pi
 		elif self.heading<-math.pi:
@@ -380,9 +380,9 @@ class Parker:
 		targetHeading = math.atan2(dy,dx) # True target direction from current position
 		yaw = self.quaternionToYaw(self.pose.orientation)
 		targetYaw = yaw + targetHeading - self.heading
-		#self.report("Park: Move {:.0f}->{:.0f} ({:.0f}->{:.0f})".format(\
-		#		math.degrees(self.heading),math.degrees(targetHeading),\
-		#		math.degrees(yaw),math.degrees(targetYaw)))
+		self.report("Park: Move {:.0f}->{:.0f} ({:.0f}->{:.0f})".format(\
+				math.degrees(self.heading),math.degrees(targetHeading),\
+				math.degrees(yaw),math.degrees(targetYaw)))
 
 		# Avoid the discontinuity at 0
 		offset = 0
