@@ -373,16 +373,18 @@ class Parker:
 	# then move to the target. All calculations are in terms of 
 	# the reference coordinates.
 	# Note that pose.position.x is forward, pos.position.y is left.
-	def moveToTarget(self,x1,y1,forward):
+	def moveToTarget(self,targx,targy,forward):
 		# Compute the target direction, distance with respect to the current leg origin
-		dx = x1 - self.position.x
-		dy = y1 - self.position.y
+		dx = targx - self.position.x
+		dy = targy - self.position.y
 		targetHeading = math.atan2(dx,dy) # True target direction from current position
+		if not forward:
+			targetHeading = targetHeading - math.pi
 		yaw = self.quaternionToYaw(self.pose.orientation)
 		targetYaw = yaw + targetHeading - self.heading
 		self.report("Park: Move {:.0f}->{:.0f} ({:.2f},{:.2f}->{:.2f},{:.2f})".format(\
 				math.degrees(self.heading),math.degrees(targetHeading),\
-				self.position.x,self.position.y,x1,y1))
+				self.position.x,self.position.y,targx,targy))
 
 		# Avoid the discontinuity at 0
 		offset = 0
@@ -406,11 +408,16 @@ class Parker:
 		
 		# Next move in a straight line to target. We check to see how far we've travelled.
 		dist = math.sqrt(dx*dx+dy*dy)
-		while math.fabs(dist)>POS_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
-			x0 = self.pose.position.x
-			y0 = self.pose.position.y
-			rospy.loginfo("Park: roll {:.2f},{:.2f}->{:.2f},{:.2f} ({:.2f})".format(x0,y0,x1,y1,dist))
-			velocity = err*VEL_FACTOR
+		x0 = self.pose.position.x
+		y0 = self.pose.position.y
+		remaining = dist
+		while math.fabs(remaining)>POS_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
+			x1 = self.pose.position.x
+			y1 = self.pose.position.y
+			remaining = dist - self.euclideanDistance(x0,y0,x1,y1)
+			rospy.loginfo("Park: odom at {:.2f},{:.2f} ({:.2f})".format(x1,y1,remaining))
+
+			velocity = dist*VEL_FACTOR
 			if velocity>MAX_LINEAR:
 				velocity = MAX_LINEAR
 			elif velocity<-MAX_LINEAR:
@@ -425,7 +432,6 @@ class Parker:
 			self.pub.publish(self.twist)
 			self.rate.sleep()
 
-			dist = self.euclideanDistance(x0,y0,x1,y1)
 			
 		# Once we've reached our destination, stop
 		self.twist.angular.z = 0.0
@@ -434,8 +440,8 @@ class Parker:
 		self.rate.sleep()
 
 		# Finally, update heading and current position
-		self.position.x = x1
-		self.position.y = y1
+		self.position.x = targx
+		self.position.y = targy
 		self.heading = targetHeading
 
 	def euclideanDistance(self,x0,y0,x1,y1):
