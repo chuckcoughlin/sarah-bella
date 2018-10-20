@@ -373,16 +373,16 @@ class Parker:
 	# then move to the target. All calculations are in terms of 
 	# the reference coordinates.
 	# Note that pose.position.x is forward, pos.position.y is left.
-	def moveToTarget(self,x,y,forward):
+	def moveToTarget(self,x1,y1,forward):
 		# Compute the target direction, distance with respect to the current leg origin
-		dx = x - self.position.x
-		dy = y - self.position.y
+		dx = x1 - self.position.x
+		dy = y1 - self.position.y
 		targetHeading = math.atan2(dx,dy) # True target direction from current position
 		yaw = self.quaternionToYaw(self.pose.orientation)
 		targetYaw = yaw + targetHeading - self.heading
 		self.report("Park: Move {:.0f}->{:.0f} ({:.2f},{:.2f}->{:.2f},{:.2f})".format(\
 				math.degrees(self.heading),math.degrees(targetHeading),\
-				self.position.x,self.position.y,x,y))
+				self.position.x,self.position.y,x1,y1))
 
 		# Avoid the discontinuity at 0
 		offset = 0
@@ -406,36 +406,26 @@ class Parker:
 		
 		# Next move in a straight line to target. We check to see how far we've travelled.
 		dist = math.sqrt(dx*dx+dy*dy)
-		x0  = self.pose.position.x
-		y0  = self.pose.position.y
-		err = dist  # Initially
-		while math.fabs(err)>POS_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
-			x1 = self.pose.position.x
-			y1 = self.pose.position.y
-			rospy.loginfo("Park: move {:.2f},{:.2f}->{:.2f},{:.2f} (".2f})".format(x0,y0,x1,y1,err))
-			lin_vel = err*VEL_FACTOR
-			if lin_vel>MAX_LINEAR:
-				lin_vel = MAX_LINEAR
-			elif lin_vel<-MAX_LINEAR:
-				lin_vel = -MAX_LINEAR
+		while math.fabs(dist)>POS_TOLERANCE and not rospy.is_shutdown() and not self.stopped:
+			x0 = self.pose.position.x
+			y0 = self.pose.position.y
+			rospy.loginfo("Park: roll {:.2f},{:.2f}->{:.2f},{:.2f} ({:.2f})".format(x0,y0,x1,y1,dist))
+			velocity = err*VEL_FACTOR
+			if velocity>MAX_LINEAR:
+				velocity = MAX_LINEAR
+			elif velocity<-MAX_LINEAR:
+				velocity = -MAX_LINEAR
 
-			dx = target.x-self.pose.position.y
-			dy = target.y-self.pose.position.x
-			theta = math.atan2(dy,dx) + math.pi/2.
 			if not forward:
-				theta = theta-math.pi
-				lin_vel = -lin_vel
+				velocity = -velocity
 
-			theta = self.rampedAngle(theta)
-			rospy.loginfo("Park: move err {:.2f}, vel {:.2f},{:.0f}".format(err,lin_vel,\
-						math.degrees(theta)))
 			# Make progress toward destination
-			self.twist.angular.z = 0.0  # Instead of theta
-			self.twist.linear.x  = -lin_vel
+			self.twist.angular.z = 0.0  # We assume we've rotated correctly
+			self.twist.linear.x  = -velocity
 			self.pub.publish(self.twist)
 			self.rate.sleep()
 
-			err = dist - self.euclideanDistance(x0,y0,x1,y1)
+			dist = self.euclideanDistance(x0,y0,x1,y1)
 			
 		# Once we've reached our destination, stop
 		self.twist.angular.z = 0.0
@@ -444,11 +434,10 @@ class Parker:
 		self.rate.sleep()
 
 		# Finally, update heading and current position
-		self.position.x = target.x
-		self.position.y = target.y
+		self.position.x = x1
+		self.position.y = y1
 		self.heading = targetHeading
 
-	# Note: two poses have different meanings of x/y
 	def euclideanDistance(self,x0,y0,x1,y1):
 		a = x1 - x0
 		b = y1 - y0
