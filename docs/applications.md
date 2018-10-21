@@ -19,6 +19,8 @@ The Android assistant contains command and monitoring code for all applications 
   * [System Check](#systemcheck)
   * [Headlamp](#headlamp)
   * [Teleop](#teleop)
+  * [Follow](#follow)
+  * [Auto Park](#park)
 
 *********************************************************
 ### a - Discovery <a id="discovery"></a>
@@ -118,9 +120,9 @@ with the joystick. Choices are:
 With the *follow* application running, walk in front of the TurtleBot3. Then, slowly walk away from the TurtleBot. The robot should move forward. Moving close to the TurtleBot will cause it to back away. Moving slowly to the left or right will cause the TurtleBot to turn. To stop the robot from following, walk quickly away from the robot.
 
 ******************************************************
-### 05 - Auto-park <a id="follow"></a>
+### 05 - Auto-park <a id="park"></a>
 When this application is running, the robot will search for a "hitching post" that marks its intended parking space. A stack of tin cans will suffice for the marker.
 
 ******************************************************
-### 06 - Call <a id="follow"></a>
+### 06 - Call <a id="call"></a>
 The *call* capability demonstrates the use of microphones to locate a sound-source. Use "Hey, Sarah", or "Come, Sarah" to direct the robot to yourself.

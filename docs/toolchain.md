@@ -1,7 +1,7 @@
 # Toolchain and Build Notes
 
 This document summarizes the tools and build procedures required to build the Sarah-Bella application suite. Current hardware consists of the following:
-  * Host system - iMac running OSX High Sierra (10.13).
+  * Host system - iMac running OSX Mohave (10.14).
   * Tablet - Samsung Galaxy S3 - 10" Android 8.0.0 (SDK version 26).
   * Robot - ROBOTIS Turtlebot3, monitor, USB keyboard
 
@@ -171,9 +171,9 @@ We use VirtualBox on an iMac host to implement our Linux virtual machines. The a
  Create a virtual machine "ROSDev" to house ROS development activities. Download the initial boot image from http://releases.ubuntu.com/16.04.4-desktop-amd64.iso. Place it in ~/robotics/linux on the host OSX system.  
  Create a virtual machine sized at 6gb of RAM and 50gb of disk. Note that Ubuntu 16.04 is required. Other versions will not work.
 
-The VirtualBox installation requires an additional package in order to support a file system shared with the host. From https://download.virtualbox.org/virtualbox/5.2.12 (or more recent version) download, then from the VirtualBox "devices" menu,
+The VirtualBox installation requires an additional package in order to support a file system shared with the host. From https://download.virtualbox.org/virtualbox/5.2.20 (or more recent version) download, then from the VirtualBox "devices" menu,
 mount the VirtualBox Extension Package (guest additions).  Either let the script run automatically or
-navigate to /media/<username>VBox_GAs_5.2.12 and execute:
+navigate to /media/<username>VBox_GAs_5.2.20 and execute:
 
 ```
 		sudo ./VBoxLinuxAdditions.run
