@@ -225,11 +225,34 @@ ObstacleDistance
 
  The *follow* application will cause the TurtleBot3 to look for objects in a window 50cm in front of it. And it will seek to keep the centroid of the observed objects directly in front of it and a fixed distance away. If the centroid of the object is too far away it will drive forward, too close backward, and if offset to the side it will turn toward the centroid.
 
+ ##### ----------------------- tablet --------------------------<br/>
+ **action:** /sb_serve_twist_command (TwistCommandRequest)<br/>
+ **subscribe:**  /sb_teleop (ObstacleDistance)<br/>
 
+ ##### ----------------------- robot --------------------------<br/>
+ **service:** /sb_serve_twist_command (TwistCommand)<br/>
+ **publish:**  /sb_obstacle_distance (ObstacleDistance)<br/>
+ **publish:**  /sb_teleop_status (TeleopStatus)<br/>
 
 
 ### 05 - Park <a id="park"></a>
-See Turtlebot3 Automatic Parking at: https://github.com/ROBOTIS-GIT/turtlebot3_applications
+The ``automatic park`` application uses lidar readings to locate two towers which must be the closest objects in its scan range. Once located the robot uses odometry to trace a rectangular pattern in front of the towers, then back into a "parking space" halfway between the towers.
+
+The figure below shows the layout, labels and some of the trig formulae used in the code.
+
+![SB Assistant](/images/sb-park-geometry.png)
+```                        SB Assistant - Parking Geometry ```</br>
+
+
+##### ----------------------- tablet --------------------------<br/>
+**action:** /sb_serve_twist_command (TwistCommandRequest)<br/>
+**subscribe:**  /sb_teleop (ObstacleDistance)<br/>
+
+##### ----------------------- robot --------------------------<br/>
+**service:** /sb_serve_twist_command (TwistCommand)<br/>
+**publish:**  /sb_obstacle_distance (ObstacleDistance)<br/>
+**publish:**  /sb_teleop_status (TeleopStatus)<br/>
+
 
 ### 06 - Come <a id="come"></a>
 

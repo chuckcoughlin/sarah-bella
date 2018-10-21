@@ -20,7 +20,7 @@ The Android assistant contains command and monitoring code for all applications 
   * [Headlamp](#headlamp)
   * [Teleop](#teleop)
   * [Follow](#follow)
-  * [Auto Park](#park)
+  * [Park](#park)
 
 *********************************************************
 ### a - Discovery <a id="discovery"></a>
@@ -90,7 +90,15 @@ It has recently been expanded to hold an Arduino UNO board.
 ```                        SB Assistant - Teleop Control ```</br>
 [toc](#table-of-contents)
 
-The **teleop** application provides remote-control of the robot via the virtual joystick. Think of the control as the steering wheel of a car, where "up"
+The **teleop** panel allows specification of a "behavior" while the robot is running the internal *teleop* application. Behaviors are:
+```
+  joystick
+  follow
+  park
+  come
+```
+
+The ``joystick`` selects remote-control of the robot via the virtual joystick. Think of the control as the steering wheel of a car, where "up"
 corresponds to straight ahead. To turn move your finger off the center line. To
 increase speed move further from the center. Lifting the finger, stops the robot.
 
@@ -106,22 +114,22 @@ might go like this:
   back up
   stop
 ```
-Additionally, a "behavior" can be specified. This is equivalent to running one of the following applications in parallel
-with the joystick. Choices are:
-```
-  joystick (run the joystick application alone)
-  follow
-  park
-  come
-```
+
 
 ******************************************************
 ### 04 - Follow <a id="follow"></a>
-With the *follow* application running, walk in front of the TurtleBot3. Then, slowly walk away from the TurtleBot. The robot should move forward. Moving close to the TurtleBot will cause it to back away. Moving slowly to the left or right will cause the TurtleBot to turn. To stop the robot from following, walk quickly away from the robot.
+*follow* is one of the *teleop* "behaviors". With ``follow`` selected, walk in front of the TurtleBot3. Then, slowly, walk away from the TurtleBot. The robot should move forward. Moving close to the TurtleBot will cause it to back away. Moving slowly to the left or right will cause the TurtleBot to turn. To stop the robot from following, walk quickly away from the robot or select a different behavior.
 
 ******************************************************
-### 05 - Auto-park <a id="park"></a>
-When this application is running, the robot will search for a "hitching post" that marks its intended parking space. A stack of tin cans will suffice for the marker.
+### 05 - Park <a id="park"></a>
+To setup the ``park`` application, create two towers similar to what is shown below. A stack of tin cans will suffice.
+
+![SB Assistant](/images/sb-parking.png)
+```                        SB Assistant - Parking Setup ```</br>
+
+Position the robot "in front" of the towers. Its orientation does not matter. There can be no other obstacles closer to the robot than the towers.
+
+Once the ``park`` behavior is selected, the robot will proceed to a reference point 0.6m in front of the left-most tower. From there it will execute a pattern similar to an aircraft landing (downwind leg, base leg and final approach). From there it will execute a parallel parking maneuver and position itself half-way between the towers.
 
 ******************************************************
 ### 06 - Call <a id="call"></a>
