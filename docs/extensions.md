@@ -212,27 +212,28 @@ ObstacleDistance
 ```
 
 ##### ----------------------- tablet --------------------------<br/>
+**action:** /sb_serve_behavior_command (Behavior)<br/>
 **action:** /sb_serve_twist_command (TwistCommandRequest)<br/>
 **subscribe:**  /sb_teleop (ObstacleDistance)<br/>
+**subscribe:**  /sb_teleop_status (TeleopStatus)<br/>
 
 ##### ----------------------- robot --------------------------<br/>
-**service:** /sb_serve_twist_command (TwistCommand)<br/>
+**publish:**  /cml_vel (Twist)<br/>
 **publish:**  /sb_obstacle_distance (ObstacleDistance)<br/>
 **publish:**  /sb_teleop_status (TeleopStatus)<br/>
 
- ### 04- Follow <a id="follow"></a>
- The *follower* application is one of the ROBOTIS demonstrations. I chose the version from: https://github.com/pirobot/ros-by-example/blob/master/rbx_vol_1/rbx1_apps/nodes/follower.py as my starting point, making modifications to fit into my application framework.
+### 04- Follow <a id="follow"></a>
+The *follower* application is one of the ROBOTIS demonstrations. I chose the version from: https://github.com/pirobot/ros-by-example/blob/master/rbx_vol_1/rbx1_apps/nodes/follower.py as my starting point, making modifications to fit into my application framework.
 
- The *follow* application will cause the TurtleBot3 to look for objects in a window 50cm in front of it. And it will seek to keep the centroid of the observed objects directly in front of it and a fixed distance away. If the centroid of the object is too far away it will drive forward, too close backward, and if offset to the side it will turn toward the centroid.
+The *follow* application will cause the TurtleBot3 to look for objects in a window 50cm in front of it. And it will seek to keep the centroid of the observed objects directly in front of it and a fixed distance away. If the centroid of the object is too far away it will drive forward, too close backward, and if offset to the side it will turn toward the centroid.
 
- ##### ----------------------- tablet --------------------------<br/>
- **action:** /sb_serve_twist_command (TwistCommandRequest)<br/>
- **subscribe:**  /sb_teleop (ObstacleDistance)<br/>
+##### ----------------------- tablet --------------------------<br/>
+ **action:** /sb_serve_behavior_command (Behavior)<br/>
+ **subscribe:**  /sb_teleop_status (TeleopStatus)<br/>
 
- ##### ----------------------- robot --------------------------<br/>
- **service:** /sb_serve_twist_command (TwistCommand)<br/>
- **publish:**  /sb_obstacle_distance (ObstacleDistance)<br/>
- **publish:**  /sb_teleop_status (TeleopStatus)<br/>
+##### ----------------------- robot --------------------------<br/>
+**service:**  /cml_vel (Twist)<br/>
+**publish:**  /sb_teleop_status (TeleopStatus)<br/>
 
 
 ### 05 - Park <a id="park"></a>
@@ -245,12 +246,13 @@ The figure below shows the layout, labels and some of the trig formulae used in 
 
 
 ##### ----------------------- tablet --------------------------<br/>
-**action:** /sb_serve_twist_command (TwistCommandRequest)<br/>
-**subscribe:**  /sb_teleop (ObstacleDistance)<br/>
+**action:** /sb_serve_behavior_command (Behavior)<br/>
+**subscribe:**  /sb_teleop_status (TeleopStatus)<br/>
 
 ##### ----------------------- robot --------------------------<br/>
-**service:** /sb_serve_twist_command (TwistCommand)<br/>
-**publish:**  /sb_obstacle_distance (ObstacleDistance)<br/>
+**subscribe:**  /scan_throttle (LasarScan)<br/>
+**subscribe:**  /odom (Odometry)<br/>
+**service:**  /cml_vel (Twist)<br/>
 **publish:**  /sb_teleop_status (TeleopStatus)<br/>
 
 
